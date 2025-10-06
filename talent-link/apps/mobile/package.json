@@ -10,20 +10,22 @@
     "test": "jest"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
+    "@react-native/gradle-plugin": "^0.81.1",
+    "@react-native/new-app-screen": "0.81.4",
+    "@repo/ui": "workspace:*",
     "react": "19.1.0",
     "react-native": "0.81.4",
-    "@react-native/new-app-screen": "0.81.4",
-    "react-native-safe-area-context": "^5.5.2",
-    "@repo/ui": "workspace:*"
+    "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
-    "@babel/runtime": "^7.25.0",
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
     "@react-native/babel-preset": "0.81.4",
+    "@react-native/codegen": "^0.81.1",
     "@react-native/eslint-config": "0.81.4",
     "@react-native/metro-config": "0.81.4",
     "@react-native/typescript-config": "0.81.4",
