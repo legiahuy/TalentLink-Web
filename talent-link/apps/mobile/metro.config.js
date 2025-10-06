@@ -1,20 +1,18 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
-const path = require('path');
+const { getDefaultConfig } = require("expo/metro-config");
+const path = require("path");
 
 const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, '..', '..');
+const workspaceRoot = path.resolve(projectRoot, "..", "..");
 
-const config = {
-  projectRoot,
-  watchFolders: [workspaceRoot],
-  resolver: {
-    unstable_enableSymlinks: true,
-    unstable_enablePackageExports: true,
-    nodeModulesPaths: [
-      path.resolve(projectRoot, 'node_modules'),
-      path.resolve(workspaceRoot, 'node_modules'),
-    ],
-  },
-};
+const config = getDefaultConfig(projectRoot);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+// Cấu hình cho monorepo
+config.watchFolders = [workspaceRoot];
+config.resolver.unstable_enableSymlinks = true;
+config.resolver.unstable_enablePackageExports = true;
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, "node_modules"),
+  path.resolve(workspaceRoot, "node_modules"),
+];
+
+module.exports = config;
