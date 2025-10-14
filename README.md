@@ -1,78 +1,69 @@
-# TalentLink Frontend
+# TalentLink Web Frontend
 
-A monorepo containing React Native mobile app and React web app built with Vite.
+A React + TypeScript + Vite web application with Tailwind CSS v4.
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 18+
+- pnpm (recommended) or npm
+
 ### Installation
 
-Install dependencies from the root directory:
-
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd TalentLink-FrontEnd
+
+# Install dependencies
 pnpm install
 ```
 
-### Running the Web App
+### Development
 
 ```bash
-cd talent-link/apps/web
+# Start development server
 pnpm dev
-# or from root
-pnpm --filter web dev
+
+# Open http://localhost:5173
 ```
 
-The web app will be available at `http://localhost:5173`
-
-### Running the Mobile App
-
-#### Prerequisites
-
-Make sure you have completed the [React Native environment setup](https://reactnative.dev/docs/set-up-your-environment).
-
-#### Start Metro bundler:
+### Build & Preview
 
 ```bash
-cd talent-link/apps/mobile
-pnpm start
-# or from root
-pnpm --filter mobile start
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
 ```
 
-#### Run on Android:
-
-```bash
-cd talent-link/apps/mobile
-pnpm android
-# or from root
-pnpm --filter mobile android
-```
-
-#### Run on iOS:
-
-```bash
-cd talent-link/apps/mobile
-# Install CocoaPods dependencies (first time only)
-cd ios && bundle install && bundle exec pod install && cd ..
-
-# Run the app
-pnpm ios
-# or from root
-pnpm --filter mobile ios
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 TalentLink-FrontEnd/
-├── 📱 talent-link/
-│   ├── 🌐 apps/
-│   │   ├── web/           # React + TypeScript + Vite web application
-│   │   └── mobile/        # React Native mobile application
-│   └── 📦 packages/
-│       └── ui/            # Shared UI components and theme
-└── 📄 README.md
+├── public/                 # Static assets
+├── src/
+│   ├── components/        # Shared/common components
+│   ├── features/          # Feature-specific components
+│   ├── hooks/            # Custom React hooks
+│   ├── layouts/          # Layout components
+│   ├── pages/            # Page components
+│   ├── assets/           # Images, icons, etc.
+│   ├── App.tsx           # Main app component
+│   ├── main.tsx          # App entry point
+│   └── index.css         # Global styles
+├── package.json
+├── vite.config.ts        # Vite configuration
+├── tailwind.config.js    # Tailwind CSS configuration
+└── tsconfig.json         # TypeScript configuration
 ```
 
-## License
+## Available Scripts
 
-MIT
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
+- `pnpm lint` - Run ESLint
+- `pnpm format` - Format code with Prettier
