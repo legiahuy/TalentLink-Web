@@ -17,9 +17,9 @@ export function SignupForm({
     <form className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
+          <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Fill in the form below to create your account
+            Nhập email của bạn bên dưới để tạo tài khoản
           </p>
         </div>
         <Field>
@@ -44,12 +44,12 @@ export function SignupForm({
         <Field>
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
           <Input id="confirm-password" type="password" required />
-          <FieldDescription>Please confirm your password.</FieldDescription>
+          <FieldDescription>  </FieldDescription>
         </Field>
         <Field>
-          <Button type="submit">Create Account</Button>
+          <Button type="submit">Tạo tài khoản</Button>
         </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
+        <FieldSeparator>Hoặc tiếp tục với</FieldSeparator>
         <Field>
           <Button variant="outline" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -58,10 +58,10 @@ export function SignupForm({
                 fill="currentColor"
               />
             </svg>
-            Sign up with GitHub
+            Đăng nhập bằng Google
           </Button>
           <FieldDescription className="px-6 text-center">
-            Already have an account? <a href="#">Sign in</a>
+            Đã có tài khoản? <a href="#">Đăng nhập</a>
           </FieldDescription>
         </Field>
       </FieldGroup>
