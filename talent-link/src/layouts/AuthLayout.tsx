@@ -47,7 +47,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
                     </div>
 
                     {/* Form container */}
-                    <div className="flex flex-1 items-center justify-center p-4 py-10 lg:p-10">
+                    <div className="flex flex-1 items-center justify-center lg:p-10">
                         <div className="w-full max-w-sm">
                             {children ?? <Outlet />}
                         </div>
