@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 export function SignupForm({
     className,
@@ -21,7 +23,7 @@ export function SignupForm({
         confirmPassword: '',
         role: 'producer',
     });
-
+    const [showPassword, setShowPassword] = useState(false);
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     ) => {
@@ -79,7 +81,7 @@ export function SignupForm({
                     />
                 </Field>
                 <Field>
-                    <FieldLabel htmlFor="role">Loại tài khoản</FieldLabel>
+                    <FieldLabel htmlFor="role">Bạn là?</FieldLabel>
                     <select
                         id="role"
                         name="role"
@@ -98,15 +100,35 @@ export function SignupForm({
                 <div className="grid grid-cols-2 gap-3">
                     <Field>
                         <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                        <Input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="Mật khẩu"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            required
-                        />
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Mật khẩu"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                required
+                                className="pr-10"
+                            />
+                            <button
+                                type="button"
+                                aria-label={
+                                    showPassword
+                                        ? 'Ẩn mật khẩu'
+                                        : 'Hiển thị mật khẩu'
+                                }
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </button>
+                        </div>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="confirmPassword">
@@ -124,14 +146,9 @@ export function SignupForm({
                     </Field>
                 </div>
 
-                {/* Password hint */}
-                <FieldDescription className="text-xs">
-                    Mật khẩu phải có ít nhất 8 ký tự
-                </FieldDescription>
-
                 {/* Submit Button */}
                 <Field>
-                    <Button type="submit" className="w-full">
+                    <Button variant="purple" type="submit" className="w-full">
                         Tạo tài khoản
                     </Button>
                 </Field>
@@ -155,9 +172,12 @@ export function SignupForm({
 
                 <FieldDescription className="text-center text-sm">
                     Đã có tài khoản?{' '}
-                    <a href="#" className="underline underline-offset-4">
+                    <Link
+                        to="/auth/login"
+                        className="underline underline-offset-4"
+                    >
                         Đăng nhập
-                    </a>
+                    </Link>
                 </FieldDescription>
             </FieldGroup>
         </form>
