@@ -2,7 +2,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     Field,
-    FieldDescription,
     FieldGroup,
     FieldLabel,
     FieldSeparator,
@@ -73,7 +72,7 @@ export function ForgotPasswordForm({
                 </Field>
 
                 <FieldSeparator />
-                <FieldDescription className="text-center text-sm">
+                <div className="text-center text-sm">
                     <div className="flex flex-row items-center justify-center gap-2 text-center">
                         <Link
                             to="/auth/login"
@@ -83,7 +82,7 @@ export function ForgotPasswordForm({
                         </Link>
                         <FaArrowRight />
                     </div>
-                </FieldDescription>
+                </div>
             </FieldGroup>
         </form>
     );
