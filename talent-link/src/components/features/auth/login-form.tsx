@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export function LoginForm({
     className,
@@ -22,6 +23,10 @@ export function LoginForm({
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -33,10 +38,24 @@ export function LoginForm({
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Add form validation and API call
-        console.log('Form data:', formData);
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            await login({
+                email: formData.email,
+                password: formData.password,
+            });
+            navigate('/user/dashboard');
+        } catch (err: unknown) {
+            const errorMessage =
+                err instanceof Error ? err.message : 'Đăng nhập thất bại';
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -109,10 +128,31 @@ export function LoginForm({
                     </div>
                 </Field>
 
+                {/* Error Message */}
+                {error && (
+                    <Field>
+                        <div className="text-center text-sm text-red-500">
+                            {error}
+                        </div>
+                    </Field>
+                )}
+
                 {/* Submit Button */}
                 <Field>
-                    <Button variant="purple" type="submit" className="w-full">
-                        Đăng nhập
+                    <Button
+                        variant="purple"
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Đang đăng nhập...
+                            </>
+                        ) : (
+                            'Đăng nhập'
+                        )}
                     </Button>
                 </Field>
 

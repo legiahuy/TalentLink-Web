@@ -9,8 +9,10 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import type { UserRole } from '@/features/auth/types';
 
 export function SignupForm({
     className,
@@ -18,12 +20,14 @@ export function SignupForm({
 }: React.ComponentProps<'form'>) {
     const [formData, setFormData] = useState({
         email: '',
-        username: '',
+        name: '',
         password: '',
         confirmPassword: '',
         role: 'producer',
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     ) => {
@@ -34,10 +38,38 @@ export function SignupForm({
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const { register } = useAuth();
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Add form validation and API call
-        console.log('Form data:', formData);
+
+        // Validate password confirmation
+        if (formData.password !== formData.confirmPassword) {
+            setError('Mật khẩu xác nhận không khớp');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError('');
+        console.log(formData);
+
+        try {
+            await register({
+                email: formData.email,
+                password: formData.password,
+                display_name: formData.name,
+                role: formData.role as UserRole,
+            });
+            navigate('/user/dashboard');
+        } catch (err: unknown) {
+            const errorMessage =
+                err instanceof Error ? err.message : 'Đăng ký thất bại';
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -69,13 +101,13 @@ export function SignupForm({
                 </Field>
 
                 <Field>
-                    <FieldLabel htmlFor="username">Tên đăng nhập</FieldLabel>
+                    <FieldLabel htmlFor="name">Tên đăng nhập</FieldLabel>
                     <Input
-                        id="username"
-                        name="username"
+                        id="name"
+                        name="name"
                         type="text"
-                        placeholder="Username"
-                        value={formData.username}
+                        placeholder="Username   "
+                        value={formData.name}
                         onChange={handleInputChange}
                         required
                     />
@@ -146,10 +178,31 @@ export function SignupForm({
                     </Field>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <Field>
+                        <div className="text-center text-sm text-red-500">
+                            {error}
+                        </div>
+                    </Field>
+                )}
+
                 {/* Submit Button */}
                 <Field>
-                    <Button variant="purple" type="submit" className="w-full">
-                        Tạo tài khoản
+                    <Button
+                        variant="purple"
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Đang tạo...
+                            </>
+                        ) : (
+                            'Tạo tài khoản'
+                        )}
                     </Button>
                 </Field>
 
