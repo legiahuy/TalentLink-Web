@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { FieldSeparator } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
     email: z.email('Email không hợp lệ'),
@@ -24,10 +26,14 @@ export function LoginForm({
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<LogInFormValues>({ resolver: zodResolver(loginSchema) });
-
+    const navigate = useNavigate();
+    const { login } = useAuthStore();
     const onSubmit = async (data: LogInFormValues) => {
         // TODO: Implement signup logic
         console.log('Signup data:', data);
+        const { email, password } = data;
+        await login(email, password);
+        navigate('/');
     };
     return (
         <form
@@ -85,7 +91,14 @@ export function LoginForm({
                     className="w-full"
                     disabled={isSubmitting}
                 >
-                    Đăng nhập
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Đang đăng nhập...
+                        </>
+                    ) : (
+                        'Đăng nhập'
+                    )}
                 </Button>
 
                 <FieldSeparator>Hoặc tiếp tục với</FieldSeparator>

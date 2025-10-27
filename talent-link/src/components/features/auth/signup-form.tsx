@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
+
 import {
     Select,
     SelectContent,
@@ -17,6 +19,7 @@ import {
     SelectValue,
     SelectGroup,
 } from '@/components/ui/select';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const signUpSchema = z
     .object({
@@ -48,10 +51,17 @@ export function SignupForm({
         control,
         formState: { errors, isSubmitting },
     } = useForm<SignUpFormValues>({ resolver: zodResolver(signUpSchema) });
+    const navigate = useNavigate();
+
+    const { signUp } = useAuthStore();
 
     const onSubmit = async (data: SignUpFormValues) => {
         // TODO: Implement signup logic
         console.log('Signup data:', data);
+
+        const { username, email, password, role } = data;
+        await signUp(username, email, password, role!);
+        navigate('/auth/login');
     };
 
     return (
@@ -204,7 +214,14 @@ export function SignupForm({
                     className="w-full"
                     disabled={isSubmitting}
                 >
-                    Tạo tài khoản
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Đang tạo...
+                        </>
+                    ) : (
+                        'Tạo tài khoản'
+                    )}
                 </Button>
 
                 <FieldSeparator>Hoặc tiếp tục với</FieldSeparator>
