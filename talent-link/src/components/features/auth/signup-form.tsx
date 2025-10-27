@@ -1,147 +1,157 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-    FieldSeparator,
-} from '@/components/ui/field';
+import { FieldSeparator } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import type { UserRole } from '@/features/auth/types';
+import { z } from 'zod';
+import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    SelectGroup,
+} from '@/components/ui/select';
+
+const signUpSchema = z
+    .object({
+        username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
+        email: z.email('Email không hợp lệ'),
+        password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+        confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
+        role: z.enum(['producer', 'singer', 'venue']).optional(),
+    })
+    .refine((data) => data.role, {
+        message: 'Vui lòng chọn vai trò',
+        path: ['role'],
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: 'Mật khẩu xác nhận không khớp',
+        path: ['confirmPassword'],
+    });
+
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export function SignupForm({
     className,
     ...props
 }: React.ComponentProps<'form'>) {
-    const [formData, setFormData] = useState({
-        email: '',
-        name: '',
-        password: '',
-        confirmPassword: '',
-        role: 'producer',
-    });
     const [showPassword, setShowPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors, isSubmitting },
+    } = useForm<SignUpFormValues>({ resolver: zodResolver(signUpSchema) });
 
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const { register } = useAuth();
-    const navigate = useNavigate();
-    const [error, setError] = useState('');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Validate password confirmation
-        if (formData.password !== formData.confirmPassword) {
-            setError('Mật khẩu xác nhận không khớp');
-            return;
-        }
-
-        setIsSubmitting(true);
-        setError('');
-        console.log(formData);
-
-        try {
-            await register({
-                email: formData.email,
-                password: formData.password,
-                display_name: formData.name,
-                role: formData.role as UserRole,
-            });
-            navigate('/user/dashboard');
-        } catch (err: unknown) {
-            const errorMessage =
-                err instanceof Error ? err.message : 'Đăng ký thất bại';
-            setError(errorMessage);
-        } finally {
-            setIsSubmitting(false);
-        }
+    const onSubmit = async (data: SignUpFormValues) => {
+        // TODO: Implement signup logic
+        console.log('Signup data:', data);
     };
 
     return (
         <form
             className={cn('flex flex-col gap-3', className)}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             {...props}
         >
-            <FieldGroup>
+            <div className="flex flex-col gap-5">
                 <div className="mb-3 flex flex-col items-center gap-1 text-center">
-                    <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
+                    <h1 className="text-2xl font-bold">
+                        Tạo tài khoản TalentLink
+                    </h1>
                     <p className="text-muted-foreground text-sm text-balance">
-                        Điền thông tin để tạo tài khoản mới
+                        Chào mừng bạn! Hãy đăng ký để bắt đầu!
                     </p>
                 </div>
 
-                {/* Email - Full width */}
-                <Field>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                <div className="flex flex-col gap-3">
+                    <Label htmlFor="username" className="block text-sm">
+                        Tên đăng nhập
+                    </Label>
                     <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="email@example.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Field>
-
-                <Field>
-                    <FieldLabel htmlFor="name">Tên đăng nhập</FieldLabel>
-                    <Input
-                        id="name"
-                        name="name"
                         type="text"
-                        placeholder="Username   "
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
+                        id="username"
+                        placeholder="Username"
+                        {...register('username')}
                     />
-                </Field>
-                <Field>
-                    <FieldLabel htmlFor="role">Bạn là?</FieldLabel>
-                    <select
-                        id="role"
+                    {errors.username && (
+                        <p className="text-destructive text-xs">
+                            {errors.username.message}
+                        </p>
+                    )}
+                </div>
+                <div className="flex flex-col gap-3">
+                    <Label htmlFor="email" className="block text-sm">
+                        Email
+                    </Label>
+                    <Input
+                        type="email"
+                        id="email"
+                        placeholder="email@example.com"
+                        {...register('email')}
+                    />
+                    {errors.email && (
+                        <p className="text-destructive text-xs">
+                            {errors.email.message}
+                        </p>
+                    )}
+                </div>
+                <div className="flex flex-col gap-3">
+                    <Label htmlFor="role" className="block text-sm">
+                        Bạn là?
+                    </Label>
+                    <Controller
                         name="role"
-                        value={formData.role}
-                        onChange={handleInputChange}
-                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        required
-                    >
-                        <option value="producer">Nhà sản xuất</option>
-                        <option value="singer">Ca sĩ</option>
-                        <option value="venue">Địa điểm</option>
-                    </select>
-                </Field>
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Chọn vai trò" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="producer">
+                                            Nhà sản xuất
+                                        </SelectItem>
+                                        <SelectItem value="singer">
+                                            Ca sĩ
+                                        </SelectItem>
+                                        <SelectItem value="venue">
+                                            Địa điểm
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        )}
+                    />
+                    {errors.role && (
+                        <p className="text-destructive text-xs">
+                            {errors.role.message}
+                        </p>
+                    )}
+                </div>
 
-                {/* Password and Confirm Password - Two columns */}
                 <div className="grid grid-cols-2 gap-3">
-                    <Field>
-                        <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                    <div className="flex flex-col gap-3">
+                        <Label htmlFor="password" className="block text-sm">
+                            Mật Khẩu
+                        </Label>
                         <div className="relative">
                             <Input
                                 id="password"
-                                name="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Mật khẩu"
-                                value={formData.password}
-                                onChange={handleInputChange}
-                                required
                                 className="pr-10"
+                                {...register('password')}
                             />
                             <button
                                 type="button"
@@ -161,69 +171,57 @@ export function SignupForm({
                                 )}
                             </button>
                         </div>
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="confirmPassword">
+                        {errors.password && (
+                            <p className="text-destructive text-xs">
+                                {errors.password.message}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label
+                            htmlFor="confirmPassword"
+                            className="block text-sm"
+                        >
                             Xác nhận mật khẩu
-                        </FieldLabel>
+                        </Label>
                         <Input
                             id="confirmPassword"
-                            name="confirmPassword"
                             type="password"
-                            placeholder="Xác nhận"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            required
+                            placeholder="Xác nhận mật khẩu"
+                            className="pr-10"
+                            {...register('confirmPassword')}
                         />
-                    </Field>
-                </div>
-
-                {/* Error Message */}
-                {error && (
-                    <Field>
-                        <div className="text-center text-sm text-red-500">
-                            {error}
-                        </div>
-                    </Field>
-                )}
-
-                {/* Submit Button */}
-                <Field>
-                    <Button
-                        variant="purple"
-                        type="submit"
-                        className="w-full"
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Đang tạo...
-                            </>
-                        ) : (
-                            'Tạo tài khoản'
+                        {errors.confirmPassword && (
+                            <p className="text-destructive text-xs">
+                                {errors.confirmPassword.message}
+                            </p>
                         )}
-                    </Button>
-                </Field>
+                    </div>
+                </div>
+                <Button
+                    variant="purple"
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                >
+                    Tạo tài khoản
+                </Button>
 
                 <FieldSeparator>Hoặc tiếp tục với</FieldSeparator>
 
-                <Field>
-                    <Button variant="outline" type="button" className="w-full">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                        >
-                            <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z" />
-                        </svg>
-                        Đăng nhập bằng Google
-                    </Button>
-                </Field>
-
-                <FieldDescription className="text-center text-sm">
+                <Button variant="outline" type="button" className="w-full">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                    >
+                        <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z" />
+                    </svg>
+                    Đăng nhập bằng Google
+                </Button>
+                <div className="text-center text-sm">
                     Đã có tài khoản?{' '}
                     <Link
                         to="/auth/login"
@@ -231,8 +229,8 @@ export function SignupForm({
                     >
                         Đăng nhập
                     </Link>
-                </FieldDescription>
-            </FieldGroup>
+                </div>
+            </div>
         </form>
     );
 }
