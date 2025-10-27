@@ -1,23 +1,37 @@
-import { useAuthStore } from '../stores/authStore';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 export const tokenManager = {
-    getAccessToken: () => {
-        return useAuthStore.getState().accessToken;
+    getAccessToken: (): string | null => {
+        return localStorage.getItem(ACCESS_TOKEN_KEY);
     },
 
-    getRefreshToken: () => {
-        return useAuthStore.getState().refreshToken;
+    getRefreshToken: (): string | null => {
+        return localStorage.getItem(REFRESH_TOKEN_KEY);
     },
 
-    setAccessToken: (token: string) => {
-        useAuthStore.getState().setAccessToken(token);
+    setAccessToken: (token: string): void => {
+        localStorage.setItem(ACCESS_TOKEN_KEY, token);
     },
 
-    setRefreshToken: (token: string) => {
-        useAuthStore.getState().setRefreshToken(token);
+    setRefreshToken: (token: string): void => {
+        localStorage.setItem(REFRESH_TOKEN_KEY, token);
     },
 
-    clearTokens: () => {
-        useAuthStore.getState().clearAuth();
+    setTokens: (accessToken: string, refreshToken: string): void => {
+        localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    },
+
+    clearTokens: (): void => {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+    },
+
+    hasTokens: (): boolean => {
+        return !!(
+            localStorage.getItem(ACCESS_TOKEN_KEY) &&
+            localStorage.getItem(REFRESH_TOKEN_KEY)
+        );
     },
 };

@@ -11,9 +11,16 @@ const extractErrorMessage = (
 ): string => {
     if (error instanceof Error && 'response' in error) {
         const axiosError = error as Error & {
-            response?: { data?: { error?: string } };
+            response?: { data?: { error?: string; message?: string } };
         };
-        return axiosError.response?.data?.error || error.message;
+        return (
+            axiosError.response?.data?.error ||
+            axiosError.response?.data?.message ||
+            error.message
+        );
+    }
+    if (error instanceof Error) {
+        return error.message;
     }
     return defaultMessage;
 };
@@ -21,55 +28,34 @@ const extractErrorMessage = (
 export const useAuth = () => {
     const { user, isAuthenticated, isLoading, setAuth, clearAuth, setLoading } =
         useAuthStore();
-    const refreshToken = useAuthStore((state) => state.refreshToken);
 
     const login = async (credentials: LoginCredentials) => {
-        console.log('🔥 Login started'); // Debug log
         try {
-            console.log('🔥 Calling authService.login...'); // Debug log
             const response = await authService.login(credentials);
-            console.log('🔥 Got response from authService.login', response); // Debug log
 
-            // Get tokens from response
+            // Extract tokens from response
             const accessToken =
-                response.access_token ||
-                response.data?.access_token ||
-                response.accessToken ||
-                response.token;
+                response.access_token || response.data?.access_token || response.accessToken;
             const refreshToken =
-                response.refresh_token ||
-                response.data?.refresh_token ||
-                response.refreshToken;
-
-            console.log('Res', response);
-            console.log('login access', accessToken);
-            console.log('login refresh', refreshToken);
+                response.refresh_token || response.data?.refresh_token || response.refreshToken;
 
             if (!accessToken || !refreshToken) {
-                console.error('Invalid response structure:', response);
-                throw new Error(
-                    'Invalid response from server - missing tokens',
-                );
+                throw new Error('Invalid response from server - missing tokens');
             }
 
-            // Set tokens first so getMe can use them
-            setAuth(null, accessToken, refreshToken);
+            // Save tokens to localStorage
+            tokenManager.setTokens(accessToken, refreshToken);
 
-            // Get user info from /me endpoint
+            // Get user info
             try {
                 const user = await authService.getMe();
-                console.log('login user from /me', user);
-                setAuth(user, accessToken, refreshToken);
-            } catch (meError) {
-                console.error('Failed to get user from /me:', meError);
-                // Still keep tokens even if getMe fails
+                setAuth(user);
+            } catch (error) {
+                console.error('Failed to fetch user info:', error);
+                throw error;
             }
         } catch (error) {
-            console.log(error);
-            const errorMessage = extractErrorMessage(
-                error,
-                'Đăng nhập thất bại',
-            );
+            const errorMessage = extractErrorMessage(error, 'Đăng nhập thất bại');
             throw new Error(errorMessage);
         }
     };
@@ -77,43 +63,29 @@ export const useAuth = () => {
     const register = async (userData: RegisterData) => {
         try {
             const response = await authService.register(userData);
-            console.log('Register response:', response); // Debug log
 
-            // Get tokens from response
+            // Extract tokens from response
             const accessToken =
-                response.access_token ||
-                response.data?.access_token ||
-                response.accessToken ||
-                response.token;
+                response.access_token || response.data?.access_token || response.accessToken;
             const refreshToken =
-                response.refresh_token ||
-                response.data?.refresh_token ||
-                response.refreshToken;
-
-            console.log('register access', accessToken);
-            console.log('register refresh', refreshToken);
+                response.refresh_token || response.data?.refresh_token || response.refreshToken;
 
             if (!accessToken || !refreshToken) {
-                console.error('Invalid response structure:', response);
-                throw new Error(
-                    'Invalid response from server - missing tokens',
-                );
+                throw new Error('Invalid response from server - missing tokens');
             }
 
-            // Set tokens first so getMe can use them
-            setAuth(null, accessToken, refreshToken);
+            // Save tokens to localStorage
+            tokenManager.setTokens(accessToken, refreshToken);
 
-            // Get user info from /me endpoint
+            // Get user info
             try {
                 const user = await authService.getMe();
-                console.log('register user from /me', user);
-                setAuth(user, accessToken, refreshToken);
-            } catch (meError) {
-                console.error('Failed to get user from /me:', meError);
-                // Still keep tokens even if getMe fails
+                setAuth(user);
+            } catch (error) {
+                console.error('Failed to fetch user info:', error);
+                throw error;
             }
         } catch (error) {
-            console.log(error);
             const errorMessage = extractErrorMessage(error, 'Đăng ký thất bại');
             throw new Error(errorMessage);
         }
@@ -121,29 +93,35 @@ export const useAuth = () => {
 
     const logout = async () => {
         try {
+            const refreshToken = tokenManager.getRefreshToken();
             if (refreshToken) {
                 await authService.logout(refreshToken);
             }
+        } catch (error) {
+            console.error('Logout error:', error);
         } finally {
             clearAuth();
         }
     };
 
     const initAuth = useCallback(async () => {
+        const hasTokens = tokenManager.hasTokens();
+        if (!hasTokens) {
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             const user = await authService.getMe();
-            // For Bearer token auth, get existing tokens from store
-            const accessToken = tokenManager.getAccessToken() || '';
-            const refreshToken = tokenManager.getRefreshToken() || '';
-            setAuth(user, accessToken, refreshToken);
+            setAuth(user);
         } catch (error) {
-            console.log(error);
+            console.error('Failed to initialize auth:', error);
             clearAuth();
         } finally {
             setLoading(false);
         }
-    }, [setLoading, setAuth, clearAuth]);
+    }, [setAuth, clearAuth, setLoading]);
 
     return {
         user,

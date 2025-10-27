@@ -15,7 +15,11 @@ export const ProtectedRoute = ({
     const { isAuthenticated, isLoading, user } = useAuthStore();
 
     if (isLoading) {
-        return <div>Loading...</div>; // Hoặc component Loading của bạn
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="text-lg">Loading...</div>
+            </div>
+        );
     }
 
     if (!isAuthenticated) {

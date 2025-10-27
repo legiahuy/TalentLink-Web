@@ -1,45 +1,50 @@
 import { create } from 'zustand';
-import type { User, AuthState } from '../types';
+import type { User } from '../types';
+import { tokenManager } from '../utils/tokenManager';
 
-interface AuthStore extends AuthState {
-    setAuth: (
-        user: User | null,
-        accessToken: string,
-        refreshToken: string,
-    ) => void;
+interface AuthStore {
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    setUser: (user: User | null) => void;
+    setAuth: (user: User | null) => void;
     clearAuth: () => void;
-    setAccessToken: (token: string) => void;
-    setRefreshToken: (token: string) => void;
     setLoading: (loading: boolean) => void;
+    checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
-    accessToken: null,
-    refreshToken: null,
     isAuthenticated: false,
     isLoading: true,
 
-    setAuth: (user, accessToken, refreshToken) =>
+    setUser: (user) => set({ user }),
+
+    setAuth: (user) =>
         set({
             user,
-            accessToken,
-            refreshToken,
-            isAuthenticated: true,
+            isAuthenticated: !!user,
             isLoading: false,
         }),
 
-    clearAuth: () =>
+    clearAuth: () => {
+        tokenManager.clearTokens();
         set({
             user: null,
-            accessToken: null,
-            refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
-        }),
-
-    setAccessToken: (token) => set({ accessToken: token }),
-    setRefreshToken: (token) => set({ refreshToken: token }),
+        });
+    },
 
     setLoading: (loading) => set({ isLoading: loading }),
+
+    checkAuth: async () => {
+        const hasTokens = tokenManager.hasTokens();
+        if (!hasTokens) {
+            set({ isAuthenticated: false, isLoading: false });
+            return;
+        }
+        set({ isLoading: true });
+        // This will be called by initAuth in useAuth hook
+    },
 }));

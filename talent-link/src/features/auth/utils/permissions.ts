@@ -1,12 +1,5 @@
 import { UserRole } from '../types';
 
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-    [UserRole.GUEST]: 0,
-    [UserRole.USER]: 1,
-    [UserRole.ARTIST]: 2,
-    [UserRole.ADMIN]: 3,
-};
-
 export const hasPermission = (
     userRole: UserRole,
     requiredRoles: UserRole[],
@@ -14,9 +7,14 @@ export const hasPermission = (
     return requiredRoles.includes(userRole);
 };
 
-export const hasMinimumRole = (
-    userRole: UserRole,
-    minimumRole: UserRole,
-): boolean => {
-    return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[minimumRole];
+export const hasAnyRole = (userRole: UserRole, allowedRoles: UserRole[]): boolean => {
+    return allowedRoles.includes(userRole);
+};
+
+export const isAdmin = (userRole: UserRole): boolean => {
+    return userRole === UserRole.ADMIN;
+};
+
+export const isVenue = (userRole: UserRole): boolean => {
+    return userRole === UserRole.VENUE;
 };
