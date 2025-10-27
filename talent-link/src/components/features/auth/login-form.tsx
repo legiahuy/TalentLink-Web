@@ -23,8 +23,7 @@ export function LoginForm({
     });
 
     const [showPassword, setShowPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { login } = useAuth();
+    const { login, isSubmitting } = useAuth();
     const navigate = useNavigate();
     const [error, setError] = useState('');
 
@@ -40,7 +39,6 @@ export function LoginForm({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
         setError('');
 
         try {
@@ -53,8 +51,6 @@ export function LoginForm({
             const errorMessage =
                 err instanceof Error ? err.message : 'Đăng nhập thất bại';
             setError(errorMessage);
-        } finally {
-            setIsSubmitting(false);
         }
     };
 

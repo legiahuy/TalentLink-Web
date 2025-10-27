@@ -1,7 +1,7 @@
 import { useAuthStore } from '../stores/authStore';
 import { authService } from '../services/authService';
 import type { LoginCredentials, RegisterData } from '../types';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { tokenManager } from '../utils/tokenManager';
 
 // Helper function to extract meaningful error message
@@ -29,7 +29,10 @@ export const useAuth = () => {
     const { user, isAuthenticated, isLoading, setAuth, clearAuth, setLoading } =
         useAuthStore();
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const login = async (credentials: LoginCredentials) => {
+        setIsSubmitting(true);
         try {
             const response = await authService.login(credentials);
 
@@ -57,10 +60,13 @@ export const useAuth = () => {
         } catch (error) {
             const errorMessage = extractErrorMessage(error, 'Đăng nhập thất bại');
             throw new Error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const register = async (userData: RegisterData) => {
+        setIsSubmitting(true);
         try {
             const response = await authService.register(userData);
 
@@ -88,6 +94,8 @@ export const useAuth = () => {
         } catch (error) {
             const errorMessage = extractErrorMessage(error, 'Đăng ký thất bại');
             throw new Error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -127,6 +135,7 @@ export const useAuth = () => {
         user,
         isAuthenticated,
         isLoading,
+        isSubmitting,
         login,
         register,
         logout,

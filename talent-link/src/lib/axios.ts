@@ -44,8 +44,21 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // If 401 and not already retrying, try to refresh token
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Only try to refresh token if:
+        // 1. Got 401 error
+        // 2. Request was already sent with a token (user was logged in)
+        // 3. Not already retrying
+        // 4. Not an auth endpoint (login, register, etc)
+        const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+            originalRequest.url?.includes('/auth/signup') ||
+            originalRequest.url?.includes('/auth/register');
+        const hasToken = originalRequest.headers.Authorization;
+
+        if (error.response?.status === 401 &&
+            !originalRequest._retry &&
+            hasToken &&
+            !isAuthEndpoint) {
+
             if (isRefreshing) {
                 // Queue this request until token is refreshed
                 return new Promise((resolve, reject) => {
@@ -82,14 +95,14 @@ axiosInstance.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 tokenManager.clearTokens();
-                // Redirect to login or let app handle it
-                window.location.href = '/auth/login';
+                // Don't redirect here - let the component handle it
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
             }
         }
 
+        // For login/register errors, return the original error from BE
         return Promise.reject(error);
     },
 );
