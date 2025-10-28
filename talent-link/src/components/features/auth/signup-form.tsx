@@ -19,7 +19,7 @@ import {
     SelectValue,
     SelectGroup,
 } from '@/components/ui/select';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const signUpSchema = z
     .object({

@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -26,14 +26,14 @@ export function LoginForm({
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<LogInFormValues>({ resolver: zodResolver(loginSchema) });
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const { login } = useAuthStore();
     const onSubmit = async (data: LogInFormValues) => {
         // TODO: Implement signup logic
         console.log('Signup data:', data);
         const { email, password } = data;
-        await login(email, password);
-        navigate('/');
+        const res = await login(email, password);
+        console.log("result:", res)
     };
     return (
         <form
