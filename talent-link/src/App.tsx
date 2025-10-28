@@ -8,7 +8,6 @@ function App() {
     const { user,
         refreshToken,
         accessToken,
-        isLoading,
         isAuthenticated
     } = useAuthStore();
 
@@ -16,9 +15,6 @@ function App() {
         console.log(user, accessToken, refreshToken, isAuthenticated)
     }, [])
 
-    if (isLoading) {
-        return <div>Initializing app...</div>;
-    }
 
     return (
         <>

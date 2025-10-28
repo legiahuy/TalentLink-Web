@@ -49,7 +49,6 @@ export const useAuthStore = create<AuthState>()(
                 set({ loading: true, error: null });
                 try {
                     const res = await axiosClient.post("/auth/login", { email, password });
-
                     const { access_token, refresh_token } = res.data.data;
                     get().setTokens(access_token, refresh_token);
                     await get().fetchUser();
@@ -61,6 +60,7 @@ export const useAuthStore = create<AuthState>()(
                         : 'Đăng nhập không thành công!';
                     set({ error: message });
                     toast.error(message);
+                    throw new Error(message);
                 } finally {
                     set({ loading: false });
                 }
@@ -116,6 +116,9 @@ export const useAuthStore = create<AuthState>()(
 
             logout: async () => {
                 try {
+                    const { refreshToken } = get();
+                    if (!refreshToken) throw new Error("Missing refresh token");
+                    await axiosClient.post("/auth/logout", { refresh_token: refreshToken });
                     set({
                         user: null,
                         accessToken: null,
@@ -123,7 +126,6 @@ export const useAuthStore = create<AuthState>()(
                         // expiresAt: null,
                         isAuthenticated: false,
                     });
-                    await axiosClient.get("/auth/logout");
                     toast.success("Đăng xuất thành công!");
                 }
                 catch (err) {
@@ -139,6 +141,7 @@ export const useAuthStore = create<AuthState>()(
                 user: state.user,
                 accessToken: state.accessToken,
                 refreshToken: state.refreshToken,
+                isAuthenticated: state.isAuthenticated,
                 // expiresAt: state.expiresAt,
             }),
         }

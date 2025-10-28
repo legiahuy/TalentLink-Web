@@ -26,14 +26,18 @@ export function LoginForm({
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<LogInFormValues>({ resolver: zodResolver(loginSchema) });
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const { login } = useAuthStore();
     const onSubmit = async (data: LogInFormValues) => {
-        // TODO: Implement signup logic
-        console.log('Signup data:', data);
         const { email, password } = data;
-        const res = await login(email, password);
-        console.log("result:", res)
+        try {
+            await login(email, password);
+            navigate("/")
+        }
+        catch {
+            //STAY ON PAGE
+        }
+
     };
     return (
         <form
