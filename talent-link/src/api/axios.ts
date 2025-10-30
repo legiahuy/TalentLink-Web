@@ -6,14 +6,12 @@ const axiosClient = axios.create({
     headers: { "Content-Type": "application/json" },
 });
 
-// 🧩 Interceptor để tự thêm token
 axiosClient.interceptors.request.use((config) => {
     const token = useAuthStore.getState().accessToken;
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });
 
-// 🧩 Interceptor xử lý lỗi 401 và refresh token
 axiosClient.interceptors.response.use(
     (res) => res,
     async (error) => {

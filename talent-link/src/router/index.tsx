@@ -7,11 +7,12 @@ import SignupPage from '@/pages/auth/SignupPage';
 import ProtectedRoute from '@/components/features/auth/ProtectedRoute';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import RedirectAuthenticatedUser from '@/components/features/auth/RedirectAuthenticatedUser';
+import LandingPage from '@/pages/LandingPage';
 
 export const router = createBrowserRouter([
     {
         path: '/',
-        element: <GuestLayout />,
+        element: <GuestLayout><LandingPage /></GuestLayout>,
     },
     {
         path: '/auth',

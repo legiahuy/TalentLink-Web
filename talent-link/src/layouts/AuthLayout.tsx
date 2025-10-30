@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
+import authImage from "@/assets/auth-photo-1.jpg"
 
 const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
     return (
@@ -7,7 +8,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
                 {/* Left side - Fixed background */}
                 <div className="bg-muted relative hidden w-1/2 items-center justify-center p-10 lg:flex xl:w-2/5">
                     <img
-                        src="/auth-photo-1.jpg"
+                        src={authImage}
                         alt="Image"
                         className="absolute inset-0 h-full w-full object-cover"
                     />
@@ -23,7 +24,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
                         </Link>
                     </div>
 
-                    <div className="relative z-10 flex max-h-[800px] max-w-[430px] flex-col justify-center space-y-12">
+                    <div className="relative z-10 flex max-h-[800px] max-w-[440px] flex-col justify-center space-y-12">
                         <div className="space-y-5 text-white">
                             <h1 className="text-4xl leading-tight font-bold">
                                 Connect Talent. Build Careers. Create Success.
@@ -42,7 +43,9 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
                     {/* Mobile header */}
                     <div className="p-4 lg:hidden">
                         <div className="flex justify-center gap-2">
-                            <img src="/TalentLink.svg" />
+                            <Link to="/">
+                                <img src="/TalentLink.svg" />
+                            </Link>
                         </div>
                     </div>
 

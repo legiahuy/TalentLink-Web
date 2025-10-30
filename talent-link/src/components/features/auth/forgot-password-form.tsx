@@ -66,7 +66,7 @@ export function ForgotPasswordForm({
                 </Field>
                 {/* Submit Button */}
                 <Field>
-                    <Button variant="purple" type="submit" className="w-full">
+                    <Button variant="default" type="submit" className="w-full">
                         Đặt lại mật khẩu
                     </Button>
                 </Field>

@@ -7,15 +7,7 @@ interface RedirectAuthenticatedUserProps {
 }
 
 const RedirectAuthenticatedUser: React.FC<RedirectAuthenticatedUserProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuthStore();
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;

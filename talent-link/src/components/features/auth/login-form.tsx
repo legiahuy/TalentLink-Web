@@ -71,9 +71,17 @@ export function LoginForm({
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <Label htmlFor="password" className="block text-sm">
-                        Mật Khẩu
-                    </Label>
+                    <div className='flex'>
+                        <Label htmlFor="password" className="text-sm block">
+                            Mật Khẩu
+                        </Label>
+                        <Link
+                            to="/auth/forgot-password"
+                            className="ml-auto text-sm underline-offset-4 hover:underline "
+                        >
+                            Quên mật khẩu?
+                        </Link>
+                    </div>
                     <div className="relative">
                         <Input
                             id="password"
@@ -90,7 +98,7 @@ export function LoginForm({
                     )}
                 </div>
                 <Button
-                    variant="purple"
+                    variant="default"
                     type="submit"
                     className="w-full"
                     disabled={isSubmitting}
@@ -128,7 +136,7 @@ export function LoginForm({
                         Đăng ký
                     </Link>
                 </div>
-            </div>
-        </form>
+            </div >
+        </form >
     );
 }

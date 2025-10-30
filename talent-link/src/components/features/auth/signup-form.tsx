@@ -209,7 +209,7 @@ export function SignupForm({
                     </div>
                 </div>
                 <Button
-                    variant="purple"
+                    variant="default"
                     type="submit"
                     className="w-full"
                     disabled={isSubmitting}

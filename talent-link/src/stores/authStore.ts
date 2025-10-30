@@ -17,6 +17,7 @@ interface AuthState {
     error: string | null;
 
     // actions
+    signUp: (display_name: string, email: string, password: string, role: string) => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
     refreshAccessToken: () => Promise<void>;
@@ -43,6 +44,24 @@ export const useAuthStore = create<AuthState>()(
                     // expiresAt,
                     isAuthenticated: true,
                 });
+            },
+
+            signUp: async (display_name, email, password, role) => {
+                set({ loading: true, error: null });
+                try {
+                    await axiosClient.post("/auth/signup", { display_name, email, password, role });
+
+                    toast.success("Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập.");
+                } catch (err) {
+                    const message = axios.isAxiosError(err)
+                        ? err.response?.data?.message || 'Đăng ký không thành công!'
+                        : 'Đăng ký không thành công!';
+                    set({ error: message });
+                    toast.error(message);
+                    throw new Error(message);
+                } finally {
+                    set({ loading: false });
+                }
             },
 
             login: async (email, password) => {
@@ -72,8 +91,9 @@ export const useAuthStore = create<AuthState>()(
                     const { refreshToken } = get();
                     if (!refreshToken) throw new Error("Missing refresh token");
                     const res = await axiosClient.post("/auth/refresh", { refresh_token: refreshToken });
-                    const { access_token } = res.data;
-                    get().setTokens(access_token, undefined);
+                    const { access_token, refresh_token } = res.data.data;
+                    get().setTokens(access_token, refresh_token);
+                    console.log("Access token has been refreshed successfully")
                 } catch (err) {
                     const message = axios.isAxiosError(err)
                         ? err.response?.data?.message || 'Refresh failed! Logout'
