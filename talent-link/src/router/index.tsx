@@ -8,6 +8,7 @@ import ProtectedRoute from '@/components/features/auth/ProtectedRoute';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import RedirectAuthenticatedUser from '@/components/features/auth/RedirectAuthenticatedUser';
 import LandingPage from '@/pages/LandingPage';
+import DashboardPage from '@/pages/user/Dashboard';
 
 export const router = createBrowserRouter([
     {
@@ -29,6 +30,17 @@ export const router = createBrowserRouter([
     {
         path: '/logout',
         element: <ProtectedRoute><LogoutPage /></ProtectedRoute>,
+    },
+    {
+        path: '/users',
+        element: (
+            <ProtectedRoute>
+                <GuestLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            { path: 'dashboard', element: <DashboardPage /> },
+        ],
     },
     {
         path: '/unauthorized',

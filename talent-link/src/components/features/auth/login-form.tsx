@@ -32,7 +32,7 @@ export function LoginForm({
         const { email, password } = data;
         try {
             await login(email, password);
-            navigate("/")
+            navigate("/users/dashboard")
         }
         catch {
             //STAY ON PAGE

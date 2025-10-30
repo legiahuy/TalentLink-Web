@@ -156,7 +156,7 @@ const LandingPage = () => {
             </div>
 
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" asChild className="border-primary/50 hover:bg-gradient-card">
+              <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link to="/discovery">
                   Xem tất cả nghệ sĩ <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -182,7 +182,7 @@ const LandingPage = () => {
             </div>
 
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" asChild className="border-primary/50 hover:bg-gradient-card">
+              <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link to="/discovery">
                   Xem tất cả sự kiện <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -271,7 +271,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground text-lg mb-8">
                 Tạo hồ sơ chuyên nghiệp và tiếp cận hàng nghìn cơ hội hợp tác
               </p>
-              <Button size="lg" className="bg-primary hover:opacity-90 transition-opacity text-lg h-14 px-8" asChild>
+              <Button size="lg" className="bg-primary text-lg" asChild>
                 <Link to="/auth/signup">
                   Tạo hồ sơ miễn phí <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
