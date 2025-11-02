@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "navigation": {
+      "home": "Trang chủ",
+      "discovery": "Khám phá",
+      "jobs": "Việc làm",
+      "about": "Giới thiệu"
+    },
+    "signup": "Đăng ký",
+    "login": "Đăng nhập"
+  },
+  "Footer": {
+    "description": "Kết nối nghệ sĩ âm nhạc độc lập với khách hàng một cách chuyên nghiệp.",
+    "aboutUs": "Về chúng tôi",
+    "about": "Giới thiệu",
+    "contact": "Liên hệ",
+    "careers": "Tuyển dụng",
+    "support": "Hỗ trợ",
+    "help": "Trợ giúp",
+    "terms": "Điều khoản",
+    "privacy": "Chính sách",
+    "connect": "Kết nối",
+    "copyright": "© 2025 TalentLink. All rights reserved."
+  },
+  "LanguageSwitcher": {
+    "action": "Lựa chọn ngôn ngữ",
+    "english": "English",
+    "vietnamese": "Tiếng Việt"
+  },
+  "Auth": {
+    "layout": {
+      "title": "Kết nối tài năng. Nuôi dưỡng sự nghiệp. Tạo nên thành công.",
+      "description": "Hàng ngàn nghệ sĩ đã tìm được cơ hội biểu mới cùng chúng tôi. Khởi động chương tiếp theo cho hành trình âm nhạc của bạn ngay tại đây.",
+      "imageAlt": "Image",
+      "logoAlt": "TalentLink Logo"
+    },
+    "login": {
+      "pageTitle": "Đăng nhập",
+      "title": "Chào mừng quay lại",
+      "subtitle": "Đăng nhập vào tài khoản TalentLink của bạn",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "emailInvalid": "Email không hợp lệ",
+      "password": "Mật Khẩu",
+      "passwordPlaceholder": "Mật khẩu",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+      "forgotPassword": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "submitting": "Đang đăng nhập...",
+      "continueWith": "Hoặc tiếp tục với",
+      "signInWithGoogle": "Đăng nhập bằng Google",
+      "noAccount": "Chưa có tài khoản?",
+      "signUp": "Đăng ký"
+    },
+    "signup": {
+      "pageTitle": "Đăng ký",
+      "title": "Tạo tài khoản TalentLink",
+      "subtitle": "Chào mừng bạn! Hãy đăng ký để bắt đầu!",
+      "username": "Tên đăng nhập",
+      "usernamePlaceholder": "Username",
+      "usernameMinLength": "Tên đăng nhập phải có ít nhất 3 ký tự",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "emailInvalid": "Email không hợp lệ",
+      "role": "Bạn là?",
+      "rolePlaceholder": "Chọn vai trò",
+      "roleProducer": "Nhà sản xuất",
+      "roleSinger": "Ca sĩ",
+      "roleVenue": "Địa điểm",
+      "roleRequired": "Vui lòng chọn vai trò",
+      "password": "Mật Khẩu",
+      "passwordPlaceholder": "Mật khẩu",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Xác nhận",
+      "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+      "confirmPasswordMismatch": "Mật khẩu xác nhận không khớp",
+      "showPassword": "Hiển thị mật khẩu",
+      "hidePassword": "Ẩn mật khẩu",
+      "submit": "Tạo tài khoản",
+      "submitting": "Đang tạo...",
+      "continueWith": "Hoặc tiếp tục với",
+      "signInWithGoogle": "Đăng nhập bằng Google",
+      "hasAccount": "Đã có tài khoản?",
+      "login": "Đăng nhập"
+    },
+    "forgotPassword": {
+      "pageTitle": "Quên mật khẩu",
+      "title": "Tìm tài khoản của bạn",
+      "subtitle": "Nhập email bên dưới để đặt lại mật khẩu",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "submit": "Đặt lại mật khẩu",
+      "backToLogin": "Đăng nhập",
+      "emailInvalid": "Email không hợp lệ"
+    }
+  }
+}

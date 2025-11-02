@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "navigation": {
+      "home": "Home",
+      "discovery": "Discovery",
+      "jobs": "Jobs",
+      "about": "About"
+    },
+    "signup": "Signup",
+    "login": "Login"
+  },
+  "Footer": {
+    "description": "Connecting independent music artists with clients professionally.",
+    "aboutUs": "About Us",
+    "about": "About",
+    "contact": "Contact",
+    "careers": "Careers",
+    "support": "Support",
+    "help": "Help",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "connect": "Connect",
+    "copyright": "© 2025 TalentLink. All rights reserved."
+  },
+  "LanguageSwitcher": {
+    "action": "Select Language",
+    "english": "English",
+    "vietnamese": "Tiếng Việt"
+  },
+  "Auth": {
+    "layout": {
+      "title": "Connect Talent. Build Careers. Create Success.",
+      "description": "Join thousands of professionals who have found their dream opportunities through our platform. Your next career move starts here.",
+      "imageAlt": "Image",
+      "logoAlt": "TalentLink Logo"
+    },
+    "login": {
+      "pageTitle": "Login",
+      "title": "Welcome back",
+      "subtitle": "Log in to your TalentLink account",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "emailInvalid": "Invalid email",
+      "password": "Password",
+      "passwordPlaceholder": "Password",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "continueWith": "Or continue with",
+      "signInWithGoogle": "Sign in with Google",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "signup": {
+      "pageTitle": "Signup",
+      "title": "Create TalentLink account",
+      "subtitle": "Welcome! Sign up to get started!",
+      "username": "Username",
+      "usernamePlaceholder": "Username",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "emailInvalid": "Invalid email",
+      "role": "What are you?",
+      "rolePlaceholder": "Select role",
+      "roleProducer": "Producer",
+      "roleSinger": "Singer",
+      "roleVenue": "Venue",
+      "roleRequired": "Please select a role",
+      "password": "Password",
+      "passwordPlaceholder": "Password",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm",
+      "confirmPasswordRequired": "Please confirm password",
+      "confirmPasswordMismatch": "Password confirmation does not match",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Create account",
+      "submitting": "Creating...",
+      "continueWith": "Or continue with",
+      "signInWithGoogle": "Sign in with Google",
+      "hasAccount": "Already have an account?",
+      "login": "Log in"
+    },
+    "forgotPassword": {
+      "pageTitle": "Forgot Password",
+      "title": "Find your account",
+      "subtitle": "Enter your email below to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "submit": "Reset password",
+      "backToLogin": "Log in",
+      "emailInvalid": "Invalid email"
+    }
+  }
+}

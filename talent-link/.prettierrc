@@ -1,13 +1,12 @@
 {
-    "singleQuote": true,
-    "tabWidth": 4,
-    "overrides": [
-        {
-            "files": "*.{js, jsx, ts, tsx}",
-            "options": {
-                "trailingComma": "all"
-            }
-        }
-    ],
-    "plugins": ["prettier-plugin-tailwindcss"]
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "jsxSingleQuote": false,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf"
 }
