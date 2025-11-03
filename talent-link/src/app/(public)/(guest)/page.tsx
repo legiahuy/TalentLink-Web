@@ -11,7 +11,7 @@ const LandingPage = () => {
     {
       id: '1',
       name: 'Minh Anh',
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
       genre: 'Pop/Ballad',
       location: 'Hà Nội',
       rating: 4.9,
@@ -20,7 +20,7 @@ const LandingPage = () => {
     {
       id: '2',
       name: 'Tuấn Anh',
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
       genre: 'Indie/Rock',
       location: 'TP. Hồ Chí Minh',
       rating: 4.8,
@@ -29,7 +29,7 @@ const LandingPage = () => {
     {
       id: '3',
       name: 'DJ Minh',
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
       genre: 'EDM/House',
       location: 'TP. Hồ Chí Minh',
       rating: 4.9,
@@ -38,7 +38,7 @@ const LandingPage = () => {
     {
       id: '4',
       name: 'Thu Hà',
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
       genre: 'Classical/Acoustic',
       location: 'Hà Nội',
       rating: 5.0,
@@ -54,7 +54,7 @@ const LandingPage = () => {
       time: '20:00',
       status: 'upcoming' as const,
       artists: ['Minh Anh', 'Thu Hà'],
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
     },
     {
       id: '2',
@@ -63,7 +63,7 @@ const LandingPage = () => {
       time: '21:00',
       status: 'upcoming' as const,
       artists: ['DJ Minh'],
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
     },
     {
       id: '3',
@@ -72,7 +72,7 @@ const LandingPage = () => {
       time: '19:30',
       status: 'upcoming' as const,
       artists: ['Tuấn Anh'],
-      image: '/auth/auth-photo-1.jpg',
+      image: '/images/auth/auth-photo-1.jpg',
     },
   ]
   return (
@@ -82,7 +82,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(240_10%_3.9%),hsl(240_8%_8%))]" />
         <Image
           className="absolute inset-0 opacity-100 object-cover"
-          src="/auth/hero-image-2.jpg"
+          src="/images/auth/hero-image-2.jpg"
           alt="Hero background"
           fill
         />
