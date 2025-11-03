@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import authImage from '../../../../public/auth/auth-photo-1.jpg'
+import authImage from '../../../../public/images/auth/auth-photo-1.jpg'
 
 const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
   const t = useTranslations('Auth.layout')
