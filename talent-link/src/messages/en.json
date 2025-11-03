@@ -94,5 +94,44 @@
       "backToLogin": "Log in",
       "emailInvalid": "Invalid email"
     }
+  },
+  "LandingPage": {
+    "hero": {
+      "title": "Find Music Talent",
+      "subtitle": "Connect with professional independent artists for your project",
+      "searchPlaceholder": "Search artists, genres, services...",
+      "exploreButton": "Explore"
+    },
+    "featuredArtists": {
+      "title": "Featured Artists",
+      "subtitle": "Discover outstanding talents specially selected",
+      "viewAll": "View all artists"
+    },
+    "featuredEvents": {
+      "title": "Upcoming Events",
+      "subtitle": "Exciting music nights await you",
+      "viewAll": "View all events"
+    },
+    "features": {
+      "title": "Why Choose TalentLink?",
+      "subtitle": "The most professional and efficient connection platform",
+      "diverseGenres": {
+        "title": "Diverse Genres",
+        "description": "From pop, rock, EDM to acoustic and classical - everything is here"
+      },
+      "easyConnection": {
+        "title": "Easy Connection",
+        "description": "Send collaboration requests directly, no intermediaries needed"
+      },
+      "professional": {
+        "title": "Professional",
+        "description": "Verified profiles, high-quality portfolios"
+      }
+    },
+    "cta": {
+      "title": "Are You an Artist?",
+      "subtitle": "Create a professional profile and access thousands of collaboration opportunities",
+      "button": "Create free profile"
+    }
   }
 }

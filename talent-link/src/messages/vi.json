@@ -94,5 +94,44 @@
       "backToLogin": "Đăng nhập",
       "emailInvalid": "Email không hợp lệ"
     }
+  },
+  "LandingPage": {
+    "hero": {
+      "title": "Tìm Kiếm Tài Năng Âm Nhạc",
+      "subtitle": "Kết nối với nghệ sĩ độc lập chuyên nghiệp cho dự án của bạn",
+      "searchPlaceholder": "Tìm nghệ sĩ, thể loại, dịch vụ...",
+      "exploreButton": "Khám phá"
+    },
+    "featuredArtists": {
+      "title": "Nghệ Sĩ Nổi Bật",
+      "subtitle": "Khám phá những tài năng xuất sắc được lựa chọn đặc biệt",
+      "viewAll": "Xem tất cả nghệ sĩ"
+    },
+    "featuredEvents": {
+      "title": "Sự Kiện Sắp Diễn Ra",
+      "subtitle": "Những đêm nhạc hấp dẫn đang chờ đón bạn",
+      "viewAll": "Xem tất cả sự kiện"
+    },
+    "features": {
+      "title": "Tại Sao Chọn TalentLink?",
+      "subtitle": "Nền tảng kết nối chuyên nghiệp và hiệu quả nhất",
+      "diverseGenres": {
+        "title": "Đa Dạng Thể Loại",
+        "description": "Từ pop, rock, EDM đến acoustic và cổ điển - tất cả đều có tại đây"
+      },
+      "easyConnection": {
+        "title": "Kết Nối Dễ Dàng",
+        "description": "Gửi yêu cầu hợp tác trực tiếp, không cần qua trung gian"
+      },
+      "professional": {
+        "title": "Chuyên Nghiệp",
+        "description": "Hồ sơ được xác minh, portfolio chất lượng cao"
+      }
+    },
+    "cta": {
+      "title": "Bạn Là Nghệ Sĩ?",
+      "subtitle": "Tạo hồ sơ chuyên nghiệp và tiếp cận hàng nghìn cơ hội hợp tác",
+      "button": "Tạo hồ sơ miễn phí"
+    }
   }
 }

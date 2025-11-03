@@ -1,3 +1,4 @@
+'use client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -5,8 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Search, ArrowRight, Music, Users, Shield } from 'lucide-react'
 import ArtistCard from '@/components/artist/ArtistCard'
 import EventCard from '@/components/event/EventCard'
+import { useTranslations } from 'next-intl'
 
 const LandingPage = () => {
+  const t = useTranslations('LandingPage')
   const featuredArtists = [
     {
       id: '1',
@@ -90,23 +93,23 @@ const LandingPage = () => {
 
         <div className="mx-auto relative z-10 px-4 py-20 text-center">
           <h1 className="text-5xl md:text-7xl leading-tight font-bold mb-6 text-white">
-            Tìm Kiếm Tài Năng Âm Nhạc
+            {t('hero.title')}
           </h1>
-          <p className="text-xl md:text-2xl text-white mb-8 max-w-2xl mx-auto leading-relaxed opacity-90">
-            Kết nối với nghệ sĩ độc lập chuyên nghiệp cho dự án của bạn
+          <p className="text-xl md:text-2xl text-white mb-8 max-w-4xl mx-auto leading-relaxed opacity-90">
+            {t('hero.subtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-8">
             <div className="relative flex-1">
               <Search className="absolute z-1 left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Tìm nghệ sĩ, thể loại, dịch vụ..."
+                placeholder={t('hero.searchPlaceholder')}
                 className="pl-10 bg-card/50 backdrop-blur border-border/40 h-10"
               />
             </div>
             <Button size="lg" variant="default" asChild>
               <Link href="/discovery">
-                Khám phá <ArrowRight className="ml-2 h-5 w-5" />
+                {t('hero.exploreButton')} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
@@ -131,9 +134,9 @@ const LandingPage = () => {
         <section className="py-20">
           <div className="mx-auto px-4 max-w-[1320px]">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Nghệ Sĩ Nổi Bật</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredArtists.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Khám phá những tài năng xuất sắc được lựa chọn đặc biệt
+                {t('featuredArtists.subtitle')}
               </p>
             </div>
 
@@ -146,7 +149,7 @@ const LandingPage = () => {
             <div className="text-center mt-12">
               <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link href="/discovery">
-                  Xem tất cả nghệ sĩ <ArrowRight className="ml-2 h-5 w-5" />
+                  {t('featuredArtists.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
@@ -157,9 +160,9 @@ const LandingPage = () => {
         <section className="py-20">
           <div className="mx-auto px-4 max-w-[1320px]">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Sự Kiện Sắp Diễn Ra</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredEvents.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Những đêm nhạc hấp dẫn đang chờ đón bạn
+                {t('featuredEvents.subtitle')}
               </p>
             </div>
 
@@ -172,7 +175,7 @@ const LandingPage = () => {
             <div className="text-center mt-12">
               <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link href="/discovery">
-                  Xem tất cả sự kiện <ArrowRight className="ml-2 h-5 w-5" />
+                  {t('featuredEvents.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
@@ -184,9 +187,9 @@ const LandingPage = () => {
       <section className="py-20">
         <div className="mx-auto px-4 max-w-[1320px]">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Tại Sao Chọn TalentLink?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('features.title')}</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Nền tảng kết nối chuyên nghiệp và hiệu quả nhất
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -195,9 +198,9 @@ const LandingPage = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Music className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Đa Dạng Thể Loại</h3>
+              <h3 className="text-xl font-semibold mb-3">{t('features.diverseGenres.title')}</h3>
               <p className="text-muted-foreground">
-                Từ pop, rock, EDM đến acoustic và cổ điển - tất cả đều có tại đây
+                {t('features.diverseGenres.description')}
               </p>
             </div>
 
@@ -205,9 +208,9 @@ const LandingPage = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Users className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Kết Nối Dễ Dàng</h3>
+              <h3 className="text-xl font-semibold mb-3">{t('features.easyConnection.title')}</h3>
               <p className="text-muted-foreground">
-                Gửi yêu cầu hợp tác trực tiếp, không cần qua trung gian
+                {t('features.easyConnection.description')}
               </p>
             </div>
 
@@ -215,8 +218,8 @@ const LandingPage = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Shield className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Chuyên Nghiệp</h3>
-              <p className="text-muted-foreground">Hồ sơ được xác minh, portfolio chất lượng cao</p>
+              <h3 className="text-xl font-semibold mb-3">{t('features.professional.title')}</h3>
+              <p className="text-muted-foreground">{t('features.professional.description')}</p>
             </div>
           </div>
         </div>
@@ -247,13 +250,13 @@ const LandingPage = () => {
         <section className="py-20">
           <div className="mx-auto px-4 max-w-[1320px]">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Bạn Là Nghệ Sĩ?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('cta.title')}</h2>
               <p className="text-muted-foreground text-lg mb-8">
-                Tạo hồ sơ chuyên nghiệp và tiếp cận hàng nghìn cơ hội hợp tác
+                {t('cta.subtitle')}
               </p>
               <Button size="lg" className="bg-primary text-lg" asChild>
                 <Link href="/auth/signup">
-                  Tạo hồ sơ miễn phí <ArrowRight className="ml-2 h-5 w-5" />
+                  {t('cta.button')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>

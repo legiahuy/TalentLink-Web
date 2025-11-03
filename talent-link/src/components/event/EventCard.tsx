@@ -22,9 +22,9 @@ const EventCard = ({
   animated,
 }: EventCardProps & { glassy?: boolean; animated?: boolean }) => {
   const statusConfig = {
-    upcoming: { label: 'Sắp diễn ra', color: 'bg-blue-500/10 text-blue-500' },
-    ongoing: { label: 'Đang diễn ra', color: 'bg-green-500/10 text-green-500' },
-    past: { label: 'Đã kết thúc', color: 'bg-gray-500/10 text-gray-500' },
+    upcoming: { label: 'Sắp diễn ra', color: 'bg-primary text-white' },
+    ongoing: { label: 'Đang diễn ra', color: 'bg-popover text-black' },
+    past: { label: 'Đã kết thúc', color: 'bg-foreground text-white' },
   }
 
   const formatDate = (dateString: string) => {
