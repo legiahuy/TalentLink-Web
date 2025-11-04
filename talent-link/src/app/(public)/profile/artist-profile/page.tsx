@@ -104,8 +104,8 @@ const ArtistProfile = () => {
         <div className="px-6 md:px-8">
           <div className="mx-auto max-w-screen-xl">
             <div className="relative -mt-24 mb-8">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="relative">
+              <div className="flex flex-col md:flex-row gap-6 items-center">
+                <div className="relative md:order-1">
                   <img
                     src="/images/profile/artist-1.jpg"  
                     alt="Minh Anh"
@@ -116,8 +116,24 @@ const ArtistProfile = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 pt-0 md:pt-16">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-start flex-wrap gap-4 md:gap-6 mb-4">
+                <div className="md:ml-auto md:order-3">
+                  <Button 
+                    size="lg" 
+                    className="bg-primary text-white hover:opacity-90 transition-opacity"
+                    asChild
+                  >
+                    <Link 
+                      href="/a"
+                      className="flex items-center gap-2 text-white hover:text-primary transition-colors"
+                    >
+                      <UserPen className="mr-2 h-5 w-5" />
+                      Thay đổi thông tin
+                    </Link>
+                  </Button>
+                </div>
+
+                <div className="flex-1 pt-0 md:order-2">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-start flex-wrap gap-4 md:gap-6 mb-4">
                     <div>
                       <h1 className="text-4xl font-bold mb-2">Minh Anh</h1>
                       <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
@@ -133,19 +149,7 @@ const ArtistProfile = () => {
                       </div>
                     </div>
 
-                    <Button 
-                      size="lg" 
-                      className="bg-primary text-white hover:opacity-90 transition-opacity md:ml-auto"
-                      asChild
-                    >
-                      <Link 
-                        href="/a"
-                        className="flex items-center gap-2 text-white hover:text-primary transition-colors"
-                      >
-                        <UserPen className="mr-2 h-5 w-5" />
-                        Thay đổi thông tin
-                      </Link>
-                    </Button>
+                    {/* Button moved to outer row for perfect vertical centering with avatar */}
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -340,9 +344,9 @@ const ArtistProfile = () => {
                       </div>
                       {/* Nút "Hiện tất cả" */}
                       <div className="w-full flex justify-center mt-4">
-                        <Button className="bg-primary text-white flex items-center justify-center hover:opacity-90 transition-opacity">
+                        <Link href="/photos" className="text-gray-400 hover:text-primary text-lg font-semibold text-shadow-stack">
                           Hiện tất cả
-                        </Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
 import Header from '@/components/public/Header';
 import Footer from '@/components/public/Footer';
 import EventCard from '@/components/event/EventCard';
@@ -34,11 +34,12 @@ interface Event {
 }
 
 const VenueProfile = () => {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const venueId = params?.id ?? '';
 
   // Mock data - will be replaced with API call
   const venue: Venue = {
-    id: id || '',
+    id: venueId,
     name: 'Acoustic Cafe & Bar',
     coverImage:
       '/images/auth/auth-photo-1.jpg', // Replace with actual cover image URL
@@ -125,7 +126,8 @@ const VenueProfile = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        <div className="container px-4 -mt-20 relative z-10 max-w-screen-lg mx-auto">
+        <div className="px-6 md:px-8 -mt-20 relative z-10">
+          <div className="mx-auto max-w-screen-xl">
           {/* Venue Info Card */}
           <div className="bg-card rounded-lg shadow-elegant p-8 mb-8">
             <div className="flex flex-col md:flex-row gap-8">
@@ -138,16 +140,13 @@ const VenueProfile = () => {
 
               {/* Info */}
               <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-start gap-4 mb-4">
                   <div>
                     <h1 className="text-4xl font-bold mb-2 bg-primary bg-clip-text text-transparent">
                       {venue.name}
                     </h1>
                     <p className="text-muted-foreground text-lg">{venue.type}</p>
                   </div>
-                  <Button className="bg-primary hover:opacity-90 transition-opacity">
-                    Gửi Yêu Cầu Hợp Tác
-                  </Button>
                 </div>
 
                 <p className="text-foreground/90 mb-6 leading-relaxed">{venue.description}</p>
@@ -195,6 +194,8 @@ const VenueProfile = () => {
                   <p className="text-sm text-muted-foreground mt-3">Sức chứa: {venue.capacity}</p>
                 </div>
               </div>
+
+              
             </div>
           </div>
 
@@ -246,6 +247,7 @@ const VenueProfile = () => {
                 )}
               </TabsContent>
             </Tabs>
+          </div>
           </div>
         </div>
       </main>
