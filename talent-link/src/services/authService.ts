@@ -14,6 +14,7 @@ export interface RefreshResponse {
 
 export interface SignUpParams {
   display_name: string
+  username: string
   email: string
   password: string
   role: string
@@ -27,14 +28,16 @@ export const authService = {
    * Sign up a new user
    */
   signUp: async (params: SignUpParams): Promise<void> => {
-    await axiosClient.post('/auth/signup', params)
+    console.log(params)
+    const res = await axiosClient.post('/auth/signup', params)
+    console.log(res)
   },
 
   /**
    * Login with email and password
    */
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const res = await axiosClient.post('/auth/login', { email, password })
+    const res = await axiosClient.post('/auth/login', { identifier: email, password })
     return res.data.data
   },
 
@@ -59,6 +62,20 @@ export const authService = {
   fetchUser: async (): Promise<User> => {
     const res = await axiosClient.get('/users/me')
     return res.data
+  },
+
+  /**
+   * Verify email with 6-digit code
+   */
+  verifyEmail: async (email: string, code: string): Promise<void> => {
+    await axiosClient.post('/auth/verify-email', { email, code })
+  },
+
+  /**
+   * Resend verification email
+   */
+  resendVerificationEmail: async (email: string): Promise<void> => {
+    await axiosClient.post('/auth/verification-email-resend', { email })
   },
 
   /**

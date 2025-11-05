@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
+import { Loader } from 'lucide-react'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -23,8 +24,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="animate-spin" size={24} />
       </div>
     )
   }

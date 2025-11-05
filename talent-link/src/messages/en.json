@@ -56,6 +56,9 @@
       "pageTitle": "Signup",
       "title": "Create TalentLink account",
       "subtitle": "Welcome! Sign up to get started!",
+      "displayname": "Your name",
+      "displaynamePlaceholder": "What do people call you?",
+      "displaynameMinLength": "Display name must not be empty",
       "username": "Username",
       "usernamePlaceholder": "Username",
       "usernameMinLength": "Username must be at least 3 characters",
@@ -93,8 +96,26 @@
       "submit": "Reset password",
       "backToLogin": "Log in",
       "emailInvalid": "Invalid email"
+    },
+    "verifyEmail": {
+      "pageTitle": "Verify Email",
+      "title": "Enter verification code",
+      "subtitle": "We sent a 6-digit code to your email.",
+      "label": "Verification code",
+      "description": "Enter the 6-digit code sent to your email.",
+      "verify": "Verify",
+      "submitting": "Verifying...",
+      "notReceived": "Didn't receive the code?",
+      "resend": "Resend",
+      "resending": "Resending...",
+      "verifySuccess": "Email verified successfully!",
+      "verifyError": "Verification failed. Please try again.",
+      "resendSuccess": "A new verification code has been sent.",
+      "resendError": "Could not resend code. Please try again.",
+      "emailMissing": "Missing email. Please go back and sign up again."
     }
   },
+
   "LandingPage": {
     "hero": {
       "title": "Find Music Talent",

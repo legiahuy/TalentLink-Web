@@ -11,11 +11,18 @@ interface AuthState {
   refreshToken: string | null
   // expiresAt: number | null;
   isAuthenticated: boolean
+
   loading: boolean
   error: string | null
 
   // actions
-  signUp: (display_name: string, email: string, password: string, role: string) => Promise<void>
+  signUp: (
+    display_name: string,
+    username: string,
+    email: string,
+    password: string,
+    role: string,
+  ) => Promise<void>
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   refreshAccessToken: () => Promise<void>
@@ -44,12 +51,12 @@ export const useAuthStore = create<AuthState>()(
         })
       },
 
-      signUp: async (display_name, email, password, role) => {
+      signUp: async (display_name, username, email, password, role) => {
         set({ loading: true, error: null })
         try {
-          await authService.signUp({ display_name, email, password, role })
+          await authService.signUp({ display_name, username, email, password, role })
 
-          toast.success('Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập.')
+          toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.')
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Đăng ký không thành công!')
           set({ error: message })

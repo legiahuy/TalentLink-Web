@@ -3,6 +3,7 @@
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
+import { Loader } from 'lucide-react'
 
 interface RedirectAuthenticatedUserProps {
   children: ReactNode
@@ -23,8 +24,8 @@ const RedirectAuthenticatedUser: React.FC<RedirectAuthenticatedUserProps> = ({ c
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="animate-spin" size={24} />
       </div>
     )
   }

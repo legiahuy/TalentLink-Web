@@ -2,8 +2,6 @@
 
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
-import Header from '@/components/public/Header'
-import Footer from '@/components/public/Footer'
 import EventCard from '@/components/event/EventCard'
 import { MapPin, Phone, Mail, Globe, Calendar } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tab' // Adjusted import path for Tabs
@@ -114,165 +112,159 @@ const VenueProfile = () => {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <main className="flex-1">
+      {/* Cover Image */}
+      <div className="relative h-80 w-full">
+        <Image
+          src={venue.coverImage}
+          alt={venue.name}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
+      </div>
 
-      <main className="flex-1">
-        {/* Cover Image */}
-        <div className="relative h-80 w-full">
-          <Image
-            src={venue.coverImage}
-            alt={venue.name}
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
-        </div>
+      <div className="px-6 md:px-8 -mt-20 relative z-10">
+        <div className="mx-auto max-w-7xl">
+          {/* Venue Info Card */}
+          <div className="bg-card rounded-lg shadow-elegant p-8 mb-8">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Avatar */}
+              <Image
+                src={venue.avatar}
+                alt={venue.name}
+                width={128}
+                height={128}
+                className="w-32 h-32 rounded-lg object-cover border-4 border-background shadow-lg"
+              />
 
-        <div className="px-6 md:px-8 -mt-20 relative z-10">
-          <div className="mx-auto max-w-7xl">
-            {/* Venue Info Card */}
-            <div className="bg-card rounded-lg shadow-elegant p-8 mb-8">
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Avatar */}
-                <Image
-                  src={venue.avatar}
-                  alt={venue.name}
-                  width={128}
-                  height={128}
-                  className="w-32 h-32 rounded-lg object-cover border-4 border-background shadow-lg"
-                />
-
-                {/* Info */}
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-start gap-4 mb-4">
-                    <div>
-                      <h1 className="text-4xl font-bold mb-2 bg-primary bg-clip-text text-transparent">
-                        {venue.name}
-                      </h1>
-                      <p className="text-muted-foreground text-lg">{venue.type}</p>
-                    </div>
-                  </div>
-
-                  <p className="text-foreground/90 mb-6 leading-relaxed">{venue.description}</p>
-
-                  {/* Contact Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-5 h-5" />
-                      <span>{venue.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="w-5 h-5" />
-                      <span>{venue.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="w-5 h-5" />
-                      <span>{venue.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Globe className="w-5 h-5" />
-                      <a
-                        href={`https://${venue.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-primary transition-colors"
-                      >
-                        {venue.website}
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Amenities */}
+              {/* Info */}
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-start gap-4 mb-4">
                   <div>
-                    <h3 className="font-semibold mb-3 flex items-center gap-2">
-                      <Calendar className="w-5 h-5" />
-                      Tiện Nghi & Dịch Vụ
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {venue.amenities.map((amenity, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-3">Sức chứa: {venue.capacity}</p>
+                    <h1 className="text-4xl font-bold mb-2 bg-primary bg-clip-text text-transparent">
+                      {venue.name}
+                    </h1>
+                    <p className="text-muted-foreground text-lg">{venue.type}</p>
                   </div>
+                </div>
+
+                <p className="text-foreground/90 mb-6 leading-relaxed">{venue.description}</p>
+
+                {/* Contact Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-5 h-5" />
+                    <span>{venue.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="w-5 h-5" />
+                    <span>{venue.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="w-5 h-5" />
+                    <span>{venue.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Globe className="w-5 h-5" />
+                    <a
+                      href={`https://${venue.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary transition-colors"
+                    >
+                      {venue.website}
+                    </a>
+                  </div>
+                </div>
+
+                {/* Amenities */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Tiện Nghi & Dịch Vụ
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {venue.amenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-3">Sức chứa: {venue.capacity}</p>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Events Section */}
-            <div className="mb-12">
-              <Tabs defaultValue="upcoming" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-8 gap-8">
-                  <TabsTrigger value="upcoming" className="text-center py-2">
-                    Sắp Diễn Ra
-                  </TabsTrigger>
-                  <TabsTrigger value="ongoing" className="text-center py-2">
-                    Đang Diễn Ra
-                  </TabsTrigger>
-                  <TabsTrigger value="past" className="text-center py-2">
-                    Đã Diễn Ra
-                  </TabsTrigger>
-                </TabsList>
+          {/* Events Section */}
+          <div className="mb-12">
+            <Tabs defaultValue="upcoming" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-8 gap-8">
+                <TabsTrigger value="upcoming" className="text-center py-2">
+                  Sắp Diễn Ra
+                </TabsTrigger>
+                <TabsTrigger value="ongoing" className="text-center py-2">
+                  Đang Diễn Ra
+                </TabsTrigger>
+                <TabsTrigger value="past" className="text-center py-2">
+                  Đã Diễn Ra
+                </TabsTrigger>
+              </TabsList>
 
-                {/* Upcoming Events */}
-                <TabsContent value="upcoming" className="space-y-6">
-                  {upcomingEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {upcomingEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-12">
-                      Chưa có sự kiện sắp diễn ra
-                    </p>
-                  )}
-                </TabsContent>
+              {/* Upcoming Events */}
+              <TabsContent value="upcoming" className="space-y-6">
+                {upcomingEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {upcomingEvents.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">
+                    Chưa có sự kiện sắp diễn ra
+                  </p>
+                )}
+              </TabsContent>
 
-                {/* Ongoing Events */}
-                <TabsContent value="ongoing" className="space-y-6">
-                  {ongoingEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {ongoingEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-12">
-                      Không có sự kiện đang diễn ra
-                    </p>
-                  )}
-                </TabsContent>
+              {/* Ongoing Events */}
+              <TabsContent value="ongoing" className="space-y-6">
+                {ongoingEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {ongoingEvents.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">
+                    Không có sự kiện đang diễn ra
+                  </p>
+                )}
+              </TabsContent>
 
-                {/* Past Events */}
-                <TabsContent value="past" className="space-y-6">
-                  {pastEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {pastEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-12">
-                      Chưa có sự kiện nào được tổ chức
-                    </p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
+              {/* Past Events */}
+              <TabsContent value="past" className="space-y-6">
+                {pastEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {pastEvents.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">
+                    Chưa có sự kiện nào được tổ chức
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </main>
   )
 }
 

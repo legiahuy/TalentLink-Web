@@ -56,6 +56,9 @@
       "pageTitle": "Đăng ký",
       "title": "Tạo tài khoản TalentLink",
       "subtitle": "Chào mừng bạn! Hãy đăng ký để bắt đầu!",
+      "displayname": "Tên hiển thị",
+      "displaynamePlaceholder": "Tên nghệ sĩ / venue",
+      "displaynameMinLength": "Không được để trống",
       "username": "Tên đăng nhập",
       "usernamePlaceholder": "Username",
       "usernameMinLength": "Tên đăng nhập phải có ít nhất 3 ký tự",
@@ -93,8 +96,26 @@
       "submit": "Đặt lại mật khẩu",
       "backToLogin": "Đăng nhập",
       "emailInvalid": "Email không hợp lệ"
+    },
+    "verifyEmail": {
+      "pageTitle": "Xác minh Email",
+      "title": "Nhập mã xác minh",
+      "subtitle": "Chúng tôi đã gửi mã 6 số đến email của bạn.",
+      "label": "Mã xác minh",
+      "description": "Nhập mã 6 số được gửi đến email của bạn.",
+      "verify": "Xác minh",
+      "submitting": "Đang xác minh...",
+      "notReceived": "Chưa nhận được mã?",
+      "resend": "Gửi lại",
+      "resending": "Đang gửi lại...",
+      "verifySuccess": "Xác minh email thành công!",
+      "verifyError": "Xác minh thất bại. Vui lòng thử lại.",
+      "resendSuccess": "Mã xác minh mới đã được gửi.",
+      "resendError": "Không thể gửi lại mã. Vui lòng thử lại.",
+      "emailMissing": "Thiếu email. Vui lòng quay lại và đăng ký lại."
     }
   },
+
   "LandingPage": {
     "hero": {
       "title": "Tìm Kiếm Tài Năng Âm Nhạc",
