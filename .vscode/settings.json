@@ -1,0 +1,5 @@
+{
+  "eslint.workingDirectories": ["talent-link"],
+  "eslint.useFlatConfig": true,
+  "eslint.format.enable": true
+}

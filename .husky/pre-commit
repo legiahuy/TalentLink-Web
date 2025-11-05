@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+cd talent-link
+pnpm lint-staged
