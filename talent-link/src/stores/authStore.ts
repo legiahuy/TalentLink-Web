@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.signUp({ display_name, username, email, password, role })
 
-          toast.success('Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập.')
+          toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.')
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Đăng ký không thành công!')
           set({ error: message })
