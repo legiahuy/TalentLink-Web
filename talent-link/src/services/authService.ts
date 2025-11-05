@@ -65,6 +65,20 @@ export const authService = {
   },
 
   /**
+   * Verify email with 6-digit code
+   */
+  verifyEmail: async (email: string, code: string): Promise<void> => {
+    await axiosClient.post('/auth/verify-email', { email, code })
+  },
+
+  /**
+   * Resend verification email
+   */
+  resendVerificationEmail: async (email: string): Promise<void> => {
+    await axiosClient.post('/auth/verification-email-resend', { email })
+  },
+
+  /**
    * Get error message from axios error
    */
   getErrorMessage: (err: unknown, defaultMessage: string): string => {

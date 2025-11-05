@@ -21,6 +21,7 @@ import {
   SelectGroup,
 } from '@/components/ui/select'
 import { useAuthStore } from '@/stores/authStore'
+import { useRouter } from 'next/navigation'
 
 type SignUpFormValues = {
   display_name: string
@@ -34,6 +35,7 @@ type SignUpFormValues = {
 export function SignupForm({ className, ...props }: React.ComponentProps<'form'>) {
   const t = useTranslations('Auth.signup')
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
 
   const signUpSchema = z
     .object({
@@ -68,7 +70,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
     const { display_name, username, email, password, role } = data
     await signUp(display_name, username, email, password, role!)
-    // navigate('/auth/login')
+    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`)
   }
 
   return (
