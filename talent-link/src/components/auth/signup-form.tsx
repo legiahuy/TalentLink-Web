@@ -23,6 +23,7 @@ import {
 import { useAuthStore } from '@/stores/authStore'
 
 type SignUpFormValues = {
+  display_name: string
   username: string
   email: string
   password: string
@@ -36,6 +37,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
   const signUpSchema = z
     .object({
+      display_name: z.string().min(1, t('displaynameMinLength')),
       username: z.string().min(3, t('usernameMinLength')),
       email: z.email(t('emailInvalid')),
       password: z.string().min(6, t('passwordMinLength')),
@@ -64,8 +66,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     // TODO: Implement signup logic
     console.log('Signup data:', data)
 
-    const { username, email, password, role } = data
-    await signUp(username, email, password, role!)
+    const { display_name, username, email, password, role } = data
+    await signUp(display_name, username, email, password, role!)
     // navigate('/auth/login')
   }
 
@@ -79,6 +81,21 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         <div className="mb-3 flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">{t('title')}</h1>
           <p className="text-muted-foreground text-sm text-balance">{t('subtitle')}</p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="display_name" className="block text-sm">
+            {t('displayname')}
+          </Label>
+          <Input
+            type="text"
+            id="display_name"
+            placeholder={t('displaynamePlaceholder')}
+            {...register('display_name')}
+          />
+          {errors.display_name && (
+            <p className="text-destructive text-xs">{errors.display_name.message}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">

@@ -13,4 +13,7 @@ export interface User {
   display_name: string
   role: UserRole
   avatar?: string
+  is_verified: boolean
+  status: string
+  username: string
 }

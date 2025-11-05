@@ -1,14 +1,14 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { useTranslations } from 'next-intl'
 import LangSwitch from '@/components/public/LangSwitch'
 
 const Header = () => {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, logout } = useAuth()
   const pathname = usePathname()
   const t = useTranslations('Header')
 
@@ -18,6 +18,16 @@ const Header = () => {
     { href: '/jobs', label: t('navigation.jobs') },
     { href: '/about', label: t('navigation.about') },
   ]
+
+  const router = useRouter()
+  const handleLogout = () => {
+    try {
+      logout()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 flex w-full select-none items-center justify-center px-4 py-2 md:px-8">
@@ -55,7 +65,12 @@ const Header = () => {
           {/* Buttons and Language Switcher */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
-              <div>Xin Chào, {user?.display_name}</div>
+              <div className="flex justify-center items-center gap-2">
+                <div>Xin Chào, {user?.display_name}</div>
+                <Button size="sm" variant="outline" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
             ) : (
               <>
                 <Button variant="ghost" size="sm" asChild>

@@ -14,6 +14,7 @@ export interface RefreshResponse {
 
 export interface SignUpParams {
   display_name: string
+  username: string
   email: string
   password: string
   role: string
@@ -34,7 +35,7 @@ export const authService = {
    * Login with email and password
    */
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const res = await axiosClient.post('/auth/login', { email, password })
+    const res = await axiosClient.post('/auth/login', { identifier: email, password })
     return res.data.data
   },
 
