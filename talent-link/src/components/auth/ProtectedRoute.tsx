@@ -1,28 +1,29 @@
+// components/auth/ProtectedRoute.tsx
 'use client'
 
-import type { ReactNode } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
 import { Loader } from 'lucide-react'
 
-interface ProtectedRouteProps {
-  children: ReactNode
-}
-
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuthStore()
+export default function ProtectedRoute({
+  children,
+  redirectTo = '/auth/login',
+}: {
+  children: React.ReactNode
+  redirectTo?: string
+}) {
   const router = useRouter()
-  const pathname = usePathname()
+  const { user, isInitialized } = useAuthStore()
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      const returnUrl = encodeURIComponent(pathname)
-      router.push(`/auth/login?returnUrl=${returnUrl}`)
+    if (isInitialized && !user) {
+      router.push(redirectTo)
     }
-  }, [isAuthenticated, loading, pathname, router])
+  }, [isInitialized, user, router, redirectTo])
 
-  if (loading) {
+  // Đang check auth - show loading
+  if (!isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader className="animate-spin" size={24} />
@@ -30,7 +31,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  if (!isAuthenticated) {
+  // Checked xong mà ko có user - đang redirect
+  if (!user) {
     return null
   }
 

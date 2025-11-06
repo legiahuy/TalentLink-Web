@@ -108,7 +108,7 @@
       "notReceived": "Didn't receive the code?",
       "resend": "Resend",
       "resending": "Resending...",
-      "verifySuccess": "Email verified successfully!",
+      "verifySuccess": "Email verified successfully! Login to continue",
       "verifyError": "Verification failed. Please try again.",
       "resendSuccess": "A new verification code has been sent.",
       "resendError": "Could not resend code. Please try again.",

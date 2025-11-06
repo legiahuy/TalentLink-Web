@@ -4,6 +4,7 @@ import { Toaster } from 'sonner'
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans, Lora, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
+import { AuthInitializer } from '@/components/auth/AuthInitializer'
 
 const sans = Plus_Jakarta_Sans({ variable: '--font-sans', subsets: ['latin'] })
 const serif = Lora({ variable: '--font-serif', subsets: ['latin'] })
@@ -27,11 +28,14 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale()
   const messages = await getMessages()
+
   return (
     <html lang={locale}>
       <body className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`}>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-        <Toaster position="top-right" richColors />
+        <AuthInitializer>
+          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+          <Toaster position="top-right" richColors />
+        </AuthInitializer>
       </body>
     </html>
   )

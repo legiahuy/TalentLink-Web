@@ -32,7 +32,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
       try {
         await authService.verifyEmail(email, code)
         toast.success(t('verifySuccess'))
-        router.replace('/')
+        router.replace('/auth/login')
       } catch (err) {
         toast.error(authService.getErrorMessage(err, t('verifyError')))
       } finally {

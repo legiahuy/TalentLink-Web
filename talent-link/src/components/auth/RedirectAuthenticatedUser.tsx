@@ -1,28 +1,28 @@
+// components/auth/RedirectAuthenticated.tsx
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { ReactNode, useEffect } from 'react'
 import { Loader } from 'lucide-react'
 
-interface RedirectAuthenticatedUserProps {
-  children: ReactNode
-}
-
-const RedirectAuthenticatedUser: React.FC<RedirectAuthenticatedUserProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuthStore()
+export default function RedirectAuthenticated({
+  children,
+  redirectTo = '/profile/artist-profile',
+}: {
+  children: React.ReactNode
+  redirectTo?: string
+}) {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const { user, isInitialized } = useAuthStore()
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      const returnUrl = searchParams.get('returnUrl')
-      const redirectTo = returnUrl ? decodeURIComponent(returnUrl) : '/'
+    if (isInitialized && user) {
       router.push(redirectTo)
     }
-  }, [isAuthenticated, loading, router, searchParams])
+  }, [isInitialized, user, router, redirectTo])
 
-  if (loading) {
+  if (!isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader className="animate-spin" size={24} />
@@ -30,11 +30,9 @@ const RedirectAuthenticatedUser: React.FC<RedirectAuthenticatedUserProps> = ({ c
     )
   }
 
-  if (isAuthenticated) {
-    return null
+  if (user) {
+    return null // Đang redirect
   }
 
   return <>{children}</>
 }
-
-export default RedirectAuthenticatedUser

@@ -11,11 +11,13 @@ interface AuthState {
   refreshToken: string | null
   // expiresAt: number | null;
   isAuthenticated: boolean
+  isInitialized: boolean
 
   loading: boolean
   error: string | null
 
   // actions
+  initialize: () => Promise<void>
   signUp: (
     display_name: string,
     username: string,
@@ -38,8 +40,38 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       // expiresAt: null,
       isAuthenticated: false,
+      isInitialized: false,
       loading: false,
       error: null,
+
+      initialize: async () => {
+        // Guard: tránh initialize nhiều lần
+        if (get().isInitialized || get().loading) return
+
+        try {
+          const { accessToken } = get()
+
+          // Fast path: không có token → skip API call
+          if (!accessToken) {
+            set({ isInitialized: true })
+            return
+          }
+
+          // Có token → verify bằng cách fetch user
+          await get().fetchUser()
+          set({ isInitialized: true })
+        } catch (error) {
+          // Token invalid → clear everything
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isInitialized: true, // ← Vẫn set true (đã check xong)
+          })
+          console.error(error)
+        }
+      },
 
       setTokens: (access, refresh) => {
         // const expiresAt = expiresIn ? Date.now() + expiresIn * 1000 : null;
@@ -110,7 +142,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchUser: async () => {
-        set({ loading: true })
+        // set({ loading: true })
         try {
           const userData = await authService.fetchUser()
           console.log(userData)
@@ -124,8 +156,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
           })
           toast.error('Lỗi xảy ra khi lấy dữ liệu người dùng. Hãy thử lại!')
+          throw err
         } finally {
-          set({ loading: false })
+          // set({ loading: false })
         }
       },
 
@@ -157,6 +190,11 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         // expiresAt: state.expiresAt,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isInitialized = false
+        }
+      },
     },
   ),
 )
