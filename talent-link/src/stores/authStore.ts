@@ -32,6 +32,11 @@ interface AuthState {
   setTokens: (access: string, refresh?: string) => void
   verifyEmail: (email: string, code: string) => Promise<void>
   resendVerificationEmail: (email: string) => Promise<void>
+  // forgot password flow
+  requestPasswordReset: (email: string) => Promise<void>
+  resendPasswordReset: (email: string) => Promise<void>
+  confirmPasswordReset: (email: string, code: string) => Promise<string>
+  resetPassword: (email: string, newPassword: string, resetToken: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -202,6 +207,61 @@ export const useAuthStore = create<AuthState>()(
           await authService.resendVerificationEmail(email)
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Gửi lại email xác minh thất bại!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      // Forgot password flow
+      requestPasswordReset: async (email) => {
+        set({ loading: true, error: null })
+        try {
+          await authService.requestPasswordReset(email)
+          // backend returns generic success even if email does not exist
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Yêu cầu đặt lại mật khẩu thất bại!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      resendPasswordReset: async (email) => {
+        set({ loading: true, error: null })
+        try {
+          await authService.resendPasswordResetRequest(email)
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Gửi lại mã đặt lại mật khẩu thất bại!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      confirmPasswordReset: async (email, code) => {
+        set({ loading: true, error: null })
+        try {
+          const { reset_token } = await authService.confirmPasswordResetRequest(email, code)
+          return reset_token
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Mã xác minh không hợp lệ!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      resetPassword: async (email, newPassword, resetToken) => {
+        set({ loading: true, error: null })
+        try {
+          await authService.resetPassword(email, newPassword, resetToken)
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Đặt lại mật khẩu thất bại!')
           set({ error: message })
           throw new Error(message)
         } finally {

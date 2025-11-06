@@ -72,6 +72,45 @@ export const authService = {
   },
 
   /**
+   * Request password reset code via email
+   */
+  requestPasswordReset: async (email: string): Promise<void> => {
+    await axiosClient.post('/auth/reset-password-request', { email })
+  },
+
+  /**
+   * Resend password reset code
+   */
+  resendPasswordResetRequest: async (email: string): Promise<void> => {
+    await axiosClient.post('/auth/reset-password-request-resend', { email })
+  },
+
+  /**
+   * Confirm reset code, receive reset token
+   */
+  confirmPasswordResetRequest: async (
+    email: string,
+    reset_code: string,
+  ): Promise<{ reset_token: string }> => {
+    const res = await axiosClient.post('/auth/confirm-reset-password-request', {
+      email,
+      reset_code,
+    })
+    return res.data.data
+  },
+
+  /**
+   * Reset password using reset token
+   */
+  resetPassword: async (
+    email: string,
+    new_password: string,
+    reset_token: string,
+  ): Promise<void> => {
+    await axiosClient.post('/auth/reset-password', { email, new_password, reset_token })
+  },
+
+  /**
    * Resend verification email
    */
   resendVerificationEmail: async (email: string): Promise<void> => {
