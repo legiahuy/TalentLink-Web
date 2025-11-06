@@ -154,5 +154,14 @@
       "subtitle": "Create a professional profile and access thousands of collaboration opportunities",
       "button": "Create free profile"
     }
+  },
+  "Common": {
+    "loading": "Loading..."
+  },
+  "NotFound": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you are looking for does not exist.",
+    "back": "Go Back",
+    "logoAlt": "TalentLink Logo"
   }
 }

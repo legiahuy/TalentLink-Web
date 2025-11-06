@@ -30,6 +30,8 @@ interface AuthState {
   refreshAccessToken: () => Promise<void>
   fetchUser: () => Promise<void>
   setTokens: (access: string, refresh?: string) => void
+  verifyEmail: (email: string, code: string) => Promise<void>
+  resendVerificationEmail: (email: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -178,6 +180,32 @@ export const useAuthStore = create<AuthState>()(
         } catch (err) {
           console.error(err)
           toast.error('Lỗi xảy ra khi logout. Hãy thử lại!')
+        }
+      },
+
+      verifyEmail: async (email, code) => {
+        set({ loading: true, error: null })
+        try {
+          await authService.verifyEmail(email, code)
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Xác minh email không thành công!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      resendVerificationEmail: async (email) => {
+        set({ loading: true, error: null })
+        try {
+          await authService.resendVerificationEmail(email)
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Gửi lại email xác minh thất bại!')
+          set({ error: message })
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
         }
       },
     }),

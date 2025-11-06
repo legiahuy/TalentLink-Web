@@ -29,7 +29,7 @@
   },
   "Auth": {
     "layout": {
-      "title": "Kết nối tài năng. Nuôi dưỡng sự nghiệp. Tạo nên thành công.",
+      "title": "Kết nối tài năng. Nuôi dưỡng sự nghiệp. Tạo dựng thành công.",
       "description": "Hàng ngàn nghệ sĩ đã tìm được cơ hội biểu mới cùng chúng tôi. Khởi động chương tiếp theo cho hành trình âm nhạc của bạn ngay tại đây.",
       "imageAlt": "Image",
       "logoAlt": "TalentLink Logo"
@@ -154,5 +154,14 @@
       "subtitle": "Tạo hồ sơ chuyên nghiệp và tiếp cận hàng nghìn cơ hội hợp tác",
       "button": "Tạo hồ sơ miễn phí"
     }
+  },
+  "Common": {
+    "loading": "Đang tải..."
+  },
+  "NotFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Xin lỗi, trang bạn đang tìm kiếm hiện không tồn tại.",
+    "back": "Quay lại",
+    "logoAlt": "Logo TalentLink"
   }
 }

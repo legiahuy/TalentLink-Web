@@ -9,12 +9,14 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { authService } from '@/services/authService'
 import { Loader2 } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
   const t = useTranslations('Auth.verifyEmail')
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email') || ''
+  const { verifyEmail, resendVerificationEmail } = useAuth()
 
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -30,7 +32,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
       if (code.length !== 6) return
       setSubmitting(true)
       try {
-        await authService.verifyEmail(email, code)
+        await verifyEmail(email, code)
         toast.success(t('verifySuccess'))
         router.replace('/auth/login')
       } catch (err) {
@@ -39,7 +41,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
         setSubmitting(false)
       }
     },
-    [code, email, router, t],
+    [code, email, router, t, verifyEmail],
   )
 
   const handleResend = useCallback(async () => {
@@ -49,14 +51,14 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
     }
     setResending(true)
     try {
-      await authService.resendVerificationEmail(email)
+      await resendVerificationEmail(email)
       toast.success(t('resendSuccess'))
     } catch (err) {
       toast.error(authService.getErrorMessage(err, t('resendError')))
     } finally {
       setResending(false)
     }
-  }, [email, t])
+  }, [email, t, resendVerificationEmail])
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

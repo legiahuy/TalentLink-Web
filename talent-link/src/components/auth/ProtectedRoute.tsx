@@ -4,7 +4,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
-import { Loader } from 'lucide-react'
+import LoadingScreen from '@/components/public/LoadingScreen'
 
 export default function ProtectedRoute({
   children,
@@ -24,11 +24,7 @@ export default function ProtectedRoute({
 
   // Đang check auth - show loading
   if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader className="animate-spin" size={24} />
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   // Checked xong mà ko có user - đang redirect
