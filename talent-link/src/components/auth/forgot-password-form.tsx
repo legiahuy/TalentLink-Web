@@ -14,8 +14,9 @@ import { useForm } from 'react-hook-form'
 import { useAuthStore } from '@/stores/authStore'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
-import { Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 type ForgotEmailFormValues = { email: string }
 type ResetPasswordFormValues = { password: string; confirmPassword: string }
@@ -24,6 +25,7 @@ type Step = 'request' | 'verify' | 'reset'
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentProps<'form'>) {
   const t = useTranslations('Auth.forgotPassword')
+  const router = useRouter()
 
   // Step 1: email schema
   const emailSchema = z.object({ email: z.email(t('emailInvalid')) })
@@ -37,11 +39,11 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
   // Step 3: reset password schema
   const resetSchema = z
     .object({
-      password: z.string().min(8, 'Password must be at least 8 characters'),
+      password: z.string().min(6, t('passwordMinLength')),
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: 'Passwords do not match',
+      message: t('confirmPasswordMismatch'),
       path: ['confirmPassword'],
     })
   const {
@@ -64,22 +66,23 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
   const [verifying, setVerifying] = React.useState(false)
   const [resending, setResending] = React.useState(false)
   const [resetToken, setResetToken] = React.useState('')
+  const [showPassword, setShowPassword] = React.useState(false)
 
   const submitEmail = async (data: ForgotEmailFormValues) => {
     try {
       await requestPasswordReset(data.email)
       setEmail(data.email)
       setStep('verify')
-      toast.success('If the email exists, a reset code has been sent')
+      toast.success(t('requestSuccess'))
     } catch {
-      toast.error('Email does not exist, please sign up first')
+      toast.error(t('emailNotExist'))
     }
   }
 
   const submitVerify = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!email) {
-      toast.error('Missing email')
+      toast.error(t('emailMissing'))
       return
     }
     if (code.length !== 6) return
@@ -88,9 +91,9 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       const token = await confirmPasswordReset(email, code)
       setResetToken(token)
       setStep('reset')
-      toast.success('Reset code verified successfully')
+      toast.success(t('verifySuccess'))
     } catch {
-      toast.error('Invalid ResetCode')
+      toast.error(t('verifyError'))
     } finally {
       setVerifying(false)
     }
@@ -98,15 +101,15 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
 
   const handleResend = async () => {
     if (!email) {
-      toast.error('Missing email')
+      toast.error(t('emailMissing'))
       return
     }
     setResending(true)
     try {
       await resendPasswordReset(email)
-      toast.success('Reset code resent')
+      toast.success(t('resendSuccess'))
     } catch {
-      toast.error('Failed to resend reset code')
+      toast.error(t('resendError'))
     } finally {
       setResending(false)
     }
@@ -115,9 +118,10 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
   const submitResetPassword = async (data: ResetPasswordFormValues) => {
     try {
       await resetPassword(email || getEmailValues('email'), data.password, resetToken)
-      toast.success('Password has been reset successfully')
+      toast.success(t('resetSuccess'))
+      router.replace('/auth/login')
     } catch {
-      toast.error('Invalid or expired reset token')
+      toast.error(t('resetError'))
     }
   }
 
@@ -193,28 +197,26 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                   <InputOTPSlot index={5} />
                 </InputOTPGroup>
               </InputOTP>
-              <FieldDescription className="text-center">
-                Enter the 6-digit code sent to your email
-              </FieldDescription>
+              <FieldDescription className="text-center">{t('otpDescription')}</FieldDescription>
             </Field>
             <Button type="submit" disabled={code.length !== 6 || verifying} className="w-full">
               {verifying ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Verifying
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t('verifying')}
                 </>
               ) : (
-                'Verify'
+                t('verify')
               )}
             </Button>
             <div className="text-center text-sm">
-              Didn&apos;t receive the code?{' '}
+              {t('notReceived')}{' '}
               <button
                 type="button"
                 onClick={handleResend}
                 disabled={resending}
                 className="underline underline-offset-4 hover:cursor-pointer"
               >
-                {resending ? 'Resending...' : 'Resend'}
+                {resending ? t('resending') : t('resend')}
               </button>
             </div>
           </FieldGroup>
@@ -224,16 +226,32 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
           <FieldGroup>
             <div className="flex flex-col gap-3">
               <Label htmlFor="password" className="block text-sm">
-                New password
+                {t('newPassword')}
               </Label>
-              <Input type="password" id="password" {...registerReset('password')} />
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  className="pr-10"
+                  {...registerReset('password')}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? t('hidePassword') : t('showPassword')}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {resetErrors.password && (
                 <p className="text-destructive text-xs">{resetErrors.password.message}</p>
               )}
             </div>
             <div className="flex flex-col gap-3">
               <Label htmlFor="confirmPassword" className="block text-sm">
-                Confirm new password
+                {t('confirmNewPassword')}
               </Label>
               <Input type="password" id="confirmPassword" {...registerReset('confirmPassword')} />
               {resetErrors.confirmPassword && (
@@ -248,10 +266,10 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
             >
               {resetting || loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Resetting
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t('resetting')}
                 </>
               ) : (
-                'Reset Password'
+                t('reset')
               )}
             </Button>
           </FieldGroup>
