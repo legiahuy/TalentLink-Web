@@ -98,17 +98,17 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
               t('verify')
             )}
           </Button>
-          <FieldDescription className="text-center">
+          <div className="text-center text-sm">
             {t('notReceived')}{' '}
             <button
               type="button"
               onClick={handleResend}
               disabled={resending}
-              className="underline underline-offset-4"
+              className="underline underline-offset-4 hover:cursor-pointer"
             >
               {resending ? t('resending') : t('resend')}
             </button>
-          </FieldDescription>
+          </div>
         </FieldGroup>
       </form>
     </div>

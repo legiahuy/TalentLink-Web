@@ -16,6 +16,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
               src={authImage}
               alt={t('imageAlt')}
               fill
+              sizes="99vw"
               loading="eager"
               draggable={false}
               className="absolute inset-0 h-full w-full object-cover"
