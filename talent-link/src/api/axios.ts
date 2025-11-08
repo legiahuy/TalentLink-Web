@@ -9,6 +9,12 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // If sending FormData, let the browser set multipart boundary
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    if (config.headers && 'Content-Type' in config.headers) {
+      delete (config.headers as any)['Content-Type']
+    }
+  }
   return config
 })
 

@@ -1,13 +1,36 @@
-'use client'
+"use client"
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Star, Music, ExternalLink, MoreHorizontal, UserPen } from 'lucide-react'
 import { Plus } from 'lucide-react' // Icon "+" từ lucide-react
+import { userService } from '@/services/userService'
+import { resolveMediaUrl } from '@/lib/utils'
 
 const ArtistProfile = () => {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [cacheBust, setCacheBust] = useState<number>(0)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [a, c] = await Promise.all([
+          userService.getMyAvatar().catch(() => null),
+          userService.getMyCover().catch(() => null),
+        ])
+        setAvatarUrl(a?.file_url || null)
+        setCoverUrl(c?.file_url || null)
+        setCacheBust(Date.now())
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    load()
+  }, [])
   const services = [
     { name: 'Biểu diễn tại sự kiện', price: 'Liên hệ' },
     { name: 'Thu âm vocal', price: '500.000đ/bài' },
@@ -69,13 +92,13 @@ const ArtistProfile = () => {
   }
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 pt-24">
       {/* Cover Image */}
       <div className="h-64 md:h-80 bg-gradient-dark relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: `url(/images/profile/artist-1.jpg)`, // Customize the image here
+            backgroundImage: `url(${coverUrl ? `${resolveMediaUrl(coverUrl)}?v=${cacheBust}` : '/images/profile/artist-1.jpg'})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             filter: 'blur(20px)',
@@ -91,8 +114,9 @@ const ArtistProfile = () => {
             <div className="flex flex-col md:flex-row gap-6 items-center">
               <div className="relative md:order-1">
                 <Image
-                  src="/images/profile/artist-1.jpg"
-                  alt="Minh Anh"
+                  unoptimized
+                  src={avatarUrl ? `${resolveMediaUrl(avatarUrl)}?v=${cacheBust}` : '/images/profile/artist-1.jpg'}
+                  alt="Artist"
                   width={192}
                   height={192}
                   className="w-48 h-48 rounded-2xl object-cover border-4 border-background shadow-glow"
@@ -105,7 +129,7 @@ const ArtistProfile = () => {
               <div className="md:ml-auto md:order-3">
                 <Button size="lg" variant="default" asChild>
                   <Link
-                    href="/a"
+                    href="/profile/edit/artist"
                     className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                   >
                     <UserPen className="mr-2 h-5 w-5" />
