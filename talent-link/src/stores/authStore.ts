@@ -16,6 +16,10 @@ interface AuthState {
   loading: boolean
   error: string | null
 
+  // 🟩 ADD
+  userRole: string | null
+  setUserRole: (role: string | null) => void
+
   // actions
   initialize: () => Promise<void>
   signUp: (
@@ -50,6 +54,20 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
       loading: false,
       error: null,
+
+      // 🟩 ADD: init role
+      userRole: null,
+
+      // 🟩 ADD: setter role
+      setUserRole: (role) => {
+        set({ userRole: role })
+        if (typeof window !== 'undefined') {
+          if (role)
+            document.cookie = `user_role=${role}; path=/`
+          else
+            document.cookie = `user_role=; Max-Age=0; path=/`
+        }
+      },
 
       initialize: async () => {
         // Guard: tránh initialize nhiều lần
@@ -111,9 +129,20 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { access_token, refresh_token } = await authService.login(email, password)
           get().setTokens(access_token, refresh_token)
+
           await get().fetchUser()
-          // set({ user });
+
+          // 🟩 ADD: store role
+          const role = get().user?.role
+          if (role) get().setUserRole(role)
+
           toast.success('Chào mừng bạn quay lại TalentLink!')
+
+          // 🟩 ADD: redirect by role
+          if (typeof window !== 'undefined') {
+            if (role === 'venue') window.location.href = '/profile/venue-profile'
+            else window.location.href = '/profile/artist-profile'
+          }
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Đăng nhập không thành công!')
           set({ error: message })
@@ -136,6 +165,10 @@ export const useAuthStore = create<AuthState>()(
           const message = authService.getErrorMessage(err, 'Refresh failed! Logout')
           set({ error: message })
           console.warn('Refresh failed! Logout')
+
+          // 🟩 ADD: clear role on refresh fail
+          get().setUserRole(null)
+
           set({
             user: null,
             accessToken: null,
@@ -152,7 +185,7 @@ export const useAuthStore = create<AuthState>()(
         // set({ loading: true })
         try {
           const userData = await authService.fetchUser()
-          console.log(userData)
+          //console.log(userData)
           set({ user: userData, isAuthenticated: true })
         } catch (err) {
           console.error(err)
@@ -174,6 +207,10 @@ export const useAuthStore = create<AuthState>()(
           const { refreshToken } = get()
           if (!refreshToken) throw new Error('Missing refresh token')
           await authService.logout(refreshToken)
+
+          // 🟩 ADD: clear user role
+          get().setUserRole(null)
+
           set({
             user: null,
             accessToken: null,
@@ -181,6 +218,7 @@ export const useAuthStore = create<AuthState>()(
             // expiresAt: null,
             isAuthenticated: false,
           })
+
           toast.success('Đăng xuất thành công!')
         } catch (err) {
           console.error(err)
@@ -277,6 +315,9 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         // expiresAt: state.expiresAt,
+
+        // 🟩 ADD persist role
+        userRole: state.userRole,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
