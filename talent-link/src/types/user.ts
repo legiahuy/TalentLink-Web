@@ -25,6 +25,7 @@ export interface User {
   detail_bio?: string
   role: string
   avatar_url?: string
+  cover_url?: string
   is_verified: boolean
   status: string
   username: string

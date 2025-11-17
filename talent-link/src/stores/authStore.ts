@@ -62,10 +62,8 @@ export const useAuthStore = create<AuthState>()(
       setUserRole: (role) => {
         set({ userRole: role })
         if (typeof window !== 'undefined') {
-          if (role)
-            document.cookie = `user_role=${role}; path=/`
-          else
-            document.cookie = `user_role=; Max-Age=0; path=/`
+          if (role) document.cookie = `user_role=${role}; path=/`
+          else document.cookie = `user_role=; Max-Age=0; path=/`
         }
       },
 
@@ -138,11 +136,14 @@ export const useAuthStore = create<AuthState>()(
 
           toast.success('Chào mừng bạn quay lại TalentLink!')
 
-          // 🟩 ADD: redirect by role
-          if (typeof window !== 'undefined') {
-            if (role === 'venue') window.location.href = '/profile/venue-profile'
-            else window.location.href = '/profile/artist-profile'
-          }
+          // if (typeof window !== 'undefined') {
+          //   const targetUsername = get().user?.username || username
+          //   if (targetUsername) {
+          //     window.location.href = `/profile/${targetUsername}`
+          //   } else {
+          //     window.location.href = '/profile'
+          //   }
+          // }
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Đăng nhập không thành công!')
           set({ error: message })

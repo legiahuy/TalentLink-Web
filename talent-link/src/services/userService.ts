@@ -1,6 +1,6 @@
 import axiosClient from '@/api/axios'
 import type { User } from '@/types/user'
-import type { Media } from '@/types/media'
+import type { Media, MediaListResponse } from '@/types/media'
 import type { Experience } from '@/types/experience'
 
 export const userService = {
@@ -12,6 +12,11 @@ export const userService = {
 
   getUser: async (id: string): Promise<User> => {
     const res = await axiosClient.get(`/users/${id}`)
+    return res.data?.data ?? res.data
+  },
+
+  getUserByUsername: async (username: string): Promise<User> => {
+    const res = await axiosClient.get(`/users/${username}`)
     return res.data?.data ?? res.data
   },
 
@@ -80,9 +85,19 @@ export const userService = {
     return res.data ?? null
   },
 
+  getAvatarByUserId: async (userId: string): Promise<{ file_url: string } | null> => {
+    const res = await axiosClient.get(`/users/avatar/${userId}`)
+    return (res.data?.data ?? res.data) || null
+  },
+
   getMyCover: async (): Promise<{ file_url: string } | null> => {
     const res = await axiosClient.get('/users/me/cover')
     return res.data ?? null
+  },
+
+  getCoverByUserId: async (userId: string): Promise<{ file_url: string } | null> => {
+    const res = await axiosClient.get(`/users/cover/${userId}`)
+    return (res.data?.data ?? res.data) || null
   },
 
   // MEDIA GALLERY
@@ -90,6 +105,15 @@ export const userService = {
     const res = await axiosClient.get('/users/me/media', {
       params: include_inactive ? { include_inactive: true } : undefined,
     })
+    const data = res.data?.data ?? res.data
+    return {
+      media: data?.media ?? [],
+      total: data?.total ?? data?.media?.length ?? 0,
+    }
+  },
+
+  getUserMediaById: async (userId: string): Promise<MediaListResponse> => {
+    const res = await axiosClient.get(`/users/media/${userId}`)
     const data = res.data?.data ?? res.data
     return {
       media: data?.media ?? [],
