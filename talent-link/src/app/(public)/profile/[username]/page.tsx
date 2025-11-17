@@ -56,17 +56,17 @@ const ProfilePage = () => {
         if (!active) return
         setProfile(userData)
 
-        const [avatarRes, coverRes, mediaRes, experiencesRes, videosRes] = await Promise.all([
-          userService.getAvatarByUserId(userData.id).catch(() => null),
-          userService.getCoverByUserId(userData.id).catch(() => null),
+        const [mediaRes, experiencesRes, videosRes] = await Promise.all([
+          // userService.getAvatarByUserId(userData.id).catch(() => null),
+          // userService.getCoverByUserId(userData.id).catch(() => null),
           userService.getUserMediaById(userData.id).catch(() => ({ media: [], total: 0 })),
           userService.listUserExperiences(userData.id).catch(() => []),
           videoService.getUserVideos(userData.username).catch(() => ({ items: [], total: 0 })),
         ])
-
+        console.log('user:', userData)
         if (!active) return
-        setAvatarUrl(avatarRes?.file_url ?? userData.avatar_url ?? null)
-        setCoverUrl(coverRes?.file_url ?? (userData as any)?.cover_url ?? null)
+        setAvatarUrl(userData.avatar_url ?? null)
+        setCoverUrl(userData.cover_url ?? null)
         setGallery(mediaRes.media ?? [])
         setExperiences(experiencesRes)
         setVideos(videosRes.items ?? [])
@@ -89,8 +89,7 @@ const ProfilePage = () => {
 
   const handleEdit = () => {
     if (!profile) return
-    const editPath = profile.role === 'venue' ? '/profile/edit/venue' : '/profile/edit/artist'
-    router.push(editPath)
+    router.push('/settings/my-profile')
   }
 
   if (loading) {
