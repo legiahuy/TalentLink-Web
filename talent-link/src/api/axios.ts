@@ -12,7 +12,8 @@ axiosClient.interceptors.request.use((config) => {
   // If sending FormData, let the browser set multipart boundary
   if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
     if (config.headers && 'Content-Type' in config.headers) {
-      delete (config.headers as any)['Content-Type']
+      const headers = config.headers as Record<string, unknown>
+      delete headers['Content-Type']
     }
   }
   return config
@@ -23,12 +24,13 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
     const authStore = useAuthStore.getState()
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh')
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
       originalRequest._retry = true
       await authStore.refreshAccessToken()
       const newToken = useAuthStore.getState().accessToken
-      if (newToken) {
+      if (newToken && originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return axiosClient(originalRequest)
       }
