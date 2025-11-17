@@ -10,6 +10,11 @@ export const userService = {
     return res.data?.data ?? res.data
   },
 
+  getUser: async (id: string): Promise<User> => {
+    const res = await axiosClient.get(`/users/${id}`)
+    return res.data?.data ?? res.data
+  },
+
   updateById: async (id: string, payload: Partial<User>): Promise<User> => {
     const res = await axiosClient.put(`/users/${id}`, payload)
     return res.data?.data ?? res.data
@@ -28,10 +33,7 @@ export const userService = {
   },
 
   // CONTACT  <<< THÊM MỚI
-  updateContact: async (payload: {
-    email?: string
-    phone_number?: string
-  }): Promise<User> => {
+  updateContact: async (payload: { email?: string; phone_number?: string }): Promise<User> => {
     const res = await axiosClient.put('/users/me/contact', payload)
     return res.data?.data ?? res.data
   },
@@ -84,16 +86,14 @@ export const userService = {
   },
 
   // MEDIA GALLERY
-  getMyMedia: async (
-    include_inactive?: boolean
-  ): Promise<{ media: Media[]; total: number }> => {
+  getMyMedia: async (include_inactive?: boolean): Promise<{ media: Media[]; total: number }> => {
     const res = await axiosClient.get('/users/me/media', {
       params: include_inactive ? { include_inactive: true } : undefined,
     })
     const data = res.data?.data ?? res.data
     return {
       media: data?.media ?? [],
-      total: data?.total ?? (data?.media?.length ?? 0),
+      total: data?.total ?? data?.media?.length ?? 0,
     }
   },
 
@@ -130,7 +130,11 @@ export const userService = {
   },
 
   createExperience: async (payload: {
-    title?: string; description?: string; start_date?: string; end_date?: string; portfolio_url?: string;
+    title?: string
+    description?: string
+    start_date?: string
+    end_date?: string
+    portfolio_url?: string
   }): Promise<Experience> => {
     const res = await axiosClient.post('/experiences', payload)
     return res.data?.data ?? res.data
@@ -141,7 +145,7 @@ export const userService = {
     return res.data?.data ?? res.data
   },
 
-   // ===== SOCIAL LINKS =====
+  // ===== SOCIAL LINKS =====
   updateSocial: async (payload: {
     facebook_url?: string
     instagram_url?: string
@@ -150,6 +154,4 @@ export const userService = {
     const res = await axiosClient.put('/users/me/social', payload)
     return res.data?.data ?? res.data
   },
-  
 }
-
