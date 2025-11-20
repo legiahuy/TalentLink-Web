@@ -178,4 +178,15 @@ export const userService = {
     const res = await axiosClient.put('/users/me/social', payload)
     return res.data?.data ?? res.data
   },
+
+  // ===== GENRES =====
+  getGenres: async (): Promise<Array<{ id: string; name: string }>> => {
+    const res = await axiosClient.get('/users/genres')
+    return res.data?.data ?? res.data ?? []
+  },
+
+  updateGenres: async (userId: string, payload: { name: string[] }): Promise<User> => {
+    const res = await axiosClient.put(`/users/genres/${userId}`, payload)
+    return res.data?.data ?? res.data
+  },
 }

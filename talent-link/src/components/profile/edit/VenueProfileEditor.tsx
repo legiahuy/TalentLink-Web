@@ -21,7 +21,9 @@ export default function VenueProfileEditor() {
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null)
-  const [gallery, setGallery] = useState<Array<{ id: string; file_url: string; file_name?: string }>>([])
+  const [gallery, setGallery] = useState<
+    Array<{ id: string; file_url: string; file_name?: string }>
+  >([])
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -122,9 +124,9 @@ export default function VenueProfileEditor() {
         business_type: formBasic.business_type,
         capacity: formBasic.capacity,
       })
-      toast.success('Đã lưu thông tin cơ bản')
+      toast.success('Basic information saved')
     } catch (error) {
-      toast.error('Lưu thất bại')
+      toast.error('Save failed')
     } finally {
       setSavingBasic(false)
     }
@@ -134,9 +136,9 @@ export default function VenueProfileEditor() {
     try {
       setSavingContact(true)
       await venueService.updateContact(formContact)
-      toast.success('Đã lưu thông tin liên hệ')
+      toast.success('Contact information saved')
     } catch (error) {
-      toast.error('Lưu thất bại')
+      toast.error('Save failed')
     } finally {
       setSavingContact(false)
     }
@@ -150,9 +152,9 @@ export default function VenueProfileEditor() {
         open_hour: formAdditional.open_hour,
         rent_price: formAdditional.rent_price,
       })
-      toast.success('Đã lưu thông tin hoạt động')
+      toast.success('Activity information saved')
     } catch (error) {
-      toast.error('Lưu thất bại')
+      toast.error('Save failed')
     } finally {
       setSavingAdditional(false)
     }
@@ -170,10 +172,10 @@ export default function VenueProfileEditor() {
         await venueService.uploadCover(coverFile)
         changed = true
       }
-      if (changed) toast.success('Đã lưu ảnh')
-      else toast.message('Không có thay đổi')
+      if (changed) toast.success('Images saved')
+      else toast.message('No changes')
     } catch (error) {
-      toast.error('Lỗi khi tải ảnh')
+      toast.error('Error uploading images')
     } finally {
       setSavingImages(false)
     }
@@ -188,12 +190,12 @@ export default function VenueProfileEditor() {
         const media = await venueService.uploadMedia(file)
         setGallery((prev) => [media, ...prev])
       }
-      toast.success(`Đã tải lên ${files.length} ảnh`)
+      toast.success(`Uploaded ${files.length} images`)
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:add' } }))
     } catch (err: any) {
       const status = err?.response?.status
-      const message = err?.response?.data?.message || err?.message || 'Tải ảnh thất bại'
-      toast.error(`Tải ảnh thất bại${status ? ` (${status})` : ''}: ${message}`)
+      const message = err?.response?.data?.message || err?.message || 'Failed to upload images'
+      toast.error(`Failed to upload images${status ? ` (${status})` : ''}: ${message}`)
     } finally {
       setUploadingGallery(false)
       e.target.value = ''
@@ -201,20 +203,20 @@ export default function VenueProfileEditor() {
   }
 
   const handleDeleteMedia = async (id: string) => {
-    if (!window.confirm('Xoá ảnh này khỏi thư viện?')) return
+    if (!window.confirm('Delete this image from library?')) return
     const prev = gallery
     setDeletingId(id)
     setGallery((g) => g.filter((m) => m.id !== id))
     try {
       await venueService.deleteMedia(id)
-      toast.success('Đã xoá ảnh')
+      toast.success('Image deleted')
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:delete' } }))
     } catch (err: any) {
       console.error(err)
       setGallery(prev)
       const status = err?.response?.status
-      const message = err?.response?.data?.message || err?.message || 'Xoá ảnh thất bại'
-      toast.error(`Xoá ảnh thất bại${status ? ` (${status})` : ''}: ${message}`)
+      const message = err?.response?.data?.message || err?.message || 'Failed to delete image'
+      toast.error(`Failed to delete image${status ? ` (${status})` : ''}: ${message}`)
     } finally {
       setDeletingId(null)
     }
@@ -223,16 +225,18 @@ export default function VenueProfileEditor() {
   return (
     <main className="container mx-auto max-w-5xl px-4 pt-24 pb-10">
       <div className="mb-6">
-        <p className="text-sm uppercase tracking-wide text-muted-foreground">Cài đặt</p>
-        <h1 className="text-3xl font-bold">Chỉnh sửa hồ sơ địa điểm</h1>
-        <p className="text-muted-foreground">Cập nhật thông tin để địa điểm của bạn xuất hiện chuyên nghiệp hơn.</p>
+        <p className="text-sm uppercase tracking-wide text-muted-foreground">Settings</p>
+        <h1 className="text-3xl font-bold">Edit Venue Profile</h1>
+        <p className="text-muted-foreground">
+          Update information to make your venue appear more professional.
+        </p>
       </div>
 
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Ảnh</CardTitle>
+          <CardTitle>Photos</CardTitle>
           <Button onClick={handleSaveImages} disabled={savingImages}>
-            <Save className="mr-2 h-4 w-4" /> {savingImages ? 'Đang lưu...' : 'Lưu thay đổi'}
+            <Save className="mr-2 h-4 w-4" /> {savingImages ? 'Saving...' : 'Save Changes'}
           </Button>
         </CardHeader>
         <CardContent>
@@ -240,29 +244,49 @@ export default function VenueProfileEditor() {
             <div className="flex items-center gap-4">
               <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-muted">
                 {logoPreviewUrl ? (
-                  <Image src={logoPreviewUrl} alt="logo" width={96} height={96} className="h-full w-full object-cover" />
+                  <Image
+                    src={logoPreviewUrl}
+                    alt="logo"
+                    width={96}
+                    height={96}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <Camera className="h-8 w-8 text-muted-foreground" />
                 )}
               </div>
-              <Input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+              />
             </div>
             <div className="flex items-center gap-4">
               <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-muted">
                 {coverPreviewUrl ? (
-                  <Image src={coverPreviewUrl} alt="cover" width={96} height={96} className="h-full w-full object-cover" />
+                  <Image
+                    src={coverPreviewUrl}
+                    alt="cover"
+                    width={96}
+                    height={96}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <Camera className="h-8 w-8 text-muted-foreground" />
                 )}
               </div>
-              <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+              />
             </div>
           </div>
           <div className="mt-8">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-base font-semibold">Thư viện ảnh</div>
+              <div className="text-base font-semibold">Photo Gallery</div>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2">
-                <span>{uploadingGallery ? 'Đang tải...' : 'Thêm ảnh'}</span>
+                <span>{uploadingGallery ? 'Uploading...' : 'Add Photos'}</span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/gif,image/webp"
@@ -274,12 +298,21 @@ export default function VenueProfileEditor() {
               </label>
             </div>
             {gallery.length === 0 ? (
-              <p className="text-muted-foreground">Chưa có ảnh portfolio.</p>
+              <p className="text-muted-foreground">No portfolio photos yet.</p>
             ) : (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {gallery.map((m) => (
-                  <div key={m.id} className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border">
-                    <Image src={m.file_url} alt={m.file_name || 'Gallery'} width={112} height={112} className="h-full w-full object-cover" />
+                  <div
+                    key={m.id}
+                    className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border"
+                  >
+                    <Image
+                      src={m.file_url}
+                      alt={m.file_name || 'Gallery'}
+                      width={112}
+                      height={112}
+                      className="h-full w-full object-cover"
+                    />
                     <button
                       type="button"
                       onClick={() => handleDeleteMedia(m.id)}
@@ -298,18 +331,23 @@ export default function VenueProfileEditor() {
 
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Thông tin cơ bản</CardTitle>
+          <CardTitle>Basic Information</CardTitle>
           <Button onClick={handleSaveBasic} disabled={savingBasic}>
-            <Save className="mr-2 h-4 w-4" /> {savingBasic ? 'Đang lưu…' : 'Lưu thay đổi'}
+            <Save className="mr-2 h-4 w-4" /> {savingBasic ? 'Saving…' : 'Save Changes'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="display_name">Tên cơ sở *</Label>
-            <Input id="display_name" name="display_name" value={formBasic.display_name} onChange={onBasicChange} />
+            <Label htmlFor="display_name">Venue Name *</Label>
+            <Input
+              id="display_name"
+              name="display_name"
+              value={formBasic.display_name}
+              onChange={onBasicChange}
+            />
           </div>
           <div>
-            <Label htmlFor="business_type">Loại hình</Label>
+            <Label htmlFor="business_type">Business Type</Label>
             <Input
               id="business_type"
               name="business_type"
@@ -323,33 +361,48 @@ export default function VenueProfileEditor() {
             />
           </div>
           <div>
-            <Label htmlFor="capacity">Sức chứa</Label>
-            <Input id="capacity" name="capacity" value={formBasic.capacity} onChange={onBasicChange} />
+            <Label htmlFor="capacity">Capacity</Label>
+            <Input
+              id="capacity"
+              name="capacity"
+              value={formBasic.capacity}
+              onChange={onBasicChange}
+            />
           </div>
         </CardContent>
       </Card>
 
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Liên hệ & Địa chỉ</CardTitle>
+          <CardTitle>Contact & Address</CardTitle>
           <Button onClick={handleSaveContact} disabled={savingContact}>
-            <Save className="mr-2 h-4 w-4" /> {savingContact ? 'Đang lưu…' : 'Lưu thay đổi'}
+            <Save className="mr-2 h-4 w-4" /> {savingContact ? 'Saving…' : 'Save Changes'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label htmlFor="city">Thành phố</Label>
+              <Label htmlFor="city">City</Label>
               <Input id="city" name="city" value={formContact.city} onChange={onContactChange} />
             </div>
             <div>
-              <Label htmlFor="country">Quốc gia</Label>
-              <Input id="country" name="country" value={formContact.country} onChange={onContactChange} />
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                name="country"
+                value={formContact.country}
+                onChange={onContactChange}
+              />
             </div>
           </div>
           <div>
-            <Label htmlFor="detailed_address">Địa chỉ chi tiết</Label>
-            <Input id="detailed_address" name="detailed_address" value={formContact.detailed_address} onChange={onContactChange} />
+            <Label htmlFor="detailed_address">Detailed Address</Label>
+            <Input
+              id="detailed_address"
+              name="detailed_address"
+              value={formContact.detailed_address}
+              onChange={onContactChange}
+            />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -357,27 +410,37 @@ export default function VenueProfileEditor() {
               <Input id="email" name="email" value={formContact.email} onChange={onContactChange} />
             </div>
             <div>
-              <Label htmlFor="phone_number">Số điện thoại</Label>
-              <Input id="phone_number" name="phone_number" value={formContact.phone_number} onChange={onContactChange} />
+              <Label htmlFor="phone_number">Phone Number</Label>
+              <Input
+                id="phone_number"
+                name="phone_number"
+                value={formContact.phone_number}
+                onChange={onContactChange}
+              />
             </div>
           </div>
           <div>
             <Label htmlFor="website_url">Website</Label>
-            <Input id="website_url" name="website_url" value={formContact.website_url} onChange={onContactChange} />
+            <Input
+              id="website_url"
+              name="website_url"
+              value={formContact.website_url}
+              onChange={onContactChange}
+            />
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Thông tin hoạt động</CardTitle>
+          <CardTitle>Activity Information</CardTitle>
           <Button onClick={handleSaveAdditional} disabled={savingAdditional}>
-            <Save className="mr-2 h-4 w-4" /> {savingAdditional ? 'Đang lưu…' : 'Lưu thay đổi'}
+            <Save className="mr-2 h-4 w-4" /> {savingAdditional ? 'Saving…' : 'Save Changes'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="convenient_facilities">Tiện ích</Label>
+            <Label htmlFor="convenient_facilities">Amenities</Label>
             <Input
               id="convenient_facilities"
               name="convenient_facilities"
@@ -386,7 +449,7 @@ export default function VenueProfileEditor() {
             />
           </div>
           <div>
-            <Label htmlFor="open_hour">Giờ mở cửa</Label>
+            <Label htmlFor="open_hour">Opening Hours</Label>
             <textarea
               id="open_hour"
               name="open_hour"
@@ -397,7 +460,7 @@ export default function VenueProfileEditor() {
             />
           </div>
           <div>
-            <Label htmlFor="rent_price">Giá thuê</Label>
+            <Label htmlFor="rent_price">Rental Price</Label>
             <textarea
               id="rent_price"
               name="rent_price"

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-
 import { useAuthStore } from '@/stores/authStore'
 import { userService } from '@/services/userService'
 import { UserRole } from '@/types/user'

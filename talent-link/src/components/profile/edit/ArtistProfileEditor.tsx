@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { MultiSelect, type Option } from '@/components/ui/multi-select'
 
 import type { Media } from '@/types/media'
 import type { User } from '@/types/user'
@@ -20,10 +21,10 @@ import { VideoItem, videoService } from '@/services/videoService'
 import VideoModal from '@/components/portfolio/VideoModal'
 
 const tabs = [
-  { id: 'overview', label: 'Tổng quan' },
-  { id: 'media', label: 'Ảnh & Video' },
-  { id: 'experience', label: 'Kinh nghiệm' },
-  { id: 'contact', label: 'Liên hệ & mạng xã hội' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'media', label: 'Photos & Videos' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'contact', label: 'Contact & Social Media' },
 ]
 
 interface SectionCardProps {
@@ -90,7 +91,9 @@ export default function ArtistProfileEditor() {
   const [savingContact, setSavingContact] = useState(false)
   const [savingSocial, setSavingSocial] = useState(false)
   const [savingExp, setSavingExp] = useState(false)
+  const [savingGenres, setSavingGenres] = useState(false)
   const [deletingExpId, setDeletingExpId] = useState<string | null>(null)
+  const [availableGenres, setAvailableGenres] = useState<Option[]>([])
 
   const [formBasic, setFormBasic] = useState({
     display_name: '',
@@ -123,7 +126,7 @@ export default function ArtistProfileEditor() {
     portfolio_url: '',
   })
 
-  const heroName = me?.display_name || me?.username || 'Nghệ sĩ'
+  const heroName = me?.display_name || me?.username || 'Artist'
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -161,24 +164,75 @@ export default function ArtistProfileEditor() {
             setVideos(videoRes.items)
           }
         }
-        const [mediaRes, avatarRes, coverRes] = await Promise.all([
+        const [mediaRes, avatarRes, coverRes, genresRes] = await Promise.all([
           userService.getMyMedia(false).catch(() => ({ media: [], total: 0 })),
           userService.getMyAvatar().catch(() => null),
           userService.getMyCover().catch(() => null),
+          userService.getGenres().catch(() => []),
         ])
         setGallery(mediaRes.media || [])
         setAvatarUrl(avatarRes?.file_url || meRes?.avatar_url || null)
         setCoverUrl(coverRes?.file_url || meRes?.cover_url || null)
+        setAvailableGenres(genresRes.map((g) => ({ label: g.name, value: g.name })))
         setCacheBust(Date.now())
       } catch (error) {
         console.error(error)
-        toast.error('Không thể tải dữ liệu hồ sơ')
+        toast.error('Unable to load profile data')
       } finally {
         setLoading(false)
       }
     }
     loadInitial()
   }, [])
+
+  const validateImageFile = (file: File, maxSizeMB: number, type: 'avatar' | 'cover'): boolean => {
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(
+        `${type === 'avatar' ? 'Avatar' : 'Cover'} image must be JPEG, PNG, GIF, or WebP format`,
+      )
+      return false
+    }
+
+    if (file.size > maxSizeBytes) {
+      toast.error(
+        `${type === 'avatar' ? 'Avatar' : 'Cover'} image must be less than ${maxSizeMB}MB`,
+      )
+      return false
+    }
+
+    return true
+  }
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      setAvatarFile(null)
+      return
+    }
+
+    if (validateImageFile(file, 5, 'avatar')) {
+      setAvatarFile(file)
+    } else {
+      e.target.value = ''
+    }
+  }
+
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      setCoverFile(null)
+      return
+    }
+
+    if (validateImageFile(file, 10, 'cover')) {
+      setCoverFile(file)
+    } else {
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     if (avatarFile) {
@@ -217,13 +271,35 @@ export default function ArtistProfileEditor() {
         country: formBasic.country.trim() || undefined,
       }
       const updated = await userService.updateBasic(payload)
-      toast.success('Đã lưu thông tin cơ bản')
+      toast.success('Basic information saved')
       setMe((prev) => (prev ? { ...prev, ...updated } : prev))
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Cập nhật thất bại')
+      const message = getErrorMessage(error, 'Update failed')
       toast.error(message)
     } finally {
       setSavingBasic(false)
+    }
+  }
+
+  const handleSaveGenres = async () => {
+    if (!me?.id) {
+      toast.error('You need to log in')
+      return
+    }
+    try {
+      setSavingGenres(true)
+      await userService.updateGenres(me.id, { name: formBasic.genres })
+      toast.success('Genres updated')
+      // Refresh user data to get updated genres
+      const updated = await userService.getMe()
+      setMe(updated)
+      const normalizedGenres = (updated.genres ?? []).map((genre) => genre.name).filter(Boolean)
+      setFormBasic((prev) => ({ ...prev, genres: normalizedGenres }))
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Failed to update genres')
+      toast.error(message)
+    } finally {
+      setSavingGenres(false)
     }
   }
 
@@ -240,7 +316,7 @@ export default function ArtistProfileEditor() {
         changed = true
       }
       if (changed) {
-        toast.success('Đã cập nhật ảnh hồ sơ')
+        toast.success('Profile images updated')
         setAvatarFile(null)
         setCoverFile(null)
         setAvatarPreviewUrl(null)
@@ -250,10 +326,10 @@ export default function ArtistProfileEditor() {
           new CustomEvent('profile:updated', { detail: { what: 'avatar:cover' } }),
         )
       } else {
-        toast.message('Không có thay đổi ảnh')
+        toast.message('No image changes')
       }
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Lưu ảnh thất bại')
+      const message = getErrorMessage(error, 'Failed to save images')
       toast.error(message)
     } finally {
       setSavingImages(false)
@@ -269,10 +345,10 @@ export default function ArtistProfileEditor() {
         const media = await userService.uploadMedia(file)
         setGallery((prev) => [media, ...prev])
       }
-      toast.success(`Đã tải lên ${files.length} ảnh`)
+      toast.success(`Uploaded ${files.length} images`)
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:add' } }))
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Tải ảnh thất bại')
+      const message = getErrorMessage(error, 'Failed to upload images')
       toast.error(message)
     } finally {
       setUploadingGallery(false)
@@ -281,18 +357,18 @@ export default function ArtistProfileEditor() {
   }
 
   const handleDeleteMedia = async (id: string) => {
-    if (!window.confirm('Xoá ảnh này khỏi thư viện?')) return
+    if (!window.confirm('Delete this image from library?')) return
     const prev = gallery
     setDeletingId(id)
     setGallery((g) => g.filter((m) => m.id !== id))
     try {
       await userService.deleteMedia(id)
-      toast.success('Đã xoá ảnh')
+      toast.success('Image deleted')
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:delete' } }))
     } catch (error: unknown) {
       console.error(error)
       setGallery(prev)
-      const message = getErrorMessage(error, 'Xoá ảnh thất bại')
+      const message = getErrorMessage(error, 'Failed to delete image')
       toast.error(message)
     } finally {
       setDeletingId(null)
@@ -306,14 +382,14 @@ export default function ArtistProfileEditor() {
         email: formContact.email?.trim() || undefined,
         phone_number: formContact.phone_number?.trim() || undefined,
       })
-      toast.success('Đã lưu thông tin liên hệ')
+      toast.success('Contact information saved')
       setFormContact({
         email: updated.email ?? formContact.email,
         phone_number: updated.phone_number ?? formContact.phone_number,
       })
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'contact' } }))
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Cập nhật liên hệ thất bại')
+      const message = getErrorMessage(error, 'Failed to update contact')
       toast.error(message)
     } finally {
       setSavingContact(false)
@@ -328,7 +404,7 @@ export default function ArtistProfileEditor() {
         instagram_url: formSocial.instagram_url?.trim() || undefined,
         facebook_url: formSocial.facebook_url?.trim() || undefined,
       })
-      toast.success('Đã lưu liên kết mạng xã hội')
+      toast.success('Social media links saved')
       setFormSocial({
         youtube_url: updated.youtube_url ?? formSocial.youtube_url,
         instagram_url: updated.instagram_url ?? formSocial.instagram_url,
@@ -336,7 +412,7 @@ export default function ArtistProfileEditor() {
       })
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'social' } }))
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Cập nhật mạng xã hội thất bại')
+      const message = getErrorMessage(error, 'Failed to update social media')
       toast.error(message)
     } finally {
       setSavingSocial(false)
@@ -345,11 +421,11 @@ export default function ArtistProfileEditor() {
 
   const handleSaveExperience = async () => {
     if (!me?.id) {
-      toast.error('Bạn cần đăng nhập')
+      toast.error('You need to log in')
       return
     }
     if (!expForm.description.trim() && !expForm.title.trim()) {
-      toast.error('Nhập ít nhất mô tả hoặc chuyên môn')
+      toast.error('Enter at least a description or specialty')
       return
     }
     try {
@@ -361,7 +437,7 @@ export default function ArtistProfileEditor() {
           portfolio_url: expForm.portfolio_url || undefined,
         })
         setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
-        toast.success('Đã cập nhật kinh nghiệm')
+        toast.success('Experience updated')
       } else {
         const created = await userService.createExperience({
           title: expForm.title || undefined,
@@ -369,12 +445,12 @@ export default function ArtistProfileEditor() {
           portfolio_url: expForm.portfolio_url || undefined,
         })
         setExperiences((prev) => [created, ...prev])
-        toast.success('Đã thêm kinh nghiệm')
+        toast.success('Experience added')
       }
       setExpForm({ id: undefined, title: '', description: '', portfolio_url: '' })
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'experience' } }))
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Lưu kinh nghiệm thất bại')
+      const message = getErrorMessage(error, 'Failed to save experience')
       toast.error(message)
     } finally {
       setSavingExp(false)
@@ -392,16 +468,16 @@ export default function ArtistProfileEditor() {
   }
 
   const handleDeleteExperience = async (id: string) => {
-    if (!window.confirm('Xoá mục kinh nghiệm này?')) return
+    if (!window.confirm('Delete this experience item?')) return
     try {
       setDeletingExpId(id)
       await userService.deleteExperience(id)
       setExperiences((prev) => prev.filter((e) => e.id !== id))
-      toast.success('Đã xoá kinh nghiệm')
+      toast.success('Experience deleted')
       if (expForm.id === id)
         setExpForm({ id: undefined, title: '', description: '', portfolio_url: '' })
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Xoá kinh nghiệm thất bại')
+      const message = getErrorMessage(error, 'Failed to delete experience')
       toast.error(message)
     } finally {
       setDeletingExpId(null)
@@ -412,9 +488,9 @@ export default function ArtistProfileEditor() {
     try {
       await videoService.deleteVideo(videoId)
       setVideos((prev) => prev.filter((v) => v.id !== videoId))
-      toast.success('Đã xoá video')
+      toast.success('Video deleted')
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Xoá video thất bại')
+      const message = getErrorMessage(error, 'Failed to delete video')
       toast.error(message)
     }
   }
@@ -448,11 +524,11 @@ export default function ArtistProfileEditor() {
     <main className="mx-auto max-w-7xl px-6 md:px-8 pt-20 pb-16 space-y-8">
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Cài đặt
+          Settings
         </p>
-        <h1 className="text-3xl font-semibold">Quản lý hồ sơ của bạn</h1>
+        <h1 className="text-3xl font-semibold">Manage Your Profile</h1>
         <p className="text-sm text-muted-foreground">
-          Cập nhật thông tin để hồ sơ luôn nổi bật với khách hàng.
+          Update information to keep your profile attractive to clients.
         </p>
       </div>
 
@@ -487,17 +563,17 @@ export default function ArtistProfileEditor() {
                   <div className="flex flex-wrap gap-3">
                     <label className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow">
                       <UploadCloud className="h-4 w-4" />
-                      <span>Đổi ảnh bìa</span>
+                      <span>Change Cover Photo</span>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         className="hidden"
-                        onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+                        onChange={handleCoverFileChange}
                       />
                     </label>
                     <Button size="sm" onClick={handleSaveImages} disabled={savingImages}>
                       <Save className="mr-2 h-4 w-4" />
-                      {savingImages ? 'Đang lưu...' : 'Lưu ảnh'}
+                      {savingImages ? 'Saving...' : 'Save Photos'}
                     </Button>
                   </div>
                 </div>
@@ -524,23 +600,23 @@ export default function ArtistProfileEditor() {
                       <Camera className="h-4 w-4" />
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         className="hidden"
-                        onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                        onChange={handleAvatarFileChange}
                       />
                     </label>
                   </div>
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        Hồ sơ nghệ sĩ
+                        Artist Profile
                       </p>
                       <h2 className="text-2xl font-semibold">{heroName}</h2>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {formBasic.city || formBasic.country
                         ? `${formBasic.city}, ${formBasic.country}`
-                        : 'Chưa cập nhật địa điểm'}
+                        : 'Location not updated'}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {genresToRender.map((genre) => (
@@ -556,18 +632,18 @@ export default function ArtistProfileEditor() {
           </Card>
 
           <SectionCard
-            title="Thông tin chính"
-            description="Chia sẻ những gì nổi bật nhất về bạn để thu hút nhà tổ chức."
+            title="Main Information"
+            description="Share what stands out about you to attract organizers."
             action={
               <Button onClick={handleSaveBasic} disabled={savingBasic}>
                 <Save className="mr-2 h-4 w-4" />
-                {savingBasic ? 'Đang lưu...' : 'Lưu thay đổi'}
+                {savingBasic ? 'Saving...' : 'Save Changes'}
               </Button>
             }
           >
             <form className="space-y-4" onSubmit={handleSaveBasic}>
               <div>
-                <Label htmlFor="display_name">Nghệ danh *</Label>
+                <Label htmlFor="display_name">Stage Name *</Label>
                 <Input
                   id="display_name"
                   name="display_name"
@@ -578,7 +654,7 @@ export default function ArtistProfileEditor() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="city">Thành phố *</Label>
+                  <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
                     name="city"
@@ -588,7 +664,7 @@ export default function ArtistProfileEditor() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="country">Quốc gia *</Label>
+                  <Label htmlFor="country">Country *</Label>
                   <Input
                     id="country"
                     name="country"
@@ -599,28 +675,49 @@ export default function ArtistProfileEditor() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="brief_bio">Giới thiệu ngắn *</Label>
+                <Label htmlFor="brief_bio">Brief Introduction *</Label>
                 <textarea
                   id="brief_bio"
                   name="brief_bio"
                   rows={3}
                   value={formBasic.brief_bio}
                   onChange={onBasicChange}
-                  placeholder="Tóm tắt nhanh về phong cách và thế mạnh của bạn"
+                  placeholder="Quick summary of your style and strengths"
                   className="w-full rounded-md border bg-background p-3"
                 />
               </div>
               <div>
-                <Label htmlFor="detail_bio">Giới thiệu chi tiết</Label>
+                <Label htmlFor="detail_bio">Detailed Introduction</Label>
                 <textarea
                   id="detail_bio"
                   name="detail_bio"
                   rows={5}
                   value={formBasic.detail_bio}
                   onChange={onBasicChange}
-                  placeholder="Kể thêm về các dự án, thành tựu hoặc câu chuyện thương hiệu cá nhân."
+                  placeholder="Tell more about your projects, achievements, or personal brand story."
                   className="w-full rounded-md border bg-background p-3"
                 />
+              </div>
+              <div>
+                <Label htmlFor="genres">Genres</Label>
+                <MultiSelect
+                  options={availableGenres}
+                  selected={formBasic.genres}
+                  onChange={(selected) => setFormBasic((prev) => ({ ...prev, genres: selected }))}
+                  placeholder="Select genres..."
+                  className="w-full"
+                />
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleSaveGenres}
+                    disabled={savingGenres}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {savingGenres ? 'Saving...' : 'Save Genres'}
+                  </Button>
+                </div>
               </div>
             </form>
           </SectionCard>
@@ -628,18 +725,18 @@ export default function ArtistProfileEditor() {
 
         <TabsContent value="media" className="space-y-8">
           <SectionCard
-            title="Ảnh hồ sơ"
-            description="Ảnh đại diện và ảnh bìa sẽ xuất hiện ở trang hồ sơ công khai của bạn."
+            title="Profile Photos"
+            description="Profile picture and cover photo will appear on your public profile page."
             action={
               <Button onClick={handleSaveImages} disabled={savingImages}>
                 <Save className="mr-2 h-4 w-4" />
-                {savingImages ? 'Đang lưu...' : 'Lưu ảnh'}
+                {savingImages ? 'Saving...' : 'Save Photos'}
               </Button>
             }
           >
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-3">
-                <Label>Ảnh đại diện</Label>
+                <Label>Profile Picture</Label>
                 <div className="flex items-center gap-4 rounded-lg border p-4">
                   <div className="h-20 w-20 overflow-hidden rounded-full border bg-muted">
                     {avatarPreviewUrl || avatarUrl ? (
@@ -656,18 +753,18 @@ export default function ArtistProfileEditor() {
                     )}
                   </div>
                   <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                    Tải ảnh JPG hoặc PNG (tối đa 5MB)
+                    Avatar image file (max 5MB, JPEG/PNG/GIF/WebP)
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                       className="hidden"
-                      onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                      onChange={handleAvatarFileChange}
                     />
                   </label>
                 </div>
               </div>
               <div className="space-y-3">
-                <Label>Ảnh bìa</Label>
+                <Label>Cover Photo</Label>
                 <div className="flex items-center gap-4 rounded-lg border p-4">
                   <div className="h-20 w-32 overflow-hidden rounded-lg border bg-muted">
                     {coverPreviewUrl || coverUrl ? (
@@ -684,12 +781,12 @@ export default function ArtistProfileEditor() {
                     )}
                   </div>
                   <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                    Ảnh ngang tối thiểu 1200x600px
+                    Cover image file (max 10MB, JPEG/PNG/GIF/WebP)
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                       className="hidden"
-                      onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+                      onChange={handleCoverFileChange}
                     />
                   </label>
                 </div>
@@ -698,11 +795,11 @@ export default function ArtistProfileEditor() {
           </SectionCard>
 
           <SectionCard
-            title="Thư viện ảnh"
-            description="Chọn những khoảnh khắc đẹp nhất để thể hiện phong cách biểu diễn của bạn."
+            title="Photo Gallery"
+            description="Select your best moments to showcase your performance style."
             action={
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium">
-                {uploadingGallery ? 'Đang tải...' : 'Thêm ảnh'}
+                {uploadingGallery ? 'Uploading...' : 'Add Photos'}
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/gif,image/webp"
@@ -715,7 +812,7 @@ export default function ArtistProfileEditor() {
             }
           >
             {gallery.length === 0 ? (
-              <p className="text-muted-foreground">Chưa có ảnh portfolio.</p>
+              <p className="text-muted-foreground">No portfolio photos yet.</p>
             ) : (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {gallery.map((m) => (
@@ -743,12 +840,12 @@ export default function ArtistProfileEditor() {
           </SectionCard>
 
           <SectionCard
-            title="Video portfolio"
-            description="Thêm video biểu diễn để nhà tổ chức nhanh chóng đánh giá phong cách của bạn."
-            action={<Button onClick={() => setOpenAddVideo(true)}>Thêm video</Button>}
+            title="Video Portfolio"
+            description="Add performance videos for organizers to quickly assess your style."
+            action={<Button onClick={() => setOpenAddVideo(true)}>Add Video</Button>}
           >
             {videos.length === 0 ? (
-              <p className="text-muted-foreground">Chưa có video nào.</p>
+              <p className="text-muted-foreground">No videos yet.</p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {videos.map((video) => (
@@ -763,7 +860,7 @@ export default function ArtistProfileEditor() {
                     </div>
                     <CardContent className="flex items-center justify-between p-4">
                       <div>
-                        <p className="font-medium">{video.title || 'Không tiêu đề'}</p>
+                        <p className="font-medium">{video.title || 'No title'}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(video.created_at).toLocaleDateString()}
                         </p>
@@ -797,37 +894,37 @@ export default function ArtistProfileEditor() {
 
         <TabsContent value="experience" className="space-y-8">
           <SectionCard
-            title="Kinh nghiệm & dịch vụ"
-            description="Cập nhật những dự án nổi bật, kỹ năng và dịch vụ bạn cung cấp."
+            title="Experience & Services"
+            description="Update your standout projects, skills, and services."
             action={
               <Button onClick={handleSaveExperience} disabled={savingExp}>
                 <Save className="mr-2 h-4 w-4" />
                 {savingExp
                   ? expForm.id
-                    ? 'Đang cập nhật...'
-                    : 'Đang lưu...'
+                    ? 'Updating...'
+                    : 'Saving...'
                   : expForm.id
-                    ? 'Cập nhật'
-                    : 'Lưu mục mới'}
+                    ? 'Update'
+                    : 'Save New Item'}
               </Button>
             }
           >
             <div className="space-y-4">
               <div>
-                <Label htmlFor="exp_description">Kinh nghiệm</Label>
+                <Label htmlFor="exp_description">Experience</Label>
                 <textarea
                   id="exp_description"
                   name="description"
                   rows={5}
                   value={expForm.description}
                   onChange={(e) => setExpForm((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Mô tả dự án, vai trò, thành tích..."
+                  placeholder="Describe project, role, achievements..."
                   className="w-full rounded-md border bg-background p-3"
                 />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="exp_title">Chuyên môn</Label>
+                  <Label htmlFor="exp_title">Specialty</Label>
                   <Input
                     id="exp_title"
                     name="title"
@@ -837,7 +934,7 @@ export default function ArtistProfileEditor() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="exp_portfolio_url">Liên kết portfolio</Label>
+                  <Label htmlFor="exp_portfolio_url">Portfolio Link</Label>
                   <Input
                     id="exp_portfolio_url"
                     name="portfolio_url"
@@ -854,12 +951,12 @@ export default function ArtistProfileEditor() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Danh sách kinh nghiệm</CardTitle>
-              <CardDescription>Những mục này sẽ hiển thị trên hồ sơ công khai.</CardDescription>
+              <CardTitle>Experience List</CardTitle>
+              <CardDescription>These items will appear on your public profile.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {experiences.length === 0 ? (
-                <p className="text-muted-foreground">Chưa có mục nào.</p>
+                <p className="text-muted-foreground">No items yet.</p>
               ) : (
                 experiences.map((experience) => (
                   <div
@@ -867,7 +964,7 @@ export default function ArtistProfileEditor() {
                     className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
                   >
                     <div className="pr-3">
-                      <p className="font-medium">{experience.title || 'Chưa đặt tiêu đề'}</p>
+                      <p className="font-medium">{experience.title || 'No title set'}</p>
                       {experience.description ? (
                         <p className="text-sm text-muted-foreground">{experience.description}</p>
                       ) : null}
@@ -908,12 +1005,12 @@ export default function ArtistProfileEditor() {
 
         <TabsContent value="contact" className="space-y-8">
           <SectionCard
-            title="Liên hệ"
-            description="Thông tin này giúp nhà tổ chức dễ dàng kết nối với bạn."
+            title="Contact"
+            description="This information helps organizers easily connect with you."
             action={
               <Button onClick={handleSaveContact} disabled={savingContact}>
                 <Save className="mr-2 h-4 w-4" />
-                {savingContact ? 'Đang lưu...' : 'Lưu liên hệ'}
+                {savingContact ? 'Saving...' : 'Save Contact'}
               </Button>
             }
           >
@@ -930,7 +1027,7 @@ export default function ArtistProfileEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor="phone_number">Số điện thoại *</Label>
+                <Label htmlFor="phone_number">Phone Number *</Label>
                 <Input
                   id="phone_number"
                   name="phone_number"
@@ -943,12 +1040,12 @@ export default function ArtistProfileEditor() {
           </SectionCard>
 
           <SectionCard
-            title="Mạng xã hội"
-            description="Gắn các kênh chính để fan và đối tác theo dõi bạn."
+            title="Social Media"
+            description="Link your main channels for fans and partners to follow you."
             action={
               <Button onClick={handleSaveSocial} disabled={savingSocial}>
                 <Save className="mr-2 h-4 w-4" />
-                {savingSocial ? 'Đang lưu...' : 'Lưu liên kết'}
+                {savingSocial ? 'Saving...' : 'Save Links'}
               </Button>
             }
           >

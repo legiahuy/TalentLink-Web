@@ -30,7 +30,7 @@ const sampleEvents: Record<'upcoming' | 'ongoing' | 'past', Event[]> = {
   upcoming: [
     {
       id: '1',
-      title: 'Đêm Nhạc Acoustic - Những Bản Tình Ca',
+      title: 'Acoustic Night - Love Songs',
       date: '2025-10-15',
       time: '19:30',
       status: 'upcoming',
@@ -61,7 +61,7 @@ const sampleEvents: Record<'upcoming' | 'ongoing' | 'past', Event[]> = {
   past: [
     {
       id: '4',
-      title: 'Đêm Nhạc Trịnh - Tưởng Nhớ',
+      title: 'Trinh Music Night - In Memory',
       date: '2025-09-30',
       time: '19:00',
       status: 'past',
@@ -93,7 +93,7 @@ export function VenueProfileView({
   const email = profile.email || ''
   const website = (profile as any).website_url || ''
   const description =
-    (profile as any).open_hour || (profile as any).detail_bio || 'Chưa có mô tả hoạt động'
+    (profile as any).open_hour || (profile as any).detail_bio || 'No activity description'
   const capacity = (profile as any).capacity || ''
   const amenities = ((profile as any).convenient_facilities as string[]) || []
   const type = Array.isArray((profile as any).business_types)
@@ -147,12 +147,12 @@ export function VenueProfileView({
                     <h1 className="text-4xl font-bold mb-2 bg-primary bg-clip-text text-transparent">
                       {venueName}
                     </h1>
-                    <p className="text-muted-foreground text-lg">{type || 'Địa điểm biểu diễn'}</p>
+                    <p className="text-muted-foreground text-lg">{type || 'Performance Venue'}</p>
                   </div>
 
                   {isOwner ? (
                     <Button onClick={onEdit} className="px-4 py-2">
-                      Thay đổi thông tin
+                      Update Information
                     </Button>
                   ) : null}
                 </div>
@@ -196,7 +196,7 @@ export function VenueProfileView({
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    Tiện Nghi & Dịch Vụ
+                    Amenities & Services
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {amenities.length ? (
@@ -209,11 +209,11 @@ export function VenueProfileView({
                         </span>
                       ))
                     ) : (
-                      <span className="text-muted-foreground">Chưa cập nhật tiện nghi</span>
+                      <span className="text-muted-foreground">Amenities not updated</span>
                     )}
                   </div>
                   {capacity ? (
-                    <p className="text-sm text-muted-foreground mt-3">Sức chứa: {capacity}</p>
+                    <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
                   ) : null}
                 </div>
               </div>
@@ -223,9 +223,9 @@ export function VenueProfileView({
           <div className="mb-12">
             <Tabs defaultValue="upcoming" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-8 gap-8">
-                <TabsTrigger value="upcoming">Sắp Diễn Ra</TabsTrigger>
-                <TabsTrigger value="ongoing">Đang Diễn Ra</TabsTrigger>
-                <TabsTrigger value="past">Đã Diễn Ra</TabsTrigger>
+                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                <TabsTrigger value="ongoing">Ongoing</TabsTrigger>
+                <TabsTrigger value="past">Past</TabsTrigger>
               </TabsList>
 
               <TabsContent value="upcoming">

@@ -17,7 +17,6 @@ import type { VideoItem } from '@/services/videoService'
 import { ArtistProfileView } from '@/components/profile/ArtistProfileView'
 import { VenueProfileView } from '@/components/profile/VenueProfileView'
 import { isArtist } from '@/types/user'
-
 const ProfilePage = () => {
   const params = useParams<{ username: string }>()
   const t = useTranslations('NotFound')
@@ -38,6 +37,14 @@ const ProfilePage = () => {
     () => currentUser?.username === username,
     [currentUser?.username, username],
   )
+
+  // Set page title dynamically
+  useEffect(() => {
+    if (profile) {
+      const displayName = profile.display_name
+      document.title = `${displayName} | TalentLink`
+    }
+  }, [profile])
 
   useEffect(() => {
     let active = true

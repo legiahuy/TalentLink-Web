@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { MapPin, Star, Music, ExternalLink } from 'lucide-react'
+import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram } from 'lucide-react'
 import type { User } from '@/types/user'
 import type { Media } from '@/types/media'
 import type { Experience } from '@/types/experience'
@@ -42,17 +42,17 @@ function pickExperienceParagraph(exps: Experience[] = []): string {
   const fmt = (e: Experience) => {
     const sd = e.start_date?.slice(0, 10) ?? ''
     const ed = e.end_date?.slice(0, 10) ?? 'nay'
-    const title = e.title || 'Kinh nghiệm'
+    const title = e.title || 'Experience'
     return `${title} (${sd}${sd || ed ? ' - ' : ''}${ed})`
   }
   return top.map(fmt).join(' • ')
 }
 
 const staticServices = [
-  { name: 'Biểu diễn tại sự kiện', price: 'Liên hệ' },
-  { name: 'Thu âm vocal', price: '500.000đ/bài' },
-  { name: 'Sáng tác ca khúc', price: 'Liên hệ' },
-  { name: 'Dạy thanh nhạc', price: '300.000đ/buổi' },
+  { name: 'Event Performance', price: 'Contact' },
+  { name: 'Vocal Recording', price: '500,000 VND/song' },
+  { name: 'Songwriting', price: 'Contact' },
+  { name: 'Vocal Lessons', price: '300,000 VND/session' },
 ]
 
 export function ArtistProfileView({
@@ -79,19 +79,17 @@ export function ArtistProfileView({
 
   return (
     <main className="flex-1">
-      <div className="h-64 md:h-80 bg-gradient-dark relative overflow-hidden">
+      <div className="h-80 md:h-100 bg-gradient-dark relative overflow-hidden">
         <div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-90"
           style={{
             backgroundImage: `url(${
               coverUrl
                 ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
-                : '/images/profile/artist-1.jpg'
+                : '/images/auth/hero-image-2.jpg'
             })`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'blur(20px)',
-            transform: 'scale(1.1)',
           }}
         />
         <div className="absolute inset-0 bg-linear-to-b from-transparent to-background" />
@@ -100,8 +98,8 @@ export function ArtistProfileView({
       <div className="px-6 md:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="relative -mt-24 mb-8">
-            <div className="flex flex-col md:flex-row gap-6 items-center">
-              <div className="relative md:order-1">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+              <div className="relative shrink-0 md:order-1">
                 <Image
                   unoptimized
                   src={
@@ -114,64 +112,70 @@ export function ArtistProfileView({
                   height={192}
                   className="w-48 h-48 rounded-2xl object-cover border-4 border-background shadow-glow"
                 />
-                <div className="absolute -bottom-2 -right-2 bg-gradient-primary rounded-full p-3">
-                  <Music className="h-6 w-6 text-primary-foreground" />
-                </div>
+
+                <label className="absolute bottom-2 right-2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
+                  {profile.role === 'producer' ? (
+                    <Music className="h-5 w-5" />
+                  ) : (
+                    <MicVocal className="h-5 w-5" />
+                  )}
+                </label>
               </div>
 
-              <div className="md:ml-auto md:order-3">
-                {isOwner ? (
-                  <Button size="lg" onClick={onEdit} className="flex items-center gap-2">
-                    Chỉnh sửa hồ sơ
-                  </Button>
-                ) : (
-                  <Button size="lg" variant="default" asChild>
-                    <Link
-                      href="/booking"
-                      className="flex items-center gap-2 text-white hover:text-primary transition-colors"
-                    >
-                      Liên hệ hợp tác
-                    </Link>
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex-1 pt-0 md:order-2">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-start flex-wrap gap-4 md:gap-6 mb-4">
-                  <div>
-                    <h1 className="text-4xl font-bold mb-2">{displayName}</h1>
-                    <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{location}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-accent text-accent" />
-                        <span className="font-semibold">4.9</span>
-                        <span>(28 đánh giá)</span>
-                      </div>
-                    </div>
+              <div className="flex-1 w-full md:order-2 min-w-0">
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">{displayName}</h1>
+                <div className="flex flex-wrap items-center gap-3 text-muted-foreground mb-4">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{location}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-accent" />
+                    <span className="font-semibold">—</span>
+                    <span>(0 reviews)</span>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {genres.length
-                    ? genres.map((genre) => (
-                        <Badge key={genre} className="bg-primary">
-                          {genre}
-                        </Badge>
-                      ))
-                    : ['Pop', 'Ballad', 'R&B'].map((genre) => (
-                        <Badge key={genre} className="bg-primary">
-                          {genre}
-                        </Badge>
-                      ))}
-                </div>
+                {genres.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {genres.map((genre) => (
+                      <Badge key={genre} className="bg-primary">
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : isOwner ? (
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground italic">
+                      Add genres to help organizers find you
+                    </p>
+                  </div>
+                ) : null}
 
-                <p className="text-muted-foreground leading-relaxed">
-                  {briefBio ||
-                    `Ca sĩ với hơn 5 năm kinh nghiệm trong ngành âm nhạc. Chuyên về dòng nhạc pop và ballad Việt Nam.`}
+                <p className="text-muted-foreground leading-relaxed max-w-full">
+                  {briefBio || 'No headline available yet.'}
                 </p>
+              </div>
+
+              <div className="w-full md:w-auto md:ml-auto md:order-3">
+                {isOwner ? (
+                  <Button
+                    size="lg"
+                    onClick={onEdit}
+                    className="w-full md:w-auto flex items-center justify-center gap-2"
+                  >
+                    Edit Profile
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="default" asChild className="w-full md:w-auto">
+                    <Link
+                      href="/booking"
+                      className="flex items-center justify-center gap-2 text-white hover:text-primary transition-colors"
+                    >
+                      Contact for Collaboration
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -184,7 +188,7 @@ export function ArtistProfileView({
                 </div>
 
                 {videos.length === 0 ? (
-                  <p className="text-muted-foreground">Chưa có video.</p>
+                  <p className="text-muted-foreground">No videos yet.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {videos.map((video) => (
@@ -203,7 +207,7 @@ export function ArtistProfileView({
                           />
                         </div>
                         <CardContent className="p-4">
-                          <h3 className="font-semibold">{video.title || 'Không tiêu đề'}</h3>
+                          <h3 className="font-semibold">{video.title || 'No title'}</h3>
                           <p className="text-xs text-muted-foreground">
                             {new Date(video.created_at).toLocaleDateString()}
                           </p>
@@ -215,75 +219,42 @@ export function ArtistProfileView({
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Giới thiệu</h2>
+                <h2 className="text-2xl font-semibold mb-4">About</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
                     <div className="space-y-4 text-muted-foreground">
-                      <p className="whitespace-pre-line">
-                        {detailBio?.trim() ||
-                          `Xin chào! Tôi là ${displayName}. Tôi đam mê pop/ballad và mong muốn mang đến những trải nghiệm âm nhạc đầy cảm xúc.`}
-                      </p>
-                      <p className="whitespace-pre-line">
-                        {expParagraph ||
-                          'Tôi đã biểu diễn tại nhiều sự kiện như đám cưới, tiệc công ty, showcase nhỏ; nhận thu âm vocal & hướng dẫn thanh nhạc.'}
-                      </p>
-                      <div className="space-y-1">
-                        <p>
-                          Hãy liên hệ với tôi để thảo luận về dự án của bạn. Tôi rất mong được hợp
-                          tác!
+                      {detailBio?.trim() ? (
+                        <p className="whitespace-pre-line">{detailBio.trim()}</p>
+                      ) : (
+                        <p className="text-muted-foreground/70">No detailed bio available yet.</p>
+                      )}
+                      {expParagraph ? (
+                        <p className="whitespace-pre-line">{expParagraph}</p>
+                      ) : (
+                        <p className="text-muted-foreground/70">
+                          No experience information available yet.
                         </p>
-                        <p>
-                          <span className="font-medium">SDT:</span>{' '}
-                          {phone ? (
-                            <a className="hover:text-primary" href={`tel:${phone}`}>
-                              {phone}
-                            </a>
-                          ) : (
-                            '—'
-                          )}
-                        </p>
-                        <p>
-                          <span className="font-medium">Email:</span>{' '}
-                          {email ? (
-                            <a className="hover:text-primary break-all" href={`mailto:${email}`}>
-                              {email}
-                            </a>
-                          ) : (
-                            '—'
-                          )}
-                        </p>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </section>
             </div>
 
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Liên kết</h2>
+            <div className="space-y-6 min-w-0">
+              <section className="min-w-0">
+                <h2 className="text-2xl font-semibold mb-4">Social Links</h2>
                 <Card className="bg-card border-border/40">
-                  <CardContent className="p-6 space-y-3">
-                    {youtube ? (
-                      <a
-                        href={youtube}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-muted-foreground hover:text-primary"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>YouTube</span>
-                      </a>
-                    ) : null}
+                  <CardContent className="p-6 space-y-3 min-w-0">
                     {instagram ? (
                       <a
                         href={instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-muted-foreground hover:text-primary"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-primary min-w-0"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>Instagram</span>
+                        <Instagram className="h-5 w-5 shrink-0" />
+                        <span className="truncate">Instagram</span>
                       </a>
                     ) : null}
                     {facebook ? (
@@ -291,21 +262,32 @@ export function ArtistProfileView({
                         href={facebook}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-muted-foreground hover:text-primary"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-primary min-w-0"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>Facebook</span>
+                        <Facebook className="h-5 w-5 shrink-0" />
+                        <span className="truncate">Facebook</span>
+                      </a>
+                    ) : null}
+                    {youtube ? (
+                      <a
+                        href={youtube}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-primary min-w-0"
+                      >
+                        <Youtube className="h-5 w-5 shrink-0" />
+                        <span className="truncate">YouTube</span>
                       </a>
                     ) : null}
                     {!youtube && !instagram && !facebook ? (
-                      <p className="text-muted-foreground">Chưa có liên kết mạng xã hội.</p>
+                      <p className="text-muted-foreground">No social media links yet.</p>
                     ) : null}
                   </CardContent>
                 </Card>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Dịch vụ</h2>
+                <h2 className="text-2xl font-semibold mb-4">Services</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
                     <div className="space-y-4">
@@ -328,11 +310,11 @@ export function ArtistProfileView({
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Ảnh</h2>
+                <h2 className="text-2xl font-semibold mb-4">Photos</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
                     {gallery.length === 0 ? (
-                      <p className="text-muted-foreground">Chưa có ảnh portfolio.</p>
+                      <p className="text-muted-foreground">No portfolio photos yet.</p>
                     ) : (
                       <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
                         {gallery.slice(0, 6).map((media) => (
