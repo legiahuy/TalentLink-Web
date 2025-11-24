@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
 import type { Job } from '@/types/job'
+import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 
 // Mock data - moved outside component to avoid Date.now() in render
 const MOCK_JOBS: Job[] = [
@@ -130,7 +131,6 @@ const JobDetailPage = () => {
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isApplicationOpen, setIsApplicationOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
 
@@ -494,13 +494,14 @@ const JobDetailPage = () => {
         </div>
       </div>
 
-      {/* TODO: ApplicationDialog component */}
-      {/* <ApplicationDialog
-        open={isApplicationOpen}
-        onOpenChange={setIsApplicationOpen}
-        jobTitle={job.title}
-        companyName={job.company}
-      /> */}
+      {job && (
+        <ApplicationDialog
+          open={isApplicationOpen}
+          onOpenChange={setIsApplicationOpen}
+          jobTitle={job.title}
+          companyName={job.company}
+        />
+      )}
     </div>
   )
 }
