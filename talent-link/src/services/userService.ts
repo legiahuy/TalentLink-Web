@@ -1,7 +1,16 @@
 import axiosClient from '@/api/axios'
-import type { User } from '@/types/user'
+import type {
+  User,
+  Genre,
+  UserBasicUpdatePayload,
+  UserContactUpdatePayload,
+  UserSocialUpdatePayload,
+  UserGenresUpdatePayload,
+  AvatarResponse,
+  CoverResponse,
+} from '@/types/user'
 import type { Media, MediaListResponse } from '@/types/media'
-import type { Experience } from '@/types/experience'
+import type { Experience, ExperienceCreatePayload } from '@/types/experience'
 
 export const userService = {
   // USER
@@ -26,19 +35,13 @@ export const userService = {
   },
 
   // BASIC
-  updateBasic: async (payload: {
-    display_name?: string
-    brief_bio?: string
-    detail_bio?: string
-    city?: string
-    country?: string
-  }): Promise<User> => {
+  updateBasic: async (payload: UserBasicUpdatePayload): Promise<User> => {
     const res = await axiosClient.put('/users/me/basic', payload)
     return res.data?.data ?? res.data
   },
 
   // CONTACT  <<< THÊM MỚI
-  updateContact: async (payload: { email?: string; phone_number?: string }): Promise<User> => {
+  updateContact: async (payload: UserContactUpdatePayload): Promise<User> => {
     const res = await axiosClient.put('/users/me/contact', payload)
     return res.data?.data ?? res.data
   },
@@ -46,7 +49,7 @@ export const userService = {
   // AVATAR / COVER
   uploadAvatar: async (file: File): Promise<string> => {
     const tryFields = ['file', 'avatar', 'image']
-    let lastErr: any
+    let lastErr: unknown
     for (const field of tryFields) {
       try {
         const form = new FormData()
@@ -64,7 +67,7 @@ export const userService = {
 
   uploadCover: async (file: File): Promise<string> => {
     const tryFields = ['file', 'cover', 'image']
-    let lastErr: any
+    let lastErr: unknown
     for (const field of tryFields) {
       try {
         const form = new FormData()
@@ -80,28 +83,28 @@ export const userService = {
     throw lastErr
   },
 
-  getMyAvatar: async (): Promise<{ file_url: string } | null> => {
+  getMyAvatar: async (): Promise<AvatarResponse | null> => {
     const res = await axiosClient.get('/users/me/avatar')
     return res.data ?? null
   },
 
-  getAvatarByUserId: async (userId: string): Promise<{ file_url: string } | null> => {
+  getAvatarByUserId: async (userId: string): Promise<AvatarResponse | null> => {
     const res = await axiosClient.get(`/users/avatar/${userId}`)
     return (res.data?.data ?? res.data) || null
   },
 
-  getMyCover: async (): Promise<{ file_url: string } | null> => {
+  getMyCover: async (): Promise<CoverResponse | null> => {
     const res = await axiosClient.get('/users/me/cover')
     return res.data ?? null
   },
 
-  getCoverByUserId: async (userId: string): Promise<{ file_url: string } | null> => {
+  getCoverByUserId: async (userId: string): Promise<CoverResponse | null> => {
     const res = await axiosClient.get(`/users/cover/${userId}`)
     return (res.data?.data ?? res.data) || null
   },
 
   // MEDIA GALLERY
-  getMyMedia: async (include_inactive?: boolean): Promise<{ media: Media[]; total: number }> => {
+  getMyMedia: async (include_inactive?: boolean): Promise<MediaListResponse> => {
     const res = await axiosClient.get('/users/me/media', {
       params: include_inactive ? { include_inactive: true } : undefined,
     })
@@ -153,13 +156,7 @@ export const userService = {
     return (firstArray as Experience[]) || []
   },
 
-  createExperience: async (payload: {
-    title?: string
-    description?: string
-    start_date?: string
-    end_date?: string
-    portfolio_url?: string
-  }): Promise<Experience> => {
+  createExperience: async (payload: ExperienceCreatePayload): Promise<Experience> => {
     const res = await axiosClient.post('/experiences', payload)
     return res.data?.data ?? res.data
   },
@@ -170,22 +167,18 @@ export const userService = {
   },
 
   // ===== SOCIAL LINKS =====
-  updateSocial: async (payload: {
-    facebook_url?: string
-    instagram_url?: string
-    youtube_url?: string
-  }) => {
+  updateSocial: async (payload: UserSocialUpdatePayload): Promise<User> => {
     const res = await axiosClient.put('/users/me/social', payload)
     return res.data?.data ?? res.data
   },
 
   // ===== GENRES =====
-  getGenres: async (): Promise<Array<{ id: string; name: string }>> => {
+  getGenres: async (): Promise<Genre[]> => {
     const res = await axiosClient.get('/users/genres')
     return res.data?.data ?? res.data ?? []
   },
 
-  updateGenres: async (userId: string, payload: { name: string[] }): Promise<User> => {
+  updateGenres: async (userId: string, payload: UserGenresUpdatePayload): Promise<User> => {
     const res = await axiosClient.put(`/users/genres/${userId}`, payload)
     return res.data?.data ?? res.data
   },

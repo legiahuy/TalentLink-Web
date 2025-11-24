@@ -1,16 +1,13 @@
 import axiosClient from '@/api/axios'
-
-export interface VideoItem {
-  id: string
-  title: string
-  video_url: string
-  thumbnail_url?: string 
-  created_at: string
-  user_id: string
-}
+import type {
+  VideoItem,
+  VideoListResponse,
+  VideoUploadPayload,
+  VideoUpdatePayload,
+} from '@/types/video'
 
 export const videoService = {
-  async getUserVideos(username: string): Promise<{ items: VideoItem[]; total: number }> {
+  async getUserVideos(username: string): Promise<VideoListResponse> {
     const res = await axiosClient.get(`/users/videos/all/${username}`)
     const data = res.data?.data ?? res.data
     return {
@@ -19,11 +16,7 @@ export const videoService = {
     }
   },
 
-  async uploadVideo(payload: {
-    file: File
-    thumbnail?: File | null
-    title?: string
-  }) {
+  async uploadVideo(payload: VideoUploadPayload): Promise<VideoItem> {
     const form = new FormData()
     form.append('file', payload.file)
     if (payload.thumbnail) form.append('thumbnail', payload.thumbnail)
@@ -33,10 +26,7 @@ export const videoService = {
     return res.data?.data ?? res.data
   },
 
-  async updateVideo(
-    videoId: string,
-    payload: { file?: File | null; thumbnail?: File | null; title?: string }
-  ) {
+  async updateVideo(videoId: string, payload: VideoUpdatePayload): Promise<VideoItem> {
     const form = new FormData()
     if (payload.file) form.append('file', payload.file)
     if (payload.thumbnail) form.append('thumbnail', payload.thumbnail)
@@ -46,7 +36,7 @@ export const videoService = {
     return res.data?.data ?? res.data
   },
 
-  async deleteVideo(videoId: string) {
-    return axiosClient.delete(`/users/videos/${videoId}`)
+  async deleteVideo(videoId: string): Promise<void> {
+    await axiosClient.delete(`/users/videos/${videoId}`)
   },
 }

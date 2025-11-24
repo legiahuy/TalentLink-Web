@@ -48,3 +48,34 @@ export interface User {
 }
 
 export const isArtist = (role: UserRole) => role === UserRole.SINGER || role === UserRole.PRODUCER
+
+export interface UserBasicUpdatePayload {
+  display_name?: string
+  brief_bio?: string
+  detail_bio?: string
+  city?: string
+  country?: string
+}
+
+export interface UserContactUpdatePayload {
+  email?: string
+  phone_number?: string
+}
+
+export interface UserSocialUpdatePayload {
+  facebook_url?: string
+  instagram_url?: string
+  youtube_url?: string
+}
+
+export interface UserGenresUpdatePayload {
+  name: string[]
+}
+
+export interface AvatarResponse {
+  file_url: string
+}
+
+export interface CoverResponse {
+  file_url: string
+}
