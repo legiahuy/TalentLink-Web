@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import JobCard from '@/components/jobs/JobCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -92,6 +93,7 @@ const MOCK_JOBS: Job[] = [
 ]
 
 const JobPool = () => {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedLocation, setSelectedLocation] = useState('all')
@@ -153,6 +155,10 @@ const JobPool = () => {
       }
       return newSet
     })
+  }
+
+  const handleViewDetails = (jobId: string) => {
+    router.push(`/jobs/${jobId}`)
   }
 
   return (
@@ -385,6 +391,7 @@ const JobPool = () => {
                           job={job}
                           isSaved={savedJobs.has(job.id)}
                           onToggleSave={handleToggleSave}
+                          onViewDetails={handleViewDetails}
                         />
                       ))}
                     </div>
@@ -413,6 +420,7 @@ const JobPool = () => {
                           job={job}
                           isSaved={savedJobs.has(job.id)}
                           onToggleSave={handleToggleSave}
+                          onViewDetails={handleViewDetails}
                         />
                       ))}
                     </div>
