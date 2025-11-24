@@ -136,7 +136,7 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
             <ul className="text-sm text-muted-foreground space-y-1.5">
               {job.requirements.slice(0, 2).map((req, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-primary mt-1.5 shrink-0">•</span>
+                  <span className="text-primary shrink-0">•</span>
                   <span className="leading-relaxed">{req}</span>
                 </li>
               ))}

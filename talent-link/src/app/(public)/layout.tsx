@@ -6,7 +6,7 @@ export default function GuestLayout({ children }: { children?: React.ReactNode }
     <div className="flex h-lvh min-h-lvh flex-col overflow-x-clip">
       <Header />
 
-      <main className="mx-auto w-full grow">{children}</main>
+      <main className="mx-auto w-full grow bg-background">{children}</main>
       <Footer />
     </div>
   )
