@@ -157,29 +157,42 @@ const JobPool = () => {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* Background gradient overlay */}
+      <div className="fixed inset-0 bg-gradient-to-b from-background via-muted/40 to-background pointer-events-none -z-10" />
+
       {/* Hero Section */}
-      <section className="pt-20 pb-10 md:pt-24 md:pb-12">
+      <section className="border-b bg-muted/30 pt-20 pb-8 md:pt-24 md:pb-10">
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-              Find Your Next Gig
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-              Venues looking for talent. Artists looking for stages. Your next performance is here.
-            </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Post a Job
-            </Button>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
+                Find Your Next Gig
+              </h1>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                Venues looking for talent. Artists looking for stages. Your next performance is
+                here.
+              </p>
+            </div>
+            <div className="shrink-0">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 w-full md:w-auto">
+                <Plus className="w-4 h-4 mr-2" />
+                Post a Job
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-10">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-10 relative">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 -z-10 opacity-40">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
+        </div>
+        <div className="flex flex-col lg:flex-row gap-6 relative">
           {/* Sidebar Filters - Desktop */}
           <aside className="lg:w-64 lg:shrink-0">
-            <Card className="p-4 lg:sticky lg:top-6">
+            <Card className="p-4 lg:sticky lg:top-24 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="font-semibold text-sm uppercase tracking-wide">Filters</h2>
@@ -306,8 +319,8 @@ const JobPool = () => {
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as JobType)}>
-              <div className="flex items-center justify-between mb-4">
-                <TabsList className="grid w-full max-w-md grid-cols-4">
+              <div className="flex items-center justify-between mb-6">
+                <TabsList className="grid w-full max-w-md grid-cols-4 bg-muted/50">
                   <TabsTrigger value="all" className="gap-1.5 text-xs">
                     <Sparkles className="w-3.5 h-3.5" />
                     All
@@ -325,7 +338,7 @@ const JobPool = () => {
                     Saved
                   </TabsTrigger>
                 </TabsList>
-                <div className="text-sm text-muted-foreground hidden sm:block">
+                <div className="text-sm text-muted-foreground hidden sm:block font-medium">
                   {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
                 </div>
               </div>
