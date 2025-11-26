@@ -9,7 +9,7 @@ import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram } from 'luc
 import type { User } from '@/types/user'
 import type { Media } from '@/types/media'
 import type { Experience } from '@/types/experience'
-import type { VideoItem } from '@/services/videoService'
+import type { VideoItem } from '@/types/video'
 import { resolveMediaUrl } from '@/lib/utils'
 
 interface ArtistProfileViewProps {
@@ -86,7 +86,7 @@ export function ArtistProfileView({
             backgroundImage: `url(${
               coverUrl
                 ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
-                : '/images/auth/hero-image-2.jpg'
+                : '/images/profile/background-default.jpg'
             })`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -105,7 +105,7 @@ export function ArtistProfileView({
                   src={
                     avatarUrl
                       ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
-                      : '/images/profile/artist-1.jpg'
+                      : '/images/profile/avatar-default.svg'
                   }
                   alt={displayName}
                   width={192}

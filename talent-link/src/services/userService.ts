@@ -115,8 +115,8 @@ export const userService = {
     }
   },
 
-  getUserMediaById: async (userId: string): Promise<MediaListResponse> => {
-    const res = await axiosClient.get(`/users/media/${userId}`)
+  getUserMediaByUsername: async (username: string): Promise<MediaListResponse> => {
+    const res = await axiosClient.get(`/users/media/${username}`)
     const data = res.data?.data ?? res.data
     return {
       media: data?.media ?? [],
@@ -145,8 +145,8 @@ export const userService = {
     await axiosClient.delete(`/experiences/${id}`)
   },
 
-  listUserExperiences: async (userId: string): Promise<Experience[]> => {
-    const res = await axiosClient.get(`/users/experiences/${userId}`)
+  listUserExperiences: async (username: string): Promise<Experience[]> => {
+    const res = await axiosClient.get(`/users/experiences/${username}`)
     // backend example hơi “generic”, nên cố gắng tìm mảng hợp lệ
     const data = res.data?.data ?? res.data
     if (Array.isArray(data)) return data as Experience[]

@@ -7,7 +7,12 @@
       "about": "About"
     },
     "signup": "Signup",
-    "login": "Login"
+    "login": "Login",
+    "userMenu": {
+      "myProfile": "My Profile",
+      "settings": "Settings",
+      "logout": "Logout"
+    }
   },
   "Footer": {
     "description": "Connecting independent music artists with clients professionally.",

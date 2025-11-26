@@ -17,7 +17,8 @@ import type { Media } from '@/types/media'
 import type { User } from '@/types/user'
 import type { Experience } from '@/types/experience'
 import { userService } from '@/services/userService'
-import { VideoItem, videoService } from '@/services/videoService'
+import { videoService } from '@/services/videoService'
+import type { VideoItem } from '@/types/video'
 import VideoModal from '@/components/portfolio/VideoModal'
 
 const tabs = [
@@ -154,7 +155,7 @@ export default function ArtistProfileEditor() {
             facebook_url: meRes.facebook_url ?? '',
           })
           try {
-            const exps = await userService.listUserExperiences(meRes.id)
+            const exps = await userService.listUserExperiences(meRes.username)
             setExperiences(exps || [])
           } catch {
             setExperiences([])
@@ -552,7 +553,7 @@ export default function ArtistProfileEditor() {
                       ? coverPreviewUrl
                       : coverUrl
                         ? `${coverUrl}?v=${cacheBust}`
-                        : '/images/profile/artist-1.jpg'
+                        : '/images/profile/avatar-default.svg'
                   }
                   alt="Cover"
                   fill
@@ -589,7 +590,7 @@ export default function ArtistProfileEditor() {
                           ? avatarPreviewUrl
                           : avatarUrl
                             ? `${avatarUrl}?v=${cacheBust}`
-                            : '/images/profile/artist-1.jpg'
+                            : '/images/profile/avatar-default.svg'
                       }
                       alt={heroName}
                       width={128}

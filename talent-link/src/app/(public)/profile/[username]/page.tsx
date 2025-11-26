@@ -13,7 +13,7 @@ import { videoService } from '@/services/videoService'
 import type { User, UserRole } from '@/types/user'
 import type { Media } from '@/types/media'
 import type { Experience } from '@/types/experience'
-import type { VideoItem } from '@/services/videoService'
+import type { VideoItem } from '@/types/video'
 import { ArtistProfileView } from '@/components/profile/ArtistProfileView'
 import { VenueProfileView } from '@/components/profile/VenueProfileView'
 import { isArtist } from '@/types/user'
@@ -66,8 +66,10 @@ const ProfilePage = () => {
         const [mediaRes, experiencesRes, videosRes] = await Promise.all([
           // userService.getAvatarByUserId(userData.id).catch(() => null),
           // userService.getCoverByUserId(userData.id).catch(() => null),
-          userService.getUserMediaById(userData.id).catch(() => ({ media: [], total: 0 })),
-          userService.listUserExperiences(userData.id).catch(() => []),
+          userService
+            .getUserMediaByUsername(userData.username)
+            .catch(() => ({ media: [], total: 0 })),
+          userService.listUserExperiences(userData.username).catch(() => []),
           videoService.getUserVideos(userData.username).catch(() => ({ items: [], total: 0 })),
         ])
         console.log('user:', userData)
