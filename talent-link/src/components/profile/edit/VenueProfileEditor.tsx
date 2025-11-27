@@ -83,6 +83,7 @@ export default function VenueProfileEditor() {
   // Initial values for change detection
   const [initialFormBasic, setInitialFormBasic] = useState({
     display_name: '',
+    brief_bio: '',
     business_type: [] as string[],
     capacity: '',
   })
@@ -104,6 +105,7 @@ export default function VenueProfileEditor() {
 
   const [formBasic, setFormBasic] = useState({
     display_name: '',
+    brief_bio: '',
     business_type: [] as string[],
     capacity: '',
   })
@@ -142,6 +144,7 @@ export default function VenueProfileEditor() {
 
         const basicData = {
           display_name: user.display_name || '',
+          brief_bio: user.brief_bio || '',
           business_type: user.business_types || [],
           capacity: user.capacity || '',
         }
@@ -207,7 +210,7 @@ export default function VenueProfileEditor() {
     setCoverPreviewUrl(null)
   }, [coverFile])
 
-  const onBasicChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+  const onBasicChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setFormBasic((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   const onContactChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormContact((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -218,6 +221,7 @@ export default function VenueProfileEditor() {
   const hasBasicChanges = useMemo(() => {
     return (
       formBasic.display_name.trim() !== initialFormBasic.display_name.trim() ||
+      formBasic.brief_bio.trim() !== initialFormBasic.brief_bio.trim() ||
       JSON.stringify([...formBasic.business_type].sort()) !==
         JSON.stringify([...initialFormBasic.business_type].sort()) ||
       formBasic.capacity.trim() !== initialFormBasic.capacity.trim()
@@ -251,6 +255,7 @@ export default function VenueProfileEditor() {
       setSavingBasic(true)
       await venueService.updateBasic({
         display_name: formBasic.display_name,
+        brief_bio: formBasic.brief_bio,
         business_type: formBasic.business_type,
         capacity: formBasic.capacity,
       })
@@ -697,6 +702,18 @@ export default function VenueProfileEditor() {
                         value={formBasic.display_name}
                         onChange={onBasicChange}
                         required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="brief_bio">Brief Description</Label>
+                      <textarea
+                        id="brief_bio"
+                        name="brief_bio"
+                        rows={3}
+                        value={formBasic.brief_bio}
+                        onChange={onBasicChange}
+                        placeholder="Brief description about your venue"
+                        className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div>
