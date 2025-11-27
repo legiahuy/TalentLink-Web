@@ -2,137 +2,65 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Loader, ArrowLeft, Bookmark, Share2, Send, MessageCircle } from 'lucide-react'
+import { Loader, ArrowLeft, Bookmark, Share2, Send, MessageCircle, BookmarkCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
-import type { Job } from '@/types/job'
+import type { JobPost } from '@/types/job'
 import ApplicationDialog from '@/components/jobs/ApplicationDialog'
+import { jobService } from '@/services/jobService'
+import { userService } from '@/services/userService'
+import { resolveMediaUrl } from '@/lib/utils'
 
-// Mock data - moved outside component to avoid Date.now() in render
-const MOCK_JOBS: Job[] = [
-  {
-    id: '1',
-    title: 'Acoustic Singer for Weekend Night',
-    company: 'Acoustic Cafe & Bar',
-    companyLogo:
-      'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=200&h=200&fit=crop',
-    type: 'Singer',
-    location: 'District 1, Ho Chi Minh City',
-    salary: '$150-250/show',
-    postedDate: '2025-01-13T10:00:00Z',
-    genres: ['Acoustic', 'Pop'],
-    description:
-      'Looking for a warm-voiced singer suitable for acoustic spaces. Performance duration: 2 hours per show. You will create a relaxing and cozy atmosphere for our customers.',
-    requirements: [
-      'Minimum 1 year of performance experience',
-      'Having your own music set is a plus',
-      'Good communication skills with the audience',
-      'Diverse repertoire of acoustic songs',
-    ],
-    benefits: [
-      'Friendly and professional working environment',
-      'Networking opportunities with other artists',
-      'Promotion on venue social media channels',
-      'Tips from customers',
-    ],
-    schedule: 'Friday, Saturday, Sunday (8:00 PM - 10:00 PM)',
-    employmentType: 'part_time',
-    experienceLevel: 'intermediate',
-    applicationDeadline: '2025-11-30',
-    contactEmail: 'booking@acousticcafe.vn',
-    contactPhone: '+84 901 234 567',
-    salaryMin: 3000000,
-    salaryMax: 5000000,
-    salaryCurrency: 'VND',
-    salaryPeriod: 'per_show',
-    salaryNegotiable: true,
-  },
-  {
-    id: '2',
-    title: 'Rock Band for Event Series',
-    company: 'Rock Arena',
-    companyLogo:
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
-    type: 'Band',
-    location: 'District 3, Ho Chi Minh City',
-    salary: '$750-1,250/show',
-    postedDate: '2025-01-11T10:00:00Z',
-    genres: ['Rock', 'Metal'],
-    description: 'Seeking professional rock band for a series of 5 events over the next 2 months.',
-    requirements: [
-      'Complete music set required',
-      'Experience performing at large venues',
-      'Original songs are a plus',
-    ],
-    benefits: [
-      'High exposure at major events',
-      'Professional sound system provided',
-      'Competitive compensation',
-    ],
-    employmentType: 'contract',
-    experienceLevel: 'expert',
-    contactEmail: 'events@rockarena.vn',
-    contactPhone: '+84 902 345 678',
-  },
-  {
-    id: '3',
-    title: 'Jazz Guitarist for Night Performance',
-    company: 'Blue Note Jazz Club',
-    companyLogo:
-      'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=200&h=200&fit=crop',
-    type: 'Musician',
-    location: 'District 2, Ho Chi Minh City',
-    salary: '$100-200/show',
-    postedDate: '2025-01-09T10:00:00Z',
-    genres: ['Jazz', 'Blues'],
-    description:
-      'Need a jazz-savvy guitarist to join the venue house band. Must be able to read music and improvise well.',
-    requirements: ['Proficient in jazz guitar', 'Ability to read music and improvise'],
-    benefits: ['Regular weekly gigs', 'Collaboration with professional musicians'],
-    employmentType: 'part_time',
-    experienceLevel: 'intermediate',
-    contactEmail: 'booking@bluenote.vn',
-  },
-  {
-    id: '4',
-    title: 'DJ for Grand Opening Event',
-    company: 'The Lounge Bar',
-    companyLogo:
-      'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=200&h=200&fit=crop',
-    type: 'DJ',
-    location: 'District 7, Ho Chi Minh City',
-    salary: '$500-750/event',
-    postedDate: '2025-01-06T10:00:00Z',
-    genres: ['EDM', 'House'],
-    description:
-      'Looking for an experienced DJ for bar grand opening. Expected attendance: 300+ guests.',
-    requirements: [
-      'Own equipment required',
-      'Experience mixing for large events',
-      'Having a fanbase is a plus',
-    ],
-    benefits: ['High-profile event', 'Media coverage', 'Networking opportunities'],
-    employmentType: 'one_time',
-    experienceLevel: 'expert',
-    contactEmail: 'events@thelounge.vn',
-    contactPhone: '+84 903 456 789',
-  },
-]
+interface JobWithCreator extends JobPost {
+  creatorName?: string
+  creatorAvatar?: string
+  creatorUsername?: string
+}
+
+const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
 
 const JobDetailPage = () => {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const jobId = params?.id ?? ''
 
-  const [job, setJob] = useState<Job | null>(null)
+  const [job, setJob] = useState<JobWithCreator | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isApplicationOpen, setIsApplicationOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+
+  // Load saved state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(SAVED_JOBS_KEY)
+    if (saved) {
+      try {
+        const savedJobs = new Set(JSON.parse(saved))
+        setIsSaved(savedJobs.has(jobId))
+      } catch (e) {
+        console.error('Failed to load saved jobs', e)
+      }
+    }
+  }, [jobId])
+
+  // Toggle save job
+  const toggleSave = () => {
+    const saved = localStorage.getItem(SAVED_JOBS_KEY)
+    const savedJobs = saved ? new Set(JSON.parse(saved)) : new Set<string>()
+    
+    if (isSaved) {
+      savedJobs.delete(jobId)
+    } else {
+      savedJobs.add(jobId)
+    }
+    
+    localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(Array.from(savedJobs)))
+    setIsSaved(!isSaved)
+  }
 
   useEffect(() => {
     let active = true
@@ -147,11 +75,8 @@ const JobDetailPage = () => {
       setLoading(true)
       setError(null)
       try {
-        // TODO: Replace with actual API call
-        // const jobData = await jobService.getJobById(jobId)
-
-        // Temporary: Find job from mock data
-        const jobData = MOCK_JOBS.find((j) => j.id === jobId)
+        // Fetch job data from API
+        const jobData = await jobService.getJobById(jobId, 'assets,tags')
 
         if (!active) return
 
@@ -160,7 +85,24 @@ const JobDetailPage = () => {
           return
         }
 
-        setJob(jobData)
+        // Fetch creator info
+        try {
+          const creator = await userService.getUser(jobData.creator_id)
+          setJob({
+            ...jobData,
+            creatorName: creator.display_name || creator.username,
+            creatorAvatar: creator.avatar_url,
+            creatorUsername: creator.username,
+          })
+        } catch (err) {
+          console.error('Failed to fetch creator info', err)
+          setJob({
+            ...jobData,
+            creatorName: 'Unknown',
+            creatorAvatar: undefined,
+            creatorUsername: undefined,
+          })
+        }
       } catch (e) {
         console.error('Error loading job', e)
         if (!active) return
@@ -286,84 +228,108 @@ const JobDetailPage = () => {
                 <CardContent className="p-6">
                   {/* Company Header */}
                   <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center sm:items-start">
-                    <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg shrink-0 border-2 border-border">
-                      <AvatarImage src={job.companyLogo} alt={job.company} />
-                      <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                        {job.company
-                          .split(' ')
-                          .map((word) => word[0])
-                          .join('')
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <button
+                      onClick={() => job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)}
+                      className="shrink-0 cursor-pointer"
+                    >
+                      <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-border hover:border-primary transition-colors">
+                        <AvatarImage src={resolveMediaUrl(job.creatorAvatar)} alt={job.creatorName || 'Unknown'} />
+                        <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                          {(job.creatorName || 'Unknown')
+                            .split(' ')
+                            .map((word) => word[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
                     <div className="flex-1 text-center sm:text-left">
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
-                      <p className="text-lg text-muted-foreground font-medium">{job.company}</p>
+                      <button
+                        onClick={() => job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)}
+                        className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
+                      >
+                        {job.creatorName || 'Unknown'}
+                      </button>
                     </div>
                   </div>
 
                   {/* Job Meta */}
                   <div className="flex flex-wrap gap-4 mb-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-muted-foreground" />
-                      <span>{job.type}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span>{job.location}</span>
-                    </div>
+                    {job.type && (
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-muted-foreground" />
+                        <span>{job.type.charAt(0).toUpperCase() + job.type.slice(1)}</span>
+                      </div>
+                    )}
+                    {(job.location || job.location_type) && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span>
+                          {job.location
+                            ? job.location_type
+                              ? `${job.location} (${job.location_type})`
+                              : job.location
+                            : job.location_type || 'Remote'}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-muted-foreground" />
                       <span className="font-semibold text-primary">{formatSalary(job)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>{getTimeAgo(job.postedDate)}</span>
+                      <span>{getTimeAgo(job.created_at)}</span>
                     </div>
                   </div>
 
                   {/* Genres */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {job.genres.map((genre, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
+                  {job.genres && job.genres.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {job.genres.map((genre, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   <Separator className="my-6" />
 
                   {/* Description */}
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-3">Job Description</h2>
-                    <p className="text-foreground/80 leading-relaxed">{job.description}</p>
+                    <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{job.description}</p>
                   </div>
 
-                  {/* Schedule */}
-                  {job.schedule && (
+                  {/* Work Time / Schedule */}
+                  {job.work_time && (
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold mb-3">Schedule</h2>
-                      <p className="text-foreground/80">{job.schedule}</p>
+                      <p className="text-foreground/80">{job.work_time}</p>
                     </div>
                   )}
 
-                  {/* Requirements */}
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-3">Requirements</h2>
-                    <ul className="space-y-2">
-                      {job.requirements.map((req, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-primary">•</span>
-                          <span className="text-foreground/80">{req}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {/* Required Skills */}
+                  {job.required_skills && job.required_skills.length > 0 && (
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-3">Required Skills</h2>
+                      <ul className="space-y-2">
+                        {job.required_skills.map((skill, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-primary">•</span>
+                            <span className="text-foreground/80">{skill}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* Benefits */}
                   {job.benefits && job.benefits.length > 0 && (
-                    <div>
+                    <div className="mb-6">
                       <h2 className="text-xl font-semibold mb-3">Benefits</h2>
                       <ul className="space-y-2">
                         {job.benefits.map((benefit, index) => (
@@ -373,6 +339,39 @@ const JobDetailPage = () => {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Additional Info */}
+                  {(job.experience_level || job.recruitment_type || job.deadline || job.submission_deadline) && (
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-3">Additional Information</h2>
+                      <div className="space-y-2 text-sm">
+                        {job.experience_level && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Experience Level:</span>
+                            <span className="font-medium capitalize">{job.experience_level}</span>
+                          </div>
+                        )}
+                        {job.recruitment_type && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Employment Type:</span>
+                            <span className="font-medium capitalize">{job.recruitment_type.replace('_', ' ')}</span>
+                          </div>
+                        )}
+                        {job.deadline && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Project Deadline:</span>
+                            <span className="font-medium">{new Date(job.deadline).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {job.submission_deadline && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Application Deadline:</span>
+                            <span className="font-medium">{new Date(job.submission_deadline).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -395,80 +394,73 @@ const JobDetailPage = () => {
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={() => setIsSaved(!isSaved)}
+                      onClick={toggleSave}
                     >
-                      <Bookmark
-                        className={`w-4 h-4 mr-2 ${isSaved ? 'fill-primary text-primary' : ''}`}
-                      />
+                      {isSaved ? (
+                        <BookmarkCheck className="w-4 h-4 mr-2 text-primary fill-primary" />
+                      ) : (
+                        <Bookmark className="w-4 h-4 mr-2" />
+                      )}
                       {isSaved ? 'Saved' : 'Save'}
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: job.title,
+                          text: job.brief_description || job.description,
+                          url: window.location.href,
+                        })
+                      } else {
+                        navigator.clipboard.writeText(window.location.href)
+                        // Add toast notification here if you have toast
+                      }
+                    }}>
                       <Share2 className="w-4 h-4 mr-2" />
                       Share
                     </Button>
                   </div>
 
+                  {job.status && (
+                    <>
+                      <Separator />
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Status</h3>
+                        <Badge variant={job.status === 'published' ? 'default' : 'secondary'}>
+                          {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
+
+                  {(job.total_submissions !== undefined || job.applications_count !== undefined) && (
+                    <>
+                      <Separator />
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Applications</h3>
+                        <p className="text-2xl font-bold">
+                          {job.total_submissions || job.applications_count || 0}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Total applications received</p>
+                      </div>
+                    </>
+                  )}
+
                   <Separator />
 
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-sm">Contact Information</h3>
-                    <div className="space-y-2 text-sm">
-                      {job.contactPhone && (
-                        <div>
-                          <span className="text-muted-foreground">Phone:</span>
-                          <p className="font-medium">{job.contactPhone}</p>
-                        </div>
-                      )}
-                      {job.contactEmail && (
-                        <div>
-                          <span className="text-muted-foreground">Email:</span>
-                          <p className="font-medium">{job.contactEmail}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-sm">Job Details</h3>
-                    <div className="space-y-2 text-sm">
-                      {job.employmentType && (
-                        <div>
-                          <span className="text-muted-foreground">Employment Type:</span>
-                          <p className="font-medium">{employmentTypeMap[job.employmentType]}</p>
-                        </div>
-                      )}
-                      {job.experienceLevel && (
-                        <div>
-                          <span className="text-muted-foreground">Experience Level:</span>
-                          <p className="font-medium">{experienceLevelMap[job.experienceLevel]}</p>
-                        </div>
-                      )}
-                      {job.applicationDeadline && (
-                        <div>
-                          <span className="text-muted-foreground">Application Deadline:</span>
-                          <p className="font-medium">
-                            {new Date(job.applicationDeadline).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-muted-foreground pt-2">
+                  <div className="text-sm text-muted-foreground">
                     <p>
                       Posted{' '}
-                      {new Date(job.postedDate).toLocaleDateString('en-US', {
+                      {new Date(job.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       })}
                     </p>
+                    {job.updated_at && job.updated_at !== job.created_at && (
+                      <p className="mt-1">
+                        Updated {getTimeAgo(job.updated_at)}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -498,8 +490,9 @@ const JobDetailPage = () => {
         <ApplicationDialog
           open={isApplicationOpen}
           onOpenChange={setIsApplicationOpen}
+          jobId={job.id}
           jobTitle={job.title}
-          companyName={job.company}
+          companyName={job.creatorName || 'Unknown'}
         />
       )}
     </div>

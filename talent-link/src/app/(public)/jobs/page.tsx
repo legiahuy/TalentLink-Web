@@ -1,5 +1,6 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import JobCard from '@/components/jobs/JobCard'
 import { Button } from '@/components/ui/button'
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Search, Plus, Briefcase, X, Sparkles, Music, Building2 } from 'lucide-react'
+import { Search, Plus, Briefcase, X, Sparkles, Music, Building2, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
@@ -16,125 +17,165 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Job, JobType } from '@/types/job'
+import { jobService } from '@/services/jobService'
+import { userService } from '@/services/userService'
+import type { JobPost, JobPostFilters } from '@/types/job'
 
-// Mock data - moved outside component to avoid Date.now() in render
-const MOCK_JOBS: Job[] = [
-  {
-    id: '1',
-    title: 'Acoustic Singer for Weekend Night',
-    company: 'Acoustic Cafe & Bar',
-    companyLogo:
-      'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=100&h=100&fit=crop',
-    type: 'Singer',
-    location: 'District 1, Ho Chi Minh City',
-    salary: '$150-250/show',
-    postedDate: '2025-01-13T10:00:00Z',
-    genres: ['Acoustic', 'Pop'],
-    description:
-      'Looking for a warm-voiced singer suitable for acoustic spaces. Performance duration: 2 hours per show.',
-    requirements: [
-      'Minimum 1 year of performance experience',
-      'Having your own music set is a plus',
-    ],
-  },
-  {
-    id: '2',
-    title: 'Rock Band for Event Series',
-    company: 'Rock Arena',
-    companyLogo:
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop',
-    type: 'Band',
-    location: 'District 3, Ho Chi Minh City',
-    salary: '$750-1,250/show',
-    postedDate: '2025-01-11T10:00:00Z',
-    genres: ['Rock', 'Metal'],
-    description: 'Seeking professional rock band for a series of 5 events over the next 2 months.',
-    requirements: [
-      'Complete music set required',
-      'Experience performing at large venues',
-      'Original songs are a plus',
-    ],
-  },
-  {
-    id: '3',
-    title: 'Jazz Guitarist for Night Performance',
-    company: 'Blue Note Jazz Club',
-    companyLogo:
-      'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=100&h=100&fit=crop',
-    type: 'Musician',
-    location: 'District 2, Ho Chi Minh City',
-    salary: '$100-200/show',
-    postedDate: '2025-01-09T10:00:00Z',
-    genres: ['Jazz', 'Blues'],
-    description:
-      'Need a jazz-savvy guitarist to join the venue house band. Must be able to read music and improvise well.',
-    requirements: ['Proficient in jazz guitar', 'Ability to read music and improvise'],
-  },
-  {
-    id: '4',
-    title: 'DJ for Grand Opening Event',
-    company: 'The Lounge Bar',
-    companyLogo:
-      'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=100&h=100&fit=crop',
-    type: 'DJ',
-    location: 'District 7, Ho Chi Minh City',
-    salary: '$500-750/event',
-    postedDate: '2025-01-06T10:00:00Z',
-    genres: ['EDM', 'House'],
-    description:
-      'Looking for an experienced DJ for bar grand opening. Expected attendance: 300+ guests.',
-    requirements: [
-      'Own equipment required',
-      'Experience mixing for large events',
-      'Having a fanbase is a plus',
-    ],
-  },
-]
+type JobType = 'all' | 'job_offer' | 'gig' | 'availability' | 'saved'
+
+interface JobWithCreator extends JobPost {
+  creatorName?: string
+  creatorAvatar?: string
+  creatorUsername?: string
+}
+
+const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
 
 const JobPool = () => {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedLocation, setSelectedLocation] = useState('all')
   const [activeTab, setActiveTab] = useState<JobType>('all')
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
+  const [jobs, setJobs] = useState<JobWithCreator[]>([])
+  const [loading, setLoading] = useState(true)
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Load saved jobs from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(SAVED_JOBS_KEY)
+    if (saved) {
+      try {
+        setSavedJobs(new Set(JSON.parse(saved)))
+      } catch (e) {
+        console.error('Failed to load saved jobs', e)
+      }
+    }
+  }, [])
+
+  // Save jobs to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(Array.from(savedJobs)))
+  }, [savedJobs])
+
+  // Debounce search input
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 500) // 500ms debounce
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [searchQuery])
+
+  // Fetch jobs from API
+  const fetchJobs = useCallback(async () => {
+    setLoading(true)
+    try {
+      let response
+
+      if (debouncedSearch.trim()) {
+        // Use search endpoint
+        response = await jobService.searchJobs(debouncedSearch, 1, 20)
+      } else {
+        // Use list endpoint with filters
+        const filters: JobPostFilters = {
+          status: 'published', // Only show published jobs
+          page: 1,
+          page_size: 20,
+        }
+
+        // Add tab filter (post_type)
+        if (activeTab !== 'all' && activeTab !== 'saved') {
+          filters.post_type = activeTab
+        }
+
+        // Add genre filter
+        if (selectedGenre !== 'all') {
+          filters.genres = [selectedGenre]
+        }
+
+        // Add location filter
+        if (selectedLocation !== 'all') {
+          filters.location = selectedLocation
+        }
+
+        response = await jobService.listJobs(filters)
+      }
+
+      // Fetch creator info for each job
+      const jobsWithCreators = await Promise.all(
+        response.posts.map(async (job) => {
+          try {
+            const creator = await userService.getUser(job.creator_id)
+            return {
+              ...job,
+              creatorName: creator.display_name || creator.username,
+              creatorAvatar: creator.avatar_url,
+              creatorUsername: creator.username,
+            }
+          } catch (err) {
+            console.error(`Failed to fetch creator for job ${job.id}`, err)
+            return {
+              ...job,
+              creatorName: 'Unknown',
+              creatorAvatar: undefined,
+              creatorUsername: undefined,
+            }
+          }
+        }),
+      )
+
+      setJobs(jobsWithCreators)
+    } catch (error) {
+      console.error('Failed to fetch jobs', error)
+      setJobs([])
+    } finally {
+      setLoading(false)
+    }
+  }, [debouncedSearch, activeTab, selectedGenre, selectedLocation])
+
+  // Fetch jobs when filters or search change
+  useEffect(() => {
+    if (activeTab !== 'saved') {
+      fetchJobs()
+    } else {
+      setLoading(false)
+    }
+  }, [activeTab, fetchJobs])
 
   const availableGenres = useMemo(() => {
     const genres = new Set<string>()
-    MOCK_JOBS.forEach((job) => job.genres.forEach((genre) => genres.add(genre)))
+    jobs.forEach((job) => job.genres?.forEach((genre) => genres.add(genre)))
     return Array.from(genres).sort()
-  }, [])
+  }, [jobs])
 
   const availableLocations = useMemo(() => {
     const locations = new Set<string>()
-    MOCK_JOBS.forEach((job) => {
-      const location = job.location.split(',')[0].trim()
-      locations.add(location)
+    jobs.forEach((job) => {
+      if (job.location) {
+        const location = job.location.split(',')[0].trim()
+        locations.add(location)
+      }
     })
     return Array.from(locations).sort()
-  }, [])
+  }, [jobs])
 
   const filteredJobs = useMemo(() => {
-    let filtered = MOCK_JOBS.filter((job) => {
-      const matchesSearch =
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesGenre = selectedGenre === 'all' || job.genres.includes(selectedGenre)
-      const matchesLocation = selectedLocation === 'all' || job.location.includes(selectedLocation)
-      return matchesSearch && matchesGenre && matchesLocation
-    })
-
-    // Filter by tab
-    if (activeTab === 'artist') {
-      filtered = filtered.filter((j) => j.type !== 'Venue')
-    } else if (activeTab === 'saved') {
-      filtered = filtered.filter((j) => savedJobs.has(j.id))
+    if (activeTab === 'saved') {
+      return jobs.filter((j) => savedJobs.has(j.id))
     }
-
-    return filtered
-  }, [searchQuery, selectedGenre, selectedLocation, activeTab, savedJobs])
+    return jobs
+  }, [jobs, activeTab, savedJobs])
 
   const hasActiveFilters =
     searchQuery !== '' || selectedGenre !== 'all' || selectedLocation !== 'all'
@@ -202,13 +243,11 @@ const JobPool = () => {
               </p>
             </div>
             <div className="shrink-0 relative z-10">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 w-full md:w-auto relative overflow-hidden group"
-              >
-                <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                <Plus className="w-4 h-4 mr-2 relative z-10" />
-                <span className="relative z-10">Post a Job</span>
+              <Button size="lg" className="w-full md:w-auto" asChild>
+                <Link href="/jobs/post">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Post a Job
+                </Link>
               </Button>
             </div>
           </div>
@@ -359,18 +398,22 @@ const JobPool = () => {
             <div className="flex-1 min-w-0">
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as JobType)}>
                 <div className="flex items-center justify-between mb-6">
-                  <TabsList className="grid w-full max-w-md grid-cols-4 bg-muted/50">
+                  <TabsList className="grid w-full max-w-xl grid-cols-5 bg-muted/50">
                     <TabsTrigger value="all" className="gap-1.5 text-xs">
                       <Sparkles className="w-3.5 h-3.5" />
                       All
                     </TabsTrigger>
-                    <TabsTrigger value="artist" className="gap-1.5 text-xs">
-                      <Music className="w-3.5 h-3.5" />
-                      Artists
+                    <TabsTrigger value="job_offer" className="gap-1.5 text-xs">
+                      <Briefcase className="w-3.5 h-3.5" />
+                      Jobs
                     </TabsTrigger>
-                    <TabsTrigger value="venue" className="gap-1.5 text-xs">
+                    <TabsTrigger value="gig" className="gap-1.5 text-xs">
+                      <Music className="w-3.5 h-3.5" />
+                      Gigs
+                    </TabsTrigger>
+                    <TabsTrigger value="availability" className="gap-1.5 text-xs">
                       <Building2 className="w-3.5 h-3.5" />
-                      Venues
+                      Availability
                     </TabsTrigger>
                     <TabsTrigger value="saved" className="gap-1.5 text-xs">
                       <Briefcase className="w-3.5 h-3.5" />
@@ -378,12 +421,18 @@ const JobPool = () => {
                     </TabsTrigger>
                   </TabsList>
                   <div className="text-sm text-muted-foreground hidden sm:block font-medium">
-                    {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+                    {loading
+                      ? '...'
+                      : `${filteredJobs.length} ${filteredJobs.length === 1 ? 'job' : 'jobs'}`}
                   </div>
                 </div>
 
                 <TabsContent value="all" className="mt-0">
-                  {filteredJobs.length > 0 ? (
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredJobs.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
                       {filteredJobs.map((job) => (
                         <JobCard
@@ -411,8 +460,40 @@ const JobPool = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="artist" className="mt-0">
-                  {filteredJobs.length > 0 ? (
+                <TabsContent value="job_offer" className="mt-0">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredJobs.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                      {filteredJobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          isSaved={savedJobs.has(job.id)}
+                          onToggleSave={handleToggleSave}
+                          onViewDetails={handleViewDetails}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-12 text-center">
+                      <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">No job offers found</h3>
+                      <p className="text-muted-foreground">
+                        No job offers match your current filters.
+                      </p>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="gig" className="mt-0">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredJobs.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
                       {filteredJobs.map((job) => (
                         <JobCard
@@ -427,22 +508,38 @@ const JobPool = () => {
                   ) : (
                     <Card className="p-12 text-center">
                       <Music className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No artist jobs found</h3>
-                      <p className="text-muted-foreground">
-                        No artist positions match your current filters.
-                      </p>
+                      <h3 className="text-lg font-semibold mb-2">No gigs found</h3>
+                      <p className="text-muted-foreground">No gigs match your current filters.</p>
                     </Card>
                   )}
                 </TabsContent>
 
-                <TabsContent value="venue" className="mt-0">
-                  <Card className="p-12 text-center">
-                    <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Coming Soon</h3>
-                    <p className="text-muted-foreground">
-                      Venue search functionality is currently under development.
-                    </p>
-                  </Card>
+                <TabsContent value="availability" className="mt-0">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredJobs.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                      {filteredJobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          isSaved={savedJobs.has(job.id)}
+                          onToggleSave={handleToggleSave}
+                          onViewDetails={handleViewDetails}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-12 text-center">
+                      <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">No availability posts found</h3>
+                      <p className="text-muted-foreground">
+                        No availability posts match your current filters.
+                      </p>
+                    </Card>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="saved" className="mt-0">
@@ -454,6 +551,7 @@ const JobPool = () => {
                           job={job}
                           isSaved={true}
                           onToggleSave={handleToggleSave}
+                          onViewDetails={handleViewDetails}
                         />
                       ))}
                     </div>

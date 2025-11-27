@@ -13,10 +13,18 @@ import {
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useState } from 'react'
-import type { Job } from '@/types/job'
+import { useRouter } from 'next/navigation'
+import { resolveMediaUrl } from '@/lib/utils'
+import type { JobPost } from '@/types/job'
+
+interface JobWithCreator extends JobPost {
+  creatorName?: string
+  creatorAvatar?: string
+  creatorUsername?: string
+}
 
 interface JobCardProps {
-  job: Job
+  job: JobWithCreator
   onApply?: (jobId: string) => void
   onViewDetails?: (jobId: string) => void
   onToggleSave?: (jobId: string, isSaved: boolean) => void
@@ -25,6 +33,7 @@ interface JobCardProps {
 
 const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }: JobCardProps) => {
   const [saved, setSaved] = useState(isSaved)
+  const router = useRouter()
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -44,27 +53,69 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
     return `${Math.floor(diffInDays / 30)} month${Math.floor(diffInDays / 30) !== 1 ? 's' : ''} ago`
   }
 
+  const formatSalary = () => {
+    if (!job.budget_min && !job.budget_max) return 'Negotiable'
+    
+    const currency = job.budget_currency || 'USD'
+    const currencySymbol = currency === 'VND' ? '₫' : currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '¥'
+    const period = job.payment_type ? `/${job.payment_type.replace('by', '').toLowerCase()}` : ''
+    
+    if (job.budget_min && job.budget_max) {
+      return `${currencySymbol}${job.budget_min}-${job.budget_max}${period}`
+    } else if (job.budget_min) {
+      return `${currencySymbol}${job.budget_min}+ ${period}`
+    } else if (job.budget_max) {
+      return `Up to ${currencySymbol}${job.budget_max}${period}`
+    }
+    return 'Negotiable'
+  }
+
+  const getJobType = () => {
+    // Return the 'type' field (band, musician, dj, producer)
+    if (job.type) {
+      return job.type.charAt(0).toUpperCase() + job.type.slice(1)
+    }
+    // Fallback to post_type
+    return job.post_type === 'job_offer' ? 'Job' : job.post_type === 'gig' ? 'Gig' : 'Availability'
+  }
+
+  const getLocation = () => {
+    if (job.location) {
+      return job.location_type ? `${job.location} (${job.location_type})` : job.location
+    }
+    return job.location_type || 'Remote'
+  }
+
   const handleSave = () => {
     const newSavedState = !saved
     setSaved(newSavedState)
     onToggleSave?.(job.id, newSavedState)
   }
 
+  const handleCreatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (job.creatorUsername) {
+      router.push(`/profile/${job.creatorUsername}`)
+    }
+  }
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-primary">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
-          <Avatar className="w-14 h-14 rounded-lg border-2 border-border">
-            <AvatarImage src={job.companyLogo} alt={job.company} />
-            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-              {job.company
-                .split(' ')
-                .map((word) => word[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
+          <button onClick={handleCreatorClick} className="shrink-0 cursor-pointer">
+            <Avatar className="w-14 h-14 rounded-lg border-2 border-border hover:border-primary transition-colors">
+              <AvatarImage src={resolveMediaUrl(job.creatorAvatar)} alt={job.creatorName || 'Unknown'} />
+              <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                {(job.creatorName || 'Unknown')
+                  .split(' ')
+                  .map((word) => word[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+          </button>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
@@ -72,7 +123,14 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
                 <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
                   {job.title}
                 </h3>
-                <CardDescription className="font-medium text-base">{job.company}</CardDescription>
+                <button 
+                  onClick={handleCreatorClick}
+                  className="text-left hover:underline"
+                >
+                  <CardDescription className="font-medium text-base">
+                    {job.creatorName || 'Unknown'}
+                  </CardDescription>
+                </button>
               </div>
               <Button
                 variant="ghost"
@@ -97,53 +155,57 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Briefcase className="w-4 h-4 shrink-0" />
-            <span className="truncate">{job.type}</span>
+            <span className="truncate">{getJobType()}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin className="w-4 h-4 shrink-0" />
-            <span className="truncate">{job.location}</span>
+            <span className="truncate">{getLocation()}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <DollarSign className="w-4 h-4 shrink-0" />
-            <span className="truncate">{job.salary}</span>
+            <span className="truncate">{formatSalary()}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 shrink-0" />
-            <span>{getTimeAgo(job.postedDate)}</span>
+            <span>{getTimeAgo(job.created_at)}</span>
           </div>
         </div>
 
         <Separator />
 
         {/* Genres */}
-        <div className="flex flex-wrap gap-2">
-          {job.genres.map((genre, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {genre}
-            </Badge>
-          ))}
-        </div>
+        {job.genres && job.genres.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {job.genres.map((genre, index) => (
+              <Badge key={index} variant="secondary" className="text-xs">
+                {genre}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Description */}
-        <p className="text-sm text-foreground/80 line-clamp-2 leading-relaxed">{job.description}</p>
+        <p className="text-sm text-foreground/80 line-clamp-2 leading-relaxed">
+          {job.brief_description || job.description}
+        </p>
 
-        {/* Requirements Preview */}
-        {job.requirements.length > 0 && (
+        {/* Required Skills Preview */}
+        {job.required_skills && job.required_skills.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              Requirements
+              Required Skills
             </p>
             <ul className="text-sm text-muted-foreground space-y-1.5">
-              {job.requirements.slice(0, 2).map((req, index) => (
+              {job.required_skills.slice(0, 2).map((skill, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-primary shrink-0">•</span>
-                  <span className="leading-relaxed">{req}</span>
+                  <span className="leading-relaxed">{skill}</span>
                 </li>
               ))}
-              {job.requirements.length > 2 && (
+              {job.required_skills.length > 2 && (
                 <li className="text-xs text-muted-foreground italic">
-                  +{job.requirements.length - 2} more requirement
-                  {job.requirements.length - 2 !== 1 ? 's' : ''}
+                  +{job.required_skills.length - 2} more skill
+                  {job.required_skills.length - 2 !== 1 ? 's' : ''}
                 </li>
               )}
             </ul>
