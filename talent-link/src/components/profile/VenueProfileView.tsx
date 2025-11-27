@@ -1,10 +1,13 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import EventCard from '@/components/event/EventCard'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tab'
-import { MapPin, Phone, Mail, Globe, Calendar } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MapPin, Phone, Mail, Globe, Building2 } from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
 
@@ -91,14 +94,13 @@ export function VenueProfileView({
   const location = [profile.city, profile.country].filter(Boolean).join(', ')
   const phone = profile.phone_number || ''
   const email = profile.email || ''
-  const website = (profile as any).website_url || ''
-  const description =
-    (profile as any).open_hour || (profile as any).detail_bio || 'No activity description'
-  const capacity = (profile as any).capacity || ''
-  const amenities = ((profile as any).convenient_facilities as string[]) || []
-  const type = Array.isArray((profile as any).business_types)
-    ? (profile as any).business_types.join(', ')
-    : (profile as any).business_type || ''
+  const website = profile.website_url || ''
+  const description = profile.open_hour || profile.detail_bio || 'No description available yet.'
+  const capacity = profile.capacity || ''
+  const amenities = profile.convenient_facilities || []
+  const type = Array.isArray(profile.business_types)
+    ? profile.business_types.join(', ')
+    : profile.business_types?.[0] || ''
 
   const formatWebsiteUrl = (url: string): string => {
     if (!url) return ''
@@ -108,121 +110,129 @@ export function VenueProfileView({
 
   return (
     <main className="flex-1">
-      <div className="relative h-80 w-full">
-        <Image
-          unoptimized
-          src={
-            coverUrl
-              ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
-              : '/images/auth/auth-photo-1.jpg'
-          }
-          alt={venueName}
-          fill
-          sizes="100vw"
-          className="object-cover"
+      <div className="h-80 md:h-100 bg-gradient-dark relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-90"
+          style={{
+            backgroundImage: `url(${
+              coverUrl
+                ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
+                : '/images/profile/background-default.jpg'
+            })`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
         />
-        <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-background" />
       </div>
 
       <div className="px-6 md:px-8 -mt-20 relative z-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="bg-card rounded-lg shadow-elegant p-8 mb-8">
-            <div className="flex flex-col md:flex-row gap-8">
-              <Image
-                unoptimized
-                src={
-                  avatarUrl
-                    ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
-                    : '/images/auth/auth-photo-1.jpg'
-                }
-                alt={venueName}
-                width={128}
-                height={128}
-                className="w-32 h-32 rounded-lg object-cover border-4 border-background shadow-lg"
-              />
+        <div className="mx-auto max-w-[1320px]">
+          <Card className="mb-8 bg-card border-border/40 shadow-lg">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                <Image
+                  unoptimized
+                  src={
+                    avatarUrl
+                      ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
+                      : '/images/profile/avatar-default.svg'
+                  }
+                  alt={venueName}
+                  width={128}
+                  height={128}
+                  className="w-32 h-32 rounded-2xl object-cover border-4 border-background shadow-lg shrink-0"
+                />
 
-              <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                  <div>
-                    <h1 className="text-4xl font-bold mb-2 bg-primary bg-clip-text text-transparent">
-                      {venueName}
-                    </h1>
-                    <p className="text-muted-foreground text-lg">{type || 'Performance Venue'}</p>
-                  </div>
-
-                  {isOwner ? (
-                    <Button onClick={onEdit} className="px-4 py-2">
-                      Update Information
-                    </Button>
-                  ) : null}
-                </div>
-
-                <p className="text-foreground/90 mb-6 leading-relaxed">{description}</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {location ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-5 h-5" />
-                      <span>{location}</span>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <div>
+                      <h1 className="text-4xl font-bold mb-2">{venueName}</h1>
+                      <p className="text-muted-foreground text-lg">{type || 'Performance Venue'}</p>
                     </div>
-                  ) : null}
-                  {phone ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="w-5 h-5" />
-                      <span>{phone}</span>
-                    </div>
-                  ) : null}
-                  {email ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="w-5 h-5" />
-                      <span>{email}</span>
-                    </div>
-                  ) : null}
-                  {website ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Globe className="w-5 h-5" />
-                      <a
-                        href={formatWebsiteUrl(website)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-primary transition-colors"
-                      >
-                        {website}
-                      </a>
-                    </div>
-                  ) : null}
-                </div>
 
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Amenities & Services
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {amenities.length ? (
-                      amenities.map((amenity) => (
-                        <span
-                          key={amenity}
-                          className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                        >
-                          {amenity}
-                        </span>
-                      ))
+                    {isOwner ? (
+                      <Button onClick={onEdit} size="lg">
+                        Update Information
+                      </Button>
                     ) : (
-                      <span className="text-muted-foreground">Amenities not updated</span>
+                      <Button size="lg" variant="default" asChild>
+                        <Link href="/booking">Contact Venue</Link>
+                      </Button>
                     )}
                   </div>
-                  {capacity ? (
-                    <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
-                  ) : null}
+
+                  <p className="text-foreground/90 mb-6 leading-relaxed">{description}</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {location ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="w-5 h-5" />
+                        <span>{location}</span>
+                      </div>
+                    ) : null}
+                    {phone ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-5 h-5" />
+                        <a href={`tel:${phone}`} className="hover:text-primary transition-colors">
+                          {phone}
+                        </a>
+                      </div>
+                    ) : null}
+                    {email ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="w-5 h-5" />
+                        <a
+                          href={`mailto:${email}`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          {email}
+                        </a>
+                      </div>
+                    ) : null}
+                    {website ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Globe className="w-5 h-5" />
+                        <a
+                          href={formatWebsiteUrl(website)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors"
+                        >
+                          {website}
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <Building2 className="w-5 h-5" />
+                      Amenities & Services
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {amenities.length ? (
+                        amenities.map((amenity) => (
+                          <Badge key={amenity} variant="secondary">
+                            {amenity}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground">Amenities not updated</span>
+                      )}
+                    </div>
+                    {capacity ? (
+                      <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           <div className="mb-12">
             <Tabs defaultValue="upcoming" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8 gap-8">
+              <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
                 <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 <TabsTrigger value="ongoing">Ongoing</TabsTrigger>
                 <TabsTrigger value="past">Past</TabsTrigger>

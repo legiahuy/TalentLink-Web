@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { Camera, Save, UploadCloud, X, Pencil, Trash2 } from 'lucide-react'
+import { Camera, Save, UploadCloud, X, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -91,9 +91,29 @@ export default function ArtistProfileEditor() {
   const [savingContact, setSavingContact] = useState(false)
   const [savingSocial, setSavingSocial] = useState(false)
   const [savingExp, setSavingExp] = useState(false)
-  const [savingGenres, setSavingGenres] = useState(false)
   const [deletingExpId, setDeletingExpId] = useState<string | null>(null)
   const [availableGenres, setAvailableGenres] = useState<Option[]>([])
+
+  // Initial values for change detection
+  const [initialFormBasic, setInitialFormBasic] = useState({
+    display_name: '',
+    brief_bio: '',
+    detail_bio: '',
+    city: '',
+    country: '',
+    genres: [] as string[],
+  })
+
+  const [initialFormContact, setInitialFormContact] = useState({
+    email: '',
+    phone_number: '',
+  })
+
+  const [initialFormSocial, setInitialFormSocial] = useState({
+    youtube_url: '',
+    instagram_url: '',
+    facebook_url: '',
+  })
 
   const [formBasic, setFormBasic] = useState({
     display_name: '',
@@ -136,23 +156,29 @@ export default function ArtistProfileEditor() {
         if (meRes) {
           setMe(meRes)
           const normalizedGenres = (meRes.genres ?? []).map((genre) => genre.name).filter(Boolean)
-          setFormBasic({
+          const basicData = {
             display_name: meRes.display_name ?? '',
             brief_bio: meRes.brief_bio ?? '',
             detail_bio: meRes.detail_bio ?? '',
             city: meRes.city ?? '',
             country: meRes.country ?? '',
             genres: normalizedGenres,
-          })
-          setFormContact({
+          }
+          const contactData = {
             email: meRes.email ?? '',
             phone_number: meRes.phone_number ?? '',
-          })
-          setFormSocial({
+          }
+          const socialData = {
             youtube_url: meRes.youtube_url ?? '',
             instagram_url: meRes.instagram_url ?? '',
             facebook_url: meRes.facebook_url ?? '',
-          })
+          }
+          setInitialFormBasic(basicData)
+          setInitialFormContact(contactData)
+          setInitialFormSocial(socialData)
+          setFormBasic(basicData)
+          setFormContact(contactData)
+          setFormSocial(socialData)
           try {
             const exps = await userService.listUserExperiences(meRes.username)
             setExperiences(exps || [])
@@ -261,10 +287,42 @@ export default function ArtistProfileEditor() {
   const onSocialChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormSocial((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
+  // Helper functions to check for changes
+  const hasBasicChanges = useMemo(() => {
+    return (
+      formBasic.display_name.trim() !== (initialFormBasic.display_name ?? '').trim() ||
+      formBasic.brief_bio.trim() !== (initialFormBasic.brief_bio ?? '').trim() ||
+      formBasic.detail_bio.trim() !== (initialFormBasic.detail_bio ?? '').trim() ||
+      formBasic.city.trim() !== (initialFormBasic.city ?? '').trim() ||
+      formBasic.country.trim() !== (initialFormBasic.country ?? '').trim() ||
+      JSON.stringify([...formBasic.genres].sort()) !==
+        JSON.stringify([...initialFormBasic.genres].sort())
+    )
+  }, [formBasic, initialFormBasic])
+
+  const hasContactChanges = useMemo(() => {
+    return (
+      formContact.email.trim() !== (initialFormContact.email ?? '').trim() ||
+      formContact.phone_number.trim() !== (initialFormContact.phone_number ?? '').trim()
+    )
+  }, [formContact, initialFormContact])
+
+  const hasSocialChanges = useMemo(() => {
+    return (
+      formSocial.youtube_url.trim() !== (initialFormSocial.youtube_url ?? '').trim() ||
+      formSocial.instagram_url.trim() !== (initialFormSocial.instagram_url ?? '').trim() ||
+      formSocial.facebook_url.trim() !== (initialFormSocial.facebook_url ?? '').trim()
+    )
+  }, [formSocial, initialFormSocial])
+
   const handleSaveBasic = async (event?: React.FormEvent) => {
     event?.preventDefault()
+    if (!hasBasicChanges) return
+
     try {
       setSavingBasic(true)
+
+      // Save basic info (excluding genres)
       const payload = {
         display_name: formBasic.display_name.trim() || undefined,
         brief_bio: formBasic.brief_bio.trim() || undefined,
@@ -273,35 +331,42 @@ export default function ArtistProfileEditor() {
         country: formBasic.country.trim() || undefined,
       }
       const updated = await userService.updateBasic(payload)
+
+      // Save genres if changed
+      if (
+        JSON.stringify([...formBasic.genres].sort()) !==
+        JSON.stringify([...initialFormBasic.genres].sort())
+      ) {
+        if (me?.id) {
+          await userService.updateGenres(me.username, { name: formBasic.genres })
+          // Refresh user data to get updated genres
+          const refreshed = await userService.getMe()
+          setMe(refreshed)
+          const normalizedGenres = (refreshed.genres ?? [])
+            .map((genre) => genre.name)
+            .filter(Boolean)
+          setFormBasic((prev) => ({ ...prev, genres: normalizedGenres }))
+          setInitialFormBasic((prev) => ({ ...prev, genres: normalizedGenres }))
+        }
+      }
+
       toast.success('Basic information saved')
       setMe((prev) => (prev ? { ...prev, ...updated } : prev))
+
+      // Update initial values after save
+      setInitialFormBasic({
+        display_name: updated.display_name ?? '',
+        brief_bio: updated.brief_bio ?? '',
+        detail_bio: updated.detail_bio ?? '',
+        city: updated.city ?? '',
+        country: updated.country ?? '',
+        genres: formBasic.genres, // Use current genres after update
+      })
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Update failed')
       toast.error(message)
     } finally {
       setSavingBasic(false)
-    }
-  }
-
-  const handleSaveGenres = async () => {
-    if (!me?.id) {
-      toast.error('You need to log in')
-      return
-    }
-    try {
-      setSavingGenres(true)
-      await userService.updateGenres(me.id, { name: formBasic.genres })
-      toast.success('Genres updated')
-      // Refresh user data to get updated genres
-      const updated = await userService.getMe()
-      setMe(updated)
-      const normalizedGenres = (updated.genres ?? []).map((genre) => genre.name).filter(Boolean)
-      setFormBasic((prev) => ({ ...prev, genres: normalizedGenres }))
-    } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Failed to update genres')
-      toast.error(message)
-    } finally {
-      setSavingGenres(false)
     }
   }
 
@@ -324,6 +389,13 @@ export default function ArtistProfileEditor() {
         setAvatarPreviewUrl(null)
         setCoverPreviewUrl(null)
         setCacheBust(Date.now())
+        // Refresh avatar/cover URLs
+        const [avatarRes, coverRes] = await Promise.all([
+          userService.getMyAvatar().catch(() => null),
+          userService.getMyCover().catch(() => null),
+        ])
+        setAvatarUrl(avatarRes?.file_url || null)
+        setCoverUrl(coverRes?.file_url || null)
         window.dispatchEvent(
           new CustomEvent('profile:updated', { detail: { what: 'avatar:cover' } }),
         )
@@ -378,6 +450,8 @@ export default function ArtistProfileEditor() {
   }
 
   const handleSaveContact = async () => {
+    if (!hasContactChanges) return
+
     try {
       setSavingContact(true)
       const updated = await userService.updateContact({
@@ -385,10 +459,12 @@ export default function ArtistProfileEditor() {
         phone_number: formContact.phone_number?.trim() || undefined,
       })
       toast.success('Contact information saved')
-      setFormContact({
+      const newContact = {
         email: updated.email ?? formContact.email,
         phone_number: updated.phone_number ?? formContact.phone_number,
-      })
+      }
+      setFormContact(newContact)
+      setInitialFormContact(newContact)
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'contact' } }))
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to update contact')
@@ -399,6 +475,8 @@ export default function ArtistProfileEditor() {
   }
 
   const handleSaveSocial = async () => {
+    if (!hasSocialChanges) return
+
     try {
       setSavingSocial(true)
       const updated = await userService.updateSocial({
@@ -407,11 +485,13 @@ export default function ArtistProfileEditor() {
         facebook_url: formSocial.facebook_url?.trim() || undefined,
       })
       toast.success('Social media links saved')
-      setFormSocial({
+      const newSocial = {
         youtube_url: updated.youtube_url ?? formSocial.youtube_url,
         instagram_url: updated.instagram_url ?? formSocial.instagram_url,
         facebook_url: updated.facebook_url ?? formSocial.facebook_url,
-      })
+      }
+      setFormSocial(newSocial)
+      setInitialFormSocial(newSocial)
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'social' } }))
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to update social media')
@@ -810,9 +890,18 @@ export default function ArtistProfileEditor() {
                   title="Main Information"
                   description="Share what stands out about you to attract organizers."
                   action={
-                    <Button onClick={handleSaveBasic} disabled={savingBasic}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {savingBasic ? 'Saving...' : 'Save Changes'}
+                    <Button onClick={handleSaveBasic} disabled={savingBasic || !hasBasicChanges}>
+                      {savingBasic ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Changes
+                        </>
+                      )}
                     </Button>
                   }
                 >
@@ -884,17 +973,6 @@ export default function ArtistProfileEditor() {
                         placeholder="Select genres..."
                         className="w-full"
                       />
-                      <div className="mt-2 flex justify-end">
-                        <Button
-                          type="button"
-                          onClick={handleSaveGenres}
-                          disabled={savingGenres}
-                          size="sm"
-                          variant="outline"
-                        >
-                          {savingGenres ? 'Saving...' : 'Save Genres'}
-                        </Button>
-                      </div>
                     </div>
                   </form>
                 </SectionCard>
@@ -905,9 +983,21 @@ export default function ArtistProfileEditor() {
                   title="Profile Photos"
                   description="Profile picture and cover photo will appear on your public profile page."
                   action={
-                    <Button onClick={handleSaveImages} disabled={savingImages}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {savingImages ? 'Saving...' : 'Save Photos'}
+                    <Button
+                      onClick={handleSaveImages}
+                      disabled={savingImages || (!avatarFile && !coverFile)}
+                    >
+                      {savingImages ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Photos
+                        </>
+                      )}
                     </Button>
                   }
                 >
@@ -975,8 +1065,7 @@ export default function ArtistProfileEditor() {
                   title="Photo Gallery"
                   description="Select your best moments to showcase your performance style."
                   action={
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium">
-                      {uploadingGallery ? 'Uploading...' : 'Add Photos'}
+                    <>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/gif,image/webp"
@@ -984,8 +1073,27 @@ export default function ArtistProfileEditor() {
                         className="hidden"
                         onChange={handleAddGallery}
                         disabled={uploadingGallery}
+                        id="gallery-upload"
                       />
-                    </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={uploadingGallery}
+                        onClick={() => document.getElementById('gallery-upload')?.click()}
+                      >
+                        {uploadingGallery ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="mr-2 h-4 w-4" />
+                            Add Photos
+                          </>
+                        )}
+                      </Button>
+                    </>
                   }
                 >
                   {gallery.length === 0 ? (
@@ -1077,15 +1185,21 @@ export default function ArtistProfileEditor() {
                   title="Experience & Services"
                   description="Update your standout projects, skills, and services."
                   action={
-                    <Button onClick={handleSaveExperience} disabled={savingExp}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {savingExp
-                        ? expForm.id
-                          ? 'Updating...'
-                          : 'Saving...'
-                        : expForm.id
-                          ? 'Update'
-                          : 'Save New Item'}
+                    <Button
+                      onClick={handleSaveExperience}
+                      disabled={savingExp || (!expForm.description.trim() && !expForm.title.trim())}
+                    >
+                      {savingExp ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {expForm.id ? 'Updating...' : 'Saving...'}
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          {expForm.id ? 'Update' : 'Save New Item'}
+                        </>
+                      )}
                     </Button>
                   }
                 >
@@ -1196,9 +1310,21 @@ export default function ArtistProfileEditor() {
                   title="Contact"
                   description="This information helps organizers easily connect with you."
                   action={
-                    <Button onClick={handleSaveContact} disabled={savingContact}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {savingContact ? 'Saving...' : 'Save Contact'}
+                    <Button
+                      onClick={handleSaveContact}
+                      disabled={savingContact || !hasContactChanges}
+                    >
+                      {savingContact ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Contact
+                        </>
+                      )}
                     </Button>
                   }
                 >
@@ -1231,9 +1357,18 @@ export default function ArtistProfileEditor() {
                   title="Social Media"
                   description="Link your main channels for fans and partners to follow you."
                   action={
-                    <Button onClick={handleSaveSocial} disabled={savingSocial}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {savingSocial ? 'Saving...' : 'Save Links'}
+                    <Button onClick={handleSaveSocial} disabled={savingSocial || !hasSocialChanges}>
+                      {savingSocial ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Links
+                        </>
+                      )}
                     </Button>
                   }
                 >

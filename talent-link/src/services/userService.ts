@@ -175,11 +175,11 @@ export const userService = {
   // ===== GENRES =====
   getGenres: async (): Promise<Genre[]> => {
     const res = await axiosClient.get('/users/genres')
-    return res.data?.data ?? res.data ?? []
+    return res.data?.genres ?? res.data ?? []
   },
 
-  updateGenres: async (userId: string, payload: UserGenresUpdatePayload): Promise<User> => {
-    const res = await axiosClient.put(`/users/genres/${userId}`, payload)
+  updateGenres: async (username: string, payload: UserGenresUpdatePayload): Promise<User> => {
+    const res = await axiosClient.put(`/users/genres/${username}`, payload)
     return res.data?.data ?? res.data
   },
 }

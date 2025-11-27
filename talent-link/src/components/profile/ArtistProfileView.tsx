@@ -286,7 +286,7 @@ export function ArtistProfileView({
                 </Card>
               </section>
 
-              <section>
+              {/* <section>
                 <h2 className="text-2xl font-semibold mb-4">Services</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
@@ -307,7 +307,7 @@ export function ArtistProfileView({
                     </div>
                   </CardContent>
                 </Card>
-              </section>
+              </section> */}
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Photos</h2>
