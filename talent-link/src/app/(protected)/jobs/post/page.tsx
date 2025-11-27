@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Briefcase, Loader2, Plus, X } from 'lucide-react'
+import { ArrowLeft, Briefcase, Loader2, Plus, X } from 'lucide-react'
 
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
@@ -24,43 +24,49 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const ROLE_OPTIONS: { label: string; value: CreateJobPostRequest['type'] }[] = [
+type PostTypeValue = NonNullable<CreateJobPostRequest['post_type']>
+type RoleTypeValue = NonNullable<CreateJobPostRequest['type']>
+type RecruitmentTypeValue = NonNullable<CreateJobPostRequest['recruitment_type']>
+type ExperienceLevelValue = NonNullable<CreateJobPostRequest['experience_level']>
+type PaymentTypeValue = NonNullable<CreateJobPostRequest['payment_type']>
+type StatusValue = NonNullable<CreateJobPostRequest['status']>
+
+const ROLE_OPTIONS: { label: string; value: RoleTypeValue }[] = [
   { label: 'Musician / Artist', value: 'musician' },
   { label: 'Band', value: 'band' },
   { label: 'DJ', value: 'dj' },
   { label: 'Producer', value: 'producer' },
 ]
 
-const POST_TYPES: { label: string; value: CreateJobPostRequest['post_type'] }[] = [
+const POST_TYPES: { label: string; value: PostTypeValue }[] = [
   { label: 'Job Offer', value: 'job_offer' },
   { label: 'Gig / One-off', value: 'gig' },
   { label: 'Talent Availability', value: 'availability' },
 ]
 
-const EMPLOYMENT_TYPES: { label: string; value: CreateJobPostRequest['recruitment_type'] }[] = [
+const EMPLOYMENT_TYPES: { label: string; value: RecruitmentTypeValue }[] = [
   { label: 'Full Time', value: 'full_time' },
   { label: 'Part Time', value: 'part_time' },
   { label: 'Flexible / Session Based', value: 'flexible' },
 ]
 
-const EXPERIENCE_LEVELS: { label: string; value: CreateJobPostRequest['experience_level'] }[] = [
+const EXPERIENCE_LEVELS: { label: string; value: ExperienceLevelValue }[] = [
   { label: 'Beginner', value: 'beginner' },
   { label: 'Intermediate', value: 'intermediate' },
   { label: 'Expert', value: 'expert' },
   { label: 'Any experience', value: 'any' },
 ]
 
-const PAYMENT_TYPES: { label: string; value: CreateJobPostRequest['payment_type'] }[] = [
+const PAYMENT_TYPES: { label: string; value: PaymentTypeValue }[] = [
   { label: 'Per Show', value: 'bySession' },
   { label: 'Per Hour', value: 'byHour' },
   { label: 'Per Project', value: 'byProject' },
   { label: 'Per Month', value: 'byMonth' },
 ]
 
-const STATUS_OPTIONS: { label: string; value: NonNullable<CreateJobPostRequest['status']> }[] = [
+const STATUS_OPTIONS: { label: string; value: StatusValue }[] = [
   { label: 'Publish immediately', value: 'published' },
   { label: 'Save as draft', value: 'draft' },
 ]
@@ -72,19 +78,16 @@ const JobPostFormPage = () => {
 
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
-  const [postType, setPostType] = useState<CreateJobPostRequest['post_type']>('job_offer')
-  const [roleType, setRoleType] = useState<CreateJobPostRequest['type']>('musician')
+  const [postType, setPostType] = useState<PostTypeValue>('job_offer')
+  const [roleType, setRoleType] = useState<RoleTypeValue>('musician')
   const [location, setLocation] = useState('')
-  const [employmentType, setEmploymentType] =
-    useState<CreateJobPostRequest['recruitment_type']>('flexible')
-  const [experienceLevel, setExperienceLevel] =
-    useState<CreateJobPostRequest['experience_level']>('any')
+  const [employmentType, setEmploymentType] = useState<RecruitmentTypeValue>('flexible')
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevelValue>('any')
   const [salaryMin, setSalaryMin] = useState('')
   const [salaryMax, setSalaryMax] = useState('')
   const [salaryCurrency, setSalaryCurrency] =
     useState<NonNullable<CreateJobPostRequest['budget_currency']>>(defaultCurrency)
-  const [salaryPeriod, setSalaryPeriod] =
-    useState<CreateJobPostRequest['payment_type']>('bySession')
+  const [salaryPeriod, setSalaryPeriod] = useState<PaymentTypeValue>('bySession')
   const [salaryNegotiable, setSalaryNegotiable] = useState(false)
   const [description, setDescription] = useState('')
   const [requirements, setRequirements] = useState<string[]>([])
@@ -95,7 +98,7 @@ const JobPostFormPage = () => {
   const [deadline, setDeadline] = useState('')
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [autoNotify, setAutoNotify] = useState(false)
-  const [status, setStatus] = useState<NonNullable<CreateJobPostRequest['status']>>('published')
+  const [status, setStatus] = useState<StatusValue>('published')
 
   const [genres, setGenres] = useState<Genre[]>([])
   const [loadingGenres, setLoadingGenres] = useState(true)
@@ -229,23 +232,21 @@ const JobPostFormPage = () => {
         <div className="absolute bottom-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-primary/50 to-transparent" />
 
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
-          <div className="flex flex-col items-center text-center gap-6">
-            <Briefcase className="w-12 h-12 text-white drop-shadow-lg" />
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight text-white">
-                Post a New Opportunity
-              </h1>
-              <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto">
-                Share detailed information about your gig or job opening so artists can quickly
-                understand the expectations, budget, and how to apply.
-              </p>
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-4 text-foreground">
+              <div className="space-y-3">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  Post a New Opportunity
+                </h1>
+                <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+                  Share detailed information about your gig or job opening so artists can quickly
+                  understand expectations, compensation, and how to reach you.
+                </p>
+              </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button asChild variant="secondary">
+            <div className="flex flex-col gap-3">
+              <Button asChild size="lg">
                 <Link href="/jobs/my-posts">View my posted jobs</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link href="/jobs">Back to jobs</Link>
               </Button>
             </div>
           </div>
@@ -257,7 +258,11 @@ const JobPostFormPage = () => {
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-        <div className="mx-auto w-full max-w-[960px] px-4 md:px-6 py-8 md:py-12 relative z-10">
+        <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-12 relative z-10">
+          <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
           <Card className="shadow-lg border-border/50 bg-card/70 backdrop-blur-sm">
             <CardHeader className="border-b border-border/60">
               <CardTitle className="text-2xl font-semibold">Job Details</CardTitle>
@@ -266,386 +271,390 @@ const JobPostFormPage = () => {
               </p>
             </CardHeader>
             <CardContent className="pt-6">
-              <form className="space-y-8" onSubmit={handleSubmit}>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="col-span-full space-y-2">
-                    <Label htmlFor="title">Job title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g. Acoustic singer for Friday night residency"
-                      value={title}
-                      onChange={(event) => setTitle(event.target.value)}
-                      required
-                    />
-                  </div>
+              <form className="space-y-10" onSubmit={handleSubmit}>
+                <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Job title *</Label>
+                        <Input
+                          id="title"
+                          placeholder="e.g. Acoustic singer for Friday night residency"
+                          value={title}
+                          onChange={(event) => setTitle(event.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="summary">Short summary</Label>
+                        <Input
+                          id="summary"
+                          placeholder="One sentence overview that appears in listings"
+                          value={summary}
+                          onChange={(event) => setSummary(event.target.value)}
+                        />
+                      </div>
+                    </div>
 
-                  <div className="col-span-full space-y-2">
-                    <Label htmlFor="summary">Short summary</Label>
-                    <Input
-                      id="summary"
-                      placeholder="One sentence overview that appears in listings"
-                      value={summary}
-                      onChange={(event) => setSummary(event.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="postType">Opportunity type *</Label>
-                    <Select
-                      value={postType}
-                      onValueChange={(value) => setPostType(value as typeof postType)}
-                    >
-                      <SelectTrigger id="postType">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {POST_TYPES.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="roleType">Talent profile *</Label>
-                    <Select
-                      value={roleType}
-                      onValueChange={(value) => setRoleType(value as typeof roleType)}
-                    >
-                      <SelectTrigger id="roleType">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ROLE_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location *</Label>
-                    <Input
-                      id="location"
-                      placeholder="District 1, Ho Chi Minh City"
-                      value={location}
-                      onChange={(event) => setLocation(event.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="employmentType">Engagement type *</Label>
-                    <Select
-                      value={employmentType}
-                      onValueChange={(value) => setEmploymentType(value as typeof employmentType)}
-                    >
-                      <SelectTrigger id="employmentType">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EMPLOYMENT_TYPES.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="experienceLevel">Experience level *</Label>
-                    <Select
-                      value={experienceLevel}
-                      onValueChange={(value) => setExperienceLevel(value as typeof experienceLevel)}
-                    >
-                      <SelectTrigger id="experienceLevel">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPERIENCE_LEVELS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Visibility *</Label>
-                    <Select
-                      value={status}
-                      onValueChange={(value) => setStatus(value as typeof status)}
-                    >
-                      <SelectTrigger id="status">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Compensation *</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Provide a range so artists can self-select quickly.
-                    </p>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="salaryMin">Minimum budget *</Label>
-                      <Input
-                        id="salaryMin"
-                        type="number"
-                        min={0}
-                        placeholder="3000000"
-                        value={salaryMin}
-                        onChange={(event) => setSalaryMin(event.target.value)}
+                      <Label htmlFor="description">Job description *</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Share responsibilities, expectations, stage setup, and how artists will collaborate with your venue."
+                        value={description}
+                        onChange={(event) => setDescription(event.target.value)}
+                        rows={8}
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="salaryMax">Maximum budget</Label>
-                      <Input
-                        id="salaryMax"
-                        type="number"
-                        min={0}
-                        placeholder="5000000"
-                        value={salaryMax}
-                        onChange={(event) => setSalaryMax(event.target.value)}
-                      />
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="schedule">Schedule / time commitment</Label>
+                        <Input
+                          id="schedule"
+                          placeholder="Every Friday, 8 PM - 10 PM"
+                          value={schedule}
+                          onChange={(event) => setSchedule(event.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="deadline">Application deadline</Label>
+                        <Input
+                          id="deadline"
+                          type="date"
+                          value={deadline}
+                          onChange={(event) => setDeadline(event.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="currency">Currency</Label>
-                      <Select
-                        value={salaryCurrency}
-                        onValueChange={(value) => setSalaryCurrency(value as typeof salaryCurrency)}
-                      >
-                        <SelectTrigger id="currency">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="VND">VND (₫)</SelectItem>
-                          <SelectItem value="USD">USD ($)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentType">Payment cadence *</Label>
-                      <Select
-                        value={salaryPeriod}
-                        onValueChange={(value) => setSalaryPeriod(value as typeof salaryPeriod)}
-                      >
-                        <SelectTrigger id="paymentType">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PAYMENT_TYPES.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
+
+                    <div className="space-y-4">
+                      <Label>Key requirements</Label>
+                      <div className="flex flex-col gap-2 md:flex-row">
+                        <Input
+                          placeholder="e.g. Minimum 2 years of live performance experience"
+                          value={currentRequirement}
+                          onChange={(event) => setCurrentRequirement(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              addRequirement()
+                            }
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={addRequirement}>
+                          Add
+                        </Button>
+                      </div>
+                      {requirements.length > 0 && (
+                        <div className="space-y-2">
+                          {requirements.map((item, index) => (
+                            <div
+                              key={`${item}-${index}`}
+                              className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
+                            >
+                              <span className="text-primary">•</span>
+                              <span className="flex-1 text-sm">{item}</span>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() => removeRequirement(index)}
+                                aria-label="Remove requirement"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <label className="flex items-center space-x-2 text-sm">
-                    <input
-                      type="checkbox"
-                      id="negotiable"
-                      checked={salaryNegotiable}
-                      onChange={(event) => setSalaryNegotiable(event.target.checked)}
-                      className="h-4 w-4 rounded border border-border"
-                    />
-                    <span className="cursor-pointer">Budget is negotiable</span>
-                  </label>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <Label>Genres *</Label>
-                  {loadingGenres ? (
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from({ length: 6 }).map((_, index) => (
-                        <Skeleton key={index} className="h-8 w-20 rounded-full" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {genres.map((genre) => (
-                        <Badge
-                          key={genre.name}
-                          variant={selectedGenres.includes(genre.name) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1 text-sm"
-                          onClick={() => toggleGenre(genre.name)}
-                        >
-                          {genre.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  {selectedGenres.length === 0 && (
-                    <p className="text-xs text-destructive">Select at least one genre.</p>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Job description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Share responsibilities, expectations, stage setup, and how artists will collaborate with your venue."
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="schedule">Schedule / time commitment</Label>
-                    <Input
-                      id="schedule"
-                      placeholder="Every Friday, 8 PM - 10 PM"
-                      value={schedule}
-                      onChange={(event) => setSchedule(event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="deadline">Application deadline</Label>
-                    <Input
-                      id="deadline"
-                      type="date"
-                      value={deadline}
-                      onChange={(event) => setDeadline(event.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <Label>Key requirements</Label>
-                  <div className="flex flex-col gap-2 md:flex-row">
-                    <Input
-                      placeholder="e.g. Minimum 2 years of live performance experience"
-                      value={currentRequirement}
-                      onChange={(event) => setCurrentRequirement(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault()
-                          addRequirement()
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" onClick={addRequirement}>
-                      Add
-                    </Button>
-                  </div>
-                  {requirements.length > 0 && (
-                    <div className="space-y-2">
-                      {requirements.map((item, index) => (
-                        <div
-                          key={`${item}-${index}`}
-                          className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
-                        >
-                          <span className="text-primary">•</span>
-                          <span className="flex-1 text-sm">{item}</span>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6"
-                            onClick={() => removeRequirement(index)}
-                            aria-label="Remove requirement"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-3">
-                  <Label>Benefits</Label>
-                  <div className="flex flex-col gap-2 md:flex-row">
-                    <Input
-                      placeholder="e.g. Professional sound engineer provided"
-                      value={currentBenefit}
-                      onChange={(event) => setCurrentBenefit(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault()
-                          addBenefit()
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" onClick={addBenefit}>
-                      Add
-                    </Button>
-                  </div>
-                  {benefits.length > 0 && (
-                    <div className="space-y-2">
-                      {benefits.map((item, index) => (
-                        <div
-                          key={`${item}-${index}`}
-                          className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
-                        >
-                          <span className="text-primary">•</span>
-                          <span className="flex-1 text-sm">{item}</span>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6"
-                            onClick={() => removeBenefit(index)}
-                            aria-label="Remove benefit"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                    <div className="space-y-4">
+                      <Label>Benefits</Label>
+                      <div className="flex flex-col gap-2 md:flex-row">
+                        <Input
+                          placeholder="e.g. Professional sound engineer provided"
+                          value={currentBenefit}
+                          onChange={(event) => setCurrentBenefit(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              addBenefit()
+                            }
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={addBenefit}>
+                          Add
+                        </Button>
+                      </div>
+                      {benefits.length > 0 && (
+                        <div className="space-y-2">
+                          {benefits.map((item, index) => (
+                            <div
+                              key={`${item}-${index}`}
+                              className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
+                            >
+                              <span className="text-primary">•</span>
+                              <span className="flex-1 text-sm">{item}</span>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() => removeBenefit(index)}
+                                aria-label="Remove benefit"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="auto-notify"
-                    checked={autoNotify}
-                    onChange={(event) => setAutoNotify(event.target.checked)}
-                    className="h-4 w-4 rounded border border-border"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="text-sm font-medium">Notify me about new submissions</span>
-                    <p className="text-xs text-muted-foreground">
-                      You&apos;ll receive notifications whenever a performer applies.
-                    </p>
                   </div>
-                </label>
+
+                  <div className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="postType">Opportunity type *</Label>
+                        <Select
+                          value={postType}
+                          onValueChange={(value) => setPostType(value as typeof postType)}
+                        >
+                          <SelectTrigger id="postType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {POST_TYPES.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="roleType">Talent profile *</Label>
+                        <Select
+                          value={roleType}
+                          onValueChange={(value) => setRoleType(value as typeof roleType)}
+                        >
+                          <SelectTrigger id="roleType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLE_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location *</Label>
+                        <Input
+                          id="location"
+                          placeholder="District 1, Ho Chi Minh City"
+                          value={location}
+                          onChange={(event) => setLocation(event.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="employmentType">Engagement type *</Label>
+                        <Select
+                          value={employmentType}
+                          onValueChange={(value) =>
+                            setEmploymentType(value as typeof employmentType)
+                          }
+                        >
+                          <SelectTrigger id="employmentType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EMPLOYMENT_TYPES.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="experienceLevel">Experience level *</Label>
+                        <Select
+                          value={experienceLevel}
+                          onValueChange={(value) =>
+                            setExperienceLevel(value as typeof experienceLevel)
+                          }
+                        >
+                          <SelectTrigger id="experienceLevel">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EXPERIENCE_LEVELS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Visibility *</Label>
+                        <Select
+                          value={status}
+                          onValueChange={(value) => setStatus(value as typeof status)}
+                        >
+                          <SelectTrigger id="status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Compensation *</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Provide a range so artists can self-select quickly.
+                        </p>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="salaryMin">Minimum budget *</Label>
+                          <Input
+                            id="salaryMin"
+                            type="number"
+                            min={0}
+                            placeholder="3000000"
+                            value={salaryMin}
+                            onChange={(event) => setSalaryMin(event.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="salaryMax">Maximum budget</Label>
+                          <Input
+                            id="salaryMax"
+                            type="number"
+                            min={0}
+                            placeholder="5000000"
+                            value={salaryMax}
+                            onChange={(event) => setSalaryMax(event.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="currency">Currency</Label>
+                          <Select
+                            value={salaryCurrency}
+                            onValueChange={(value) =>
+                              setSalaryCurrency(value as typeof salaryCurrency)
+                            }
+                          >
+                            <SelectTrigger id="currency">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="VND">VND (₫)</SelectItem>
+                              <SelectItem value="USD">USD ($)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="paymentType">Payment cadence *</Label>
+                          <Select
+                            value={salaryPeriod}
+                            onValueChange={(value) => setSalaryPeriod(value as typeof salaryPeriod)}
+                          >
+                            <SelectTrigger id="paymentType">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PAYMENT_TYPES.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <label className="flex items-center space-x-2 text-sm">
+                        <input
+                          type="checkbox"
+                          id="negotiable"
+                          checked={salaryNegotiable}
+                          onChange={(event) => setSalaryNegotiable(event.target.checked)}
+                          className="h-4 w-4 rounded border border-border"
+                        />
+                        <span className="cursor-pointer">Budget is negotiable</span>
+                      </label>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label>Genres *</Label>
+                      {loadingGenres ? (
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from({ length: 6 }).map((_, index) => (
+                            <Skeleton key={index} className="h-8 w-20 rounded-full" />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {genres.map((genre) => (
+                            <Badge
+                              key={genre.name}
+                              variant={selectedGenres.includes(genre.name) ? 'default' : 'outline'}
+                              className="cursor-pointer px-3 py-1 text-sm"
+                              onClick={() => toggleGenre(genre.name)}
+                            >
+                              {genre.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {selectedGenres.length === 0 && (
+                        <p className="text-xs text-destructive">Select at least one genre.</p>
+                      )}
+                    </div>
+
+                    <label className="flex items-start gap-2 rounded-md border border-dashed border-border/60 px-3 py-2">
+                      <input
+                        type="checkbox"
+                        id="auto-notify"
+                        checked={autoNotify}
+                        onChange={(event) => setAutoNotify(event.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border border-border"
+                      />
+                      <div className="space-y-0.5">
+                        <span className="text-sm font-medium">Notify me about new submissions</span>
+                        <p className="text-xs text-muted-foreground">
+                          You&apos;ll receive notifications whenever a performer applies.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
 
                 <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                   <Button type="button" variant="outline" className="w-full sm:flex-1" asChild>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -9,20 +9,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
 import { jobService } from '@/services/jobService'
 import type { JobPost } from '@/types/job'
-import { Briefcase, Calendar, Eye, ExternalLink, RefreshCcw, Users } from 'lucide-react'
+import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users } from 'lucide-react'
 
 type StatusFilter = 'all' | 'draft' | 'published' | 'closed'
 
-const statusBadges: Record<string, string> = {
-  draft: 'secondary',
-  published: 'default',
-  closed: 'outline',
-  completed: 'outline',
-  cancelled: 'destructive',
-}
+const statusBadges: Record<JobPost['status'], 'default' | 'secondary' | 'outline' | 'destructive'> =
+  {
+    draft: 'secondary',
+    published: 'default',
+    closed: 'outline',
+    completed: 'outline',
+    cancelled: 'destructive',
+  }
 
 const postTypeLabels: Record<JobPost['post_type'], string> = {
   job_offer: 'Job Offer',
@@ -47,7 +47,7 @@ const MyJobPostsPage = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [error, setError] = useState<string | null>(null)
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setError(null)
     try {
       const response = await jobService.getMyJobs()
@@ -60,12 +60,11 @@ const MyJobPostsPage = () => {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchJobs()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchJobs])
 
   const filteredJobs = useMemo(() => {
     if (statusFilter === 'all') return jobs
@@ -91,25 +90,16 @@ const MyJobPostsPage = () => {
         <div className="absolute bottom-10 left-1/3 w-44 h-44 bg-primary/20 rounded-full blur-3xl animate-float-slow" />
 
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div className="text-white">
-              <p className="text-sm uppercase tracking-wider text-white/70 mb-2">Manage posts</p>
-              <h1 className="text-3xl md:text-4xl font-semibold mb-3">Your job postings</h1>
-              <p className="text-white/80 max-w-2xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-3 text-foreground">
+              <p className="text-sm uppercase tracking-wider text-muted-foreground">Manage posts</p>
+              <h1 className="text-3xl md:text-4xl font-semibold">Your job postings</h1>
+              <p className="text-muted-foreground max-w-2xl">
                 Track performance, check applications, and keep your listings up to date. Candidates
-                see only published jobs.
+                only see published jobs.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={refreshing || loading}
-                className="bg-background/30 backdrop-blur"
-              >
-                <RefreshCcw className="mr-2 h-4 w-4 animate-spin" hidden={!refreshing} />
-                {refreshing ? 'Refreshing' : 'Refresh'}
-              </Button>
+            <div className="flex flex-col gap-3">
               <Button asChild size="lg">
                 <Link href="/jobs/post">Post a job</Link>
               </Button>
@@ -124,6 +114,21 @@ const MyJobPostsPage = () => {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-12 relative z-10">
+          <div className="flex justify-between w-full">
+            <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to jobs
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              className="justify-start gap-2"
+            >
+              <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing' : 'Refresh list'}
+            </Button>
+          </div>
           <Card className="border-border/60 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardContent className="p-0">
               <Tabs
