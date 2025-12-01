@@ -1,12 +1,20 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram, Grid3x3 } from 'lucide-react'
 import type { User } from '@/types/user'
 import type { Media } from '@/types/media'
 import type { Experience } from '@/types/experience'
@@ -47,6 +55,7 @@ export function ArtistProfileView({
   loadingExperiences = false,
   loadingGallery = false,
 }: ArtistProfileViewProps) {
+  const [galleryModalOpen, setGalleryModalOpen] = useState(false)
   const displayName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ') || '—'
   const briefBio = (profile as any)?.brief_bio || ''
@@ -381,7 +390,20 @@ export function ArtistProfileView({
               </section> */}
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Photos</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-semibold">Photos</h2>
+                  {!loadingGallery && gallery.length > 6 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setGalleryModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                      View All ({gallery.length})
+                    </Button>
+                  )}
+                </div>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
                     {loadingGallery ? (
@@ -393,23 +415,38 @@ export function ArtistProfileView({
                     ) : gallery.length === 0 ? (
                       <p className="text-muted-foreground">No portfolio photos yet.</p>
                     ) : (
-                      <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
-                        {gallery.slice(0, 6).map((media) => (
-                          <div
-                            key={media.id}
-                            className="relative w-full aspect-square overflow-hidden rounded-lg"
-                          >
-                            <Image
-                              unoptimized
-                              src={`${resolveMediaUrl(media.file_url)}?v=${media.updated_at ?? ''}`}
-                              alt={media.file_name}
-                              fill
-                              sizes="(max-width: 768px) 50vw, 33vw"
-                              className="object-cover"
-                            />
+                      <>
+                        <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
+                          {gallery.slice(0, 6).map((media) => (
+                            <div
+                              key={media.id}
+                              className="relative w-full aspect-square overflow-hidden rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setGalleryModalOpen(true)}
+                            >
+                              <Image
+                                unoptimized
+                                src={`${resolveMediaUrl(media.file_url)}?v=${media.updated_at ?? ''}`}
+                                alt={media.file_name}
+                                fill
+                                sizes="(max-width: 768px) 50vw, 33vw"
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        {gallery.length > 6 && (
+                          <div className="mt-4 text-center">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setGalleryModalOpen(true)}
+                              className="text-muted-foreground"
+                            >
+                              +{gallery.length - 6} more photos
+                            </Button>
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -418,6 +455,33 @@ export function ArtistProfileView({
           </div>
         </div>
       </div>
+
+      {/* Gallery Modal */}
+      <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
+        <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-y-auto p-6">
+          <DialogHeader>
+            <DialogTitle>All Photos ({gallery.length})</DialogTitle>
+            <DialogDescription>Browse through all portfolio photos.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+            {gallery.map((media) => (
+              <div
+                key={media.id}
+                className="relative w-full aspect-square overflow-hidden rounded-lg cursor-pointer hover:opacity-90 transition-opacity shadow-md"
+              >
+                <Image
+                  unoptimized
+                  src={`${resolveMediaUrl(media.file_url)}?v=${media.updated_at ?? ''}`}
+                  alt={media.file_name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
