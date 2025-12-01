@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Loader, ArrowLeft, Bookmark, Share2, Send, MessageCircle, BookmarkCheck } from 'lucide-react'
+import {
+  Loader,
+  ArrowLeft,
+  Bookmark,
+  Share2,
+  Send,
+  MessageCircle,
+  BookmarkCheck,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -51,13 +59,13 @@ const JobDetailPage = () => {
   const toggleSave = () => {
     const saved = localStorage.getItem(SAVED_JOBS_KEY)
     const savedJobs = saved ? new Set(JSON.parse(saved)) : new Set<string>()
-    
+
     if (isSaved) {
       savedJobs.delete(jobId)
     } else {
       savedJobs.add(jobId)
     }
-    
+
     localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(Array.from(savedJobs)))
     setIsSaved(!isSaved)
   }
@@ -229,11 +237,16 @@ const JobDetailPage = () => {
                   {/* Company Header */}
                   <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center sm:items-start">
                     <button
-                      onClick={() => job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)}
+                      onClick={() =>
+                        job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)
+                      }
                       className="shrink-0 cursor-pointer"
                     >
                       <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-border hover:border-primary transition-colors">
-                        <AvatarImage src={resolveMediaUrl(job.creatorAvatar)} alt={job.creatorName || 'Unknown'} />
+                        <AvatarImage
+                          src={resolveMediaUrl(job.creatorAvatar)}
+                          alt={job.creatorName || 'Unknown'}
+                        />
                         <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
                           {(job.creatorName || 'Unknown')
                             .split(' ')
@@ -247,7 +260,9 @@ const JobDetailPage = () => {
                     <div className="flex-1 text-center sm:text-left">
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
                       <button
-                        onClick={() => job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)}
+                        onClick={() =>
+                          job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)
+                        }
                         className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
                       >
                         {job.creatorName || 'Unknown'}
@@ -301,7 +316,9 @@ const JobDetailPage = () => {
                   {/* Description */}
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-3">Job Description</h2>
-                    <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{job.description}</p>
+                    <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                      {job.description}
+                    </p>
                   </div>
 
                   {/* Work Time / Schedule */}
@@ -343,7 +360,10 @@ const JobDetailPage = () => {
                   )}
 
                   {/* Additional Info */}
-                  {(job.experience_level || job.recruitment_type || job.deadline || job.submission_deadline) && (
+                  {(job.experience_level ||
+                    job.recruitment_type ||
+                    job.deadline ||
+                    job.submission_deadline) && (
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold mb-3">Additional Information</h2>
                       <div className="space-y-2 text-sm">
@@ -356,19 +376,25 @@ const JobDetailPage = () => {
                         {job.recruitment_type && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Employment Type:</span>
-                            <span className="font-medium capitalize">{job.recruitment_type.replace('_', ' ')}</span>
+                            <span className="font-medium capitalize">
+                              {job.recruitment_type.replace('_', ' ')}
+                            </span>
                           </div>
                         )}
                         {job.deadline && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Project Deadline:</span>
-                            <span className="font-medium">{new Date(job.deadline).toLocaleDateString()}</span>
+                            <span className="font-medium">
+                              {new Date(job.deadline).toLocaleDateString()}
+                            </span>
                           </div>
                         )}
                         {job.submission_deadline && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Application Deadline:</span>
-                            <span className="font-medium">{new Date(job.submission_deadline).toLocaleDateString()}</span>
+                            <span className="font-medium">
+                              {new Date(job.submission_deadline).toLocaleDateString()}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -391,11 +417,7 @@ const JobDetailPage = () => {
                   </Button>
 
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={toggleSave}
-                    >
+                    <Button variant="outline" className="flex-1" onClick={toggleSave}>
                       {isSaved ? (
                         <BookmarkCheck className="w-4 h-4 mr-2 text-primary fill-primary" />
                       ) : (
@@ -403,18 +425,22 @@ const JobDetailPage = () => {
                       )}
                       {isSaved ? 'Saved' : 'Save'}
                     </Button>
-                    <Button variant="outline" className="flex-1" onClick={() => {
-                      if (navigator.share) {
-                        navigator.share({
-                          title: job.title,
-                          text: job.brief_description || job.description,
-                          url: window.location.href,
-                        })
-                      } else {
-                        navigator.clipboard.writeText(window.location.href)
-                        // Add toast notification here if you have toast
-                      }
-                    }}>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({
+                            title: job.title,
+                            text: job.brief_description || job.description,
+                            url: window.location.href,
+                          })
+                        } else {
+                          navigator.clipboard.writeText(window.location.href)
+                          // Add toast notification here if you have toast
+                        }
+                      }}
+                    >
                       <Share2 className="w-4 h-4 mr-2" />
                       Share
                     </Button>
@@ -432,7 +458,8 @@ const JobDetailPage = () => {
                     </>
                   )}
 
-                  {(job.total_submissions !== undefined || job.applications_count !== undefined) && (
+                  {(job.total_submissions !== undefined ||
+                    job.applications_count !== undefined) && (
                     <>
                       <Separator />
                       <div className="space-y-2">
@@ -457,9 +484,7 @@ const JobDetailPage = () => {
                       })}
                     </p>
                     {job.updated_at && job.updated_at !== job.created_at && (
-                      <p className="mt-1">
-                        Updated {getTimeAgo(job.updated_at)}
-                      </p>
+                      <p className="mt-1">Updated {getTimeAgo(job.updated_at)}</p>
                     )}
                   </div>
                 </CardContent>

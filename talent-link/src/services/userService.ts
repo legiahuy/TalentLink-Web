@@ -138,7 +138,8 @@ export const userService = {
   // ===== EXPERIENCES =====
   getExperience: async (id: string): Promise<Experience> => {
     const res = await axiosClient.get(`/experiences/${id}`)
-    return res.data?.data ?? res.data
+    const data = res.data?.data ?? res.data
+    return data?.experience ?? data
   },
 
   deleteExperience: async (id: string): Promise<void> => {
@@ -158,12 +159,14 @@ export const userService = {
 
   createExperience: async (payload: ExperienceCreatePayload): Promise<Experience> => {
     const res = await axiosClient.post('/experiences', payload)
-    return res.data?.data ?? res.data
+    const data = res.data?.data ?? res.data
+    return data?.experience ?? data
   },
 
   updateExperience: async (id: string, payload: Partial<Experience>): Promise<Experience> => {
     const res = await axiosClient.put(`/experiences/${id}`, payload)
-    return res.data?.data ?? res.data
+    const data = res.data?.data ?? res.data
+    return data?.experience ?? data
   },
 
   // ===== SOCIAL LINKS =====

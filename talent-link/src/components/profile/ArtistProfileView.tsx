@@ -23,31 +23,6 @@ interface ArtistProfileViewProps {
   onEdit?: () => void
 }
 
-function pickExperienceParagraph(exps: Experience[] = []): string {
-  if (!exps.length) return ''
-  const parse = (s?: string | null) => (s ? Date.parse(s) : Number.POSITIVE_INFINITY)
-  const sorted = [...exps].sort((a, b) => {
-    const ea = parse(a.end_date)
-    const eb = parse(b.end_date)
-    if (ea !== eb) return eb - ea
-    const sa = parse(a.start_date)
-    const sb = parse(b.start_date)
-    return sb - sa
-  })
-  const top = sorted.slice(0, 3)
-  const withDesc = top
-    .filter((x) => (x.description || '').trim())
-    .sort((a, b) => (b.description?.length || 0) - (a.description?.length || 0))
-  if (withDesc[0]?.description) return withDesc[0].description!.trim()
-  const fmt = (e: Experience) => {
-    const sd = e.start_date?.slice(0, 10) ?? ''
-    const ed = e.end_date?.slice(0, 10) ?? 'nay'
-    const title = e.title || 'Experience'
-    return `${title} (${sd}${sd || ed ? ' - ' : ''}${ed})`
-  }
-  return top.map(fmt).join(' • ')
-}
-
 const staticServices = [
   { name: 'Event Performance', price: 'Contact' },
   { name: 'Vocal Recording', price: '500,000 VND/song' },
@@ -74,8 +49,18 @@ export function ArtistProfileView({
   const facebook = (profile as any)?.facebook_url || ''
   const instagram = (profile as any)?.instagram_url || ''
   const youtube = (profile as any)?.youtube_url || ''
-  const expParagraph = pickExperienceParagraph(experiences)
   const genres = (profile.genres || []).map((g) => g.name)
+
+  // Sort experiences by end date (most recent first), then by start date
+  const sortedExperiences = [...experiences].sort((a, b) => {
+    const parse = (s?: string | null) => (s ? Date.parse(s) : Number.POSITIVE_INFINITY)
+    const ea = parse(a.end_date)
+    const eb = parse(b.end_date)
+    if (ea !== eb) return eb - ea
+    const sa = parse(a.start_date)
+    const sb = parse(b.start_date)
+    return sb - sa
+  })
 
   return (
     <main className="flex-1">
@@ -228,16 +213,71 @@ export function ArtistProfileView({
                       ) : (
                         <p className="text-muted-foreground/70">No detailed bio available yet.</p>
                       )}
-                      {expParagraph ? (
-                        <p className="whitespace-pre-line">{expParagraph}</p>
-                      ) : (
-                        <p className="text-muted-foreground/70">
-                          No experience information available yet.
-                        </p>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">Experience</h2>
+                {sortedExperiences.length === 0 ? (
+                  <Card className="bg-card border-border/40">
+                    <CardContent className="p-6">
+                      <p className="text-muted-foreground">
+                        No experience information available yet.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {sortedExperiences.map((experience, index) => (
+                      <Card
+                        key={experience.id || `experience-${index}`}
+                        className="bg-card border-border/40"
+                      >
+                        <CardContent className="p-6">
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-lg">
+                              {experience.title || 'No title set'}
+                            </h3>
+                            {(experience.start_date || experience.end_date) && (
+                              <p className="text-sm text-muted-foreground">
+                                {experience.start_date
+                                  ? new Date(experience.start_date).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : 'Start date not set'}{' '}
+                                -{' '}
+                                {experience.end_date
+                                  ? new Date(experience.end_date).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : 'Present'}
+                              </p>
+                            )}
+                            {experience.description && (
+                              <p className="text-muted-foreground whitespace-pre-line">
+                                {experience.description}
+                              </p>
+                            )}
+                            {experience.portfolio_url && (
+                              <a
+                                href={experience.portfolio_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                              >
+                                {experience.portfolio_url}
+                              </a>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </section>
             </div>
 

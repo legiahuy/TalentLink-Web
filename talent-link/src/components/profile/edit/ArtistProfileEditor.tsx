@@ -13,6 +13,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { MultiSelect, type Option } from '@/components/ui/multi-select'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 import type { Media } from '@/types/media'
 import type { User } from '@/types/user'
@@ -81,6 +91,10 @@ export default function ArtistProfileEditor() {
 
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [mediaToDelete, setMediaToDelete] = useState<string | null>(null)
+  const [deleteExpDialogOpen, setDeleteExpDialogOpen] = useState(false)
+  const [expToDelete, setExpToDelete] = useState<string | null>(null)
 
   const [openAddVideo, setOpenAddVideo] = useState(false)
   const [editVideoData, setEditVideoData] = useState<{ id: string; title: string } | null>(null)
@@ -140,10 +154,14 @@ export default function ArtistProfileEditor() {
     title: string
     description: string
     portfolio_url: string
+    start_date: string
+    end_date: string
   }>({
     title: '',
     description: '',
     portfolio_url: '',
+    start_date: '',
+    end_date: '',
   })
 
   const heroName = me?.display_name || me?.username || 'Artist'
@@ -431,10 +449,18 @@ export default function ArtistProfileEditor() {
   }
 
   const handleDeleteMedia = async (id: string) => {
-    if (!window.confirm('Delete this image from library?')) return
+    setMediaToDelete(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteMedia = async () => {
+    if (!mediaToDelete) return
+    const id = mediaToDelete
     const prev = gallery
     setDeletingId(id)
     setGallery((g) => g.filter((m) => m.id !== id))
+    setDeleteDialogOpen(false)
+    setMediaToDelete(null)
     try {
       await userService.deleteMedia(id)
       toast.success('Image deleted')
@@ -512,24 +538,59 @@ export default function ArtistProfileEditor() {
     }
     try {
       setSavingExp(true)
+
+      // Convert YYYY-MM-DD to ISO 8601 with timezone offset (e.g., "2025-12-12T00:00:00+07:00")
+      const formatDateToISO = (dateStr: string): string | undefined => {
+        if (!dateStr) return undefined
+        try {
+          // Parse the date string (YYYY-MM-DD)
+          const [year, month, day] = dateStr.split('-').map(Number)
+          // Create date at midnight in local timezone
+          const date = new Date(year, month - 1, day, 0, 0, 0)
+
+          // Get timezone offset in minutes (negative means ahead of UTC)
+          const offsetMinutes = date.getTimezoneOffset()
+          const offsetHours = Math.abs(Math.floor(offsetMinutes / 60))
+          const offsetMins = Math.abs(offsetMinutes % 60)
+          // getTimezoneOffset returns positive for behind UTC, so we invert the sign
+          const offsetSign = offsetMinutes > 0 ? '-' : '+'
+          const offset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMins.toString().padStart(2, '0')}`
+
+          // Format as YYYY-MM-DDTHH:mm:ss+offset
+          const formattedYear = date.getFullYear()
+          const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
+          const formattedDay = date.getDate().toString().padStart(2, '0')
+
+          return `${formattedYear}-${formattedMonth}-${formattedDay}T00:00:00${offset}`
+        } catch {
+          return undefined
+        }
+      }
+
+      const payload = {
+        title: expForm.title.trim() || undefined,
+        description: expForm.description.trim() || undefined,
+        portfolio_url: expForm.portfolio_url.trim() || undefined,
+        start_date: formatDateToISO(expForm.start_date),
+        end_date: formatDateToISO(expForm.end_date),
+      }
       if (expForm.id) {
-        const updated = await userService.updateExperience(expForm.id, {
-          title: expForm.title || undefined,
-          description: expForm.description || undefined,
-          portfolio_url: expForm.portfolio_url || undefined,
-        })
+        const updated = await userService.updateExperience(expForm.id, payload)
         setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
         toast.success('Experience updated')
       } else {
-        const created = await userService.createExperience({
-          title: expForm.title || undefined,
-          description: expForm.description || undefined,
-          portfolio_url: expForm.portfolio_url || undefined,
-        })
+        const created = await userService.createExperience(payload)
         setExperiences((prev) => [created, ...prev])
         toast.success('Experience added')
       }
-      setExpForm({ id: undefined, title: '', description: '', portfolio_url: '' })
+      setExpForm({
+        id: undefined,
+        title: '',
+        description: '',
+        portfolio_url: '',
+        start_date: '',
+        end_date: '',
+      })
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'experience' } }))
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to save experience')
@@ -540,24 +601,62 @@ export default function ArtistProfileEditor() {
   }
 
   const handleEditExperience = (exp: Experience) => {
+    // Convert ISO date strings to YYYY-MM-DD format for date inputs
+    const formatDateForInput = (dateStr: string | null | undefined): string => {
+      if (!dateStr) return ''
+      try {
+        const date = new Date(dateStr)
+        return date.toISOString().split('T')[0]
+      } catch {
+        return ''
+      }
+    }
     setExpForm({
       id: exp.id,
       title: exp.title || '',
       description: exp.description || '',
       portfolio_url: exp.portfolio_url || '',
+      start_date: formatDateForInput(exp.start_date),
+      end_date: formatDateForInput(exp.end_date),
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleCancelEditExperience = () => {
+    setExpForm({
+      id: undefined,
+      title: '',
+      description: '',
+      portfolio_url: '',
+      start_date: '',
+      end_date: '',
+    })
+  }
+
   const handleDeleteExperience = async (id: string) => {
-    if (!window.confirm('Delete this experience item?')) return
+    setExpToDelete(id)
+    setDeleteExpDialogOpen(true)
+  }
+
+  const confirmDeleteExperience = async () => {
+    if (!expToDelete) return
+    const id = expToDelete
+    setDeleteExpDialogOpen(false)
+    setExpToDelete(null)
     try {
       setDeletingExpId(id)
       await userService.deleteExperience(id)
       setExperiences((prev) => prev.filter((e) => e.id !== id))
       toast.success('Experience deleted')
       if (expForm.id === id)
-        setExpForm({ id: undefined, title: '', description: '', portfolio_url: '' })
+        setExpForm({
+          id: undefined,
+          title: '',
+          description: '',
+          portfolio_url: '',
+          start_date: '',
+          end_date: '',
+        })
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to delete experience')
       toast.error(message)
@@ -1185,27 +1284,49 @@ export default function ArtistProfileEditor() {
                   title="Experience & Services"
                   description="Update your standout projects, skills, and services."
                   action={
-                    <Button
-                      onClick={handleSaveExperience}
-                      disabled={savingExp || (!expForm.description.trim() && !expForm.title.trim())}
-                    >
-                      {savingExp ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          {expForm.id ? 'Updating...' : 'Saving...'}
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          {expForm.id ? 'Update' : 'Save New Item'}
-                        </>
+                    <div className="flex gap-2">
+                      {expForm.id && (
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEditExperience}
+                          disabled={savingExp}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
                       )}
-                    </Button>
+                      <Button
+                        onClick={handleSaveExperience}
+                        disabled={savingExp || !expForm.title.trim()}
+                      >
+                        {savingExp ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {expForm.id ? 'Updating...' : 'Saving...'}
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4" />
+                            {expForm.id ? 'Update' : 'Save New Item'}
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   }
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="exp_description">Experience</Label>
+                      <Label htmlFor="exp_title">Title *</Label>
+                      <Input
+                        id="exp_title"
+                        name="title"
+                        value={expForm.title}
+                        onChange={(e) => setExpForm((prev) => ({ ...prev, title: e.target.value }))}
+                        placeholder="Ex: Live Performance, Studio Recording..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="exp_description">Description</Label>
                       <textarea
                         id="exp_description"
                         name="description"
@@ -1220,29 +1341,42 @@ export default function ArtistProfileEditor() {
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label htmlFor="exp_title">Specialty</Label>
+                        <Label htmlFor="exp_start_date">Start Date</Label>
                         <Input
-                          id="exp_title"
-                          name="title"
-                          value={expForm.title}
+                          id="exp_start_date"
+                          name="start_date"
+                          type="date"
+                          value={expForm.start_date}
                           onChange={(e) =>
-                            setExpForm((prev) => ({ ...prev, title: e.target.value }))
+                            setExpForm((prev) => ({ ...prev, start_date: e.target.value }))
                           }
-                          placeholder="Ex: Live Performance, Studio Recording..."
                         />
                       </div>
                       <div>
-                        <Label htmlFor="exp_portfolio_url">Portfolio Link</Label>
+                        <Label htmlFor="exp_end_date">End Date</Label>
                         <Input
-                          id="exp_portfolio_url"
-                          name="portfolio_url"
-                          value={expForm.portfolio_url}
+                          id="exp_end_date"
+                          name="end_date"
+                          type="date"
+                          value={expForm.end_date}
                           onChange={(e) =>
-                            setExpForm((prev) => ({ ...prev, portfolio_url: e.target.value }))
+                            setExpForm((prev) => ({ ...prev, end_date: e.target.value }))
                           }
-                          placeholder="Spotify, YouTube, Facebook..."
                         />
                       </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="exp_portfolio_url">Portfolio Link</Label>
+                      <Input
+                        id="exp_portfolio_url"
+                        name="portfolio_url"
+                        type="url"
+                        value={expForm.portfolio_url}
+                        onChange={(e) =>
+                          setExpForm((prev) => ({ ...prev, portfolio_url: e.target.value }))
+                        }
+                        placeholder="https://spotify.com/..., https://youtube.com/..."
+                      />
                     </div>
                   </div>
                 </SectionCard>
@@ -1258,13 +1392,30 @@ export default function ArtistProfileEditor() {
                     {experiences.length === 0 ? (
                       <p className="text-muted-foreground">No items yet.</p>
                     ) : (
-                      experiences.map((experience) => (
+                      experiences.map((experience, index) => (
                         <div
-                          key={experience.id}
+                          key={experience.id || `experience-${index}`}
                           className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
                         >
-                          <div className="pr-3">
+                          <div className="pr-3 space-y-1">
                             <p className="font-medium">{experience.title || 'No title set'}</p>
+                            {(experience.start_date || experience.end_date) && (
+                              <p className="text-xs text-muted-foreground">
+                                {experience.start_date
+                                  ? new Date(experience.start_date).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : 'Start date not set'}{' '}
+                                -{' '}
+                                {experience.end_date
+                                  ? new Date(experience.end_date).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : 'Present'}
+                              </p>
+                            )}
                             {experience.description ? (
                               <p className="text-sm text-muted-foreground">
                                 {experience.description}
@@ -1415,6 +1566,38 @@ export default function ArtistProfileEditor() {
               onUploaded={refreshVideos}
               init={editVideoData || undefined}
             />
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this image from your library? This action cannot
+                    be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteMedia}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={deleteExpDialogOpen} onOpenChange={setDeleteExpDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Experience</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this experience item? This action cannot be
+                    undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteExperience}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

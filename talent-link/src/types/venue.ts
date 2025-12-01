@@ -3,6 +3,7 @@ import type { Media, MediaListResponse } from './media'
 
 export interface VenueBasicUpdatePayload {
   display_name?: string
+  brief_bio?: string
   business_type?: string[]
   capacity?: string
 }

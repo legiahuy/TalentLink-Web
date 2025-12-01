@@ -9,6 +9,16 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Camera, Save, UploadCloud, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -74,6 +84,8 @@ export default function VenueProfileEditor() {
   >([])
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [mediaToDelete, setMediaToDelete] = useState<string | null>(null)
 
   const [savingBasic, setSavingBasic] = useState(false)
   const [savingContact, setSavingContact] = useState(false)
@@ -380,10 +392,18 @@ export default function VenueProfileEditor() {
   }
 
   const handleDeleteMedia = async (id: string) => {
-    if (!window.confirm('Delete this image from library?')) return
+    setMediaToDelete(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteMedia = async () => {
+    if (!mediaToDelete) return
+    const id = mediaToDelete
     const prev = gallery
     setDeletingId(id)
     setGallery((g) => g.filter((m) => m.id !== id))
+    setDeleteDialogOpen(false)
+    setMediaToDelete(null)
     try {
       await venueService.deleteMedia(id)
       toast.success('Image deleted')
@@ -1053,6 +1073,22 @@ export default function VenueProfileEditor() {
                 </SectionCard>
               </TabsContent>
             </Tabs>
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this image from your library? This action cannot
+                    be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteMedia}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
