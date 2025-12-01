@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram } from 'lucide-react'
 import type { User } from '@/types/user'
 import type { Media } from '@/types/media'
@@ -21,6 +22,9 @@ interface ArtistProfileViewProps {
   videos?: VideoItem[]
   isOwner: boolean
   onEdit?: () => void
+  loadingVideos?: boolean
+  loadingExperiences?: boolean
+  loadingGallery?: boolean
 }
 
 const staticServices = [
@@ -39,6 +43,9 @@ export function ArtistProfileView({
   videos = [],
   isOwner,
   onEdit,
+  loadingVideos = false,
+  loadingExperiences = false,
+  loadingGallery = false,
 }: ArtistProfileViewProps) {
   const displayName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ') || '—'
@@ -172,7 +179,19 @@ export function ArtistProfileView({
                   <h2 className="text-2xl font-semibold">Portfolio (Video)</h2>
                 </div>
 
-                {videos.length === 0 ? (
+                {loadingVideos ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[1, 2].map((i) => (
+                      <Card key={i} className="overflow-hidden bg-card border-border/40">
+                        <Skeleton className="aspect-video w-full" />
+                        <CardContent className="p-4 space-y-2">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : videos.length === 0 ? (
                   <p className="text-muted-foreground">No videos yet.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,7 +239,19 @@ export function ArtistProfileView({
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Experience</h2>
-                {sortedExperiences.length === 0 ? (
+                {loadingExperiences ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i} className="bg-card border-border/40">
+                        <CardContent className="p-6 space-y-3">
+                          <Skeleton className="h-6 w-1/2" />
+                          <Skeleton className="h-4 w-1/3" />
+                          <Skeleton className="h-20 w-full" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : sortedExperiences.length === 0 ? (
                   <Card className="bg-card border-border/40">
                     <CardContent className="p-6">
                       <p className="text-muted-foreground">
@@ -353,7 +384,13 @@ export function ArtistProfileView({
                 <h2 className="text-2xl font-semibold mb-4">Photos</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
-                    {gallery.length === 0 ? (
+                    {loadingGallery ? (
+                      <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                          <Skeleton key={i} className="aspect-square w-full rounded-lg" />
+                        ))}
+                      </div>
+                    ) : gallery.length === 0 ? (
                       <p className="text-muted-foreground">No portfolio photos yet.</p>
                     ) : (
                       <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">

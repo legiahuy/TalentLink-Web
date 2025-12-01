@@ -31,6 +31,9 @@ const ProfilePage = () => {
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingVideos, setLoadingVideos] = useState(true)
+  const [loadingExperiences, setLoadingExperiences] = useState(true)
+  const [loadingGallery, setLoadingGallery] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const isOwnProfile = useMemo(
@@ -57,36 +60,49 @@ const ProfilePage = () => {
 
     const loadProfile = async () => {
       setLoading(true)
+      setLoadingVideos(true)
+      setLoadingExperiences(true)
+      setLoadingGallery(true)
       setError(null)
       try {
         const userData = await userService.getUserByUsername(username)
         if (!active) return
         setProfile(userData)
-
-        const [mediaRes, experiencesRes, videosRes] = await Promise.all([
-          // userService.getAvatarByUserId(userData.id).catch(() => null),
-          // userService.getCoverByUserId(userData.id).catch(() => null),
-          userService
-            .getUserMediaByUsername(userData.username)
-            .catch(() => ({ media: [], total: 0 })),
-          userService.listUserExperiences(userData.username).catch(() => []),
-          videoService.getUserVideos(userData.username).catch(() => ({ items: [], total: 0 })),
-        ])
-        console.log('user:', userData)
-        if (!active) return
         setAvatarUrl(userData.avatar_url ?? null)
         setCoverUrl(userData.cover_url ?? null)
+        setLoading(false)
+
+        // Load additional data in parallel
+        const loadMedia = userService
+          .getUserMediaByUsername(userData.username)
+          .catch(() => ({ media: [], total: 0 }))
+        const loadExperiences = userService.listUserExperiences(userData.username).catch(() => [])
+        const loadVideos = videoService
+          .getUserVideos(userData.username)
+          .catch(() => ({ items: [], total: 0 }))
+
+        const [mediaRes, experiencesRes, videosRes] = await Promise.all([
+          loadMedia,
+          loadExperiences,
+          loadVideos,
+        ])
+        if (!active) return
         setGallery(mediaRes.media ?? [])
         setExperiences(experiencesRes)
         setVideos(videosRes.items ?? [])
+        setLoadingGallery(false)
+        setLoadingExperiences(false)
+        setLoadingVideos(false)
       } catch (e) {
         console.error('Error loading profile', e)
         if (!active) return
         const message = e instanceof Error ? e.message : 'Không thể tải hồ sơ'
         setError(message)
         toast.error(message)
-      } finally {
-        if (active) setLoading(false)
+        setLoading(false)
+        setLoadingVideos(false)
+        setLoadingExperiences(false)
+        setLoadingGallery(false)
       }
     }
 
@@ -101,15 +117,7 @@ const ProfilePage = () => {
     router.push('/settings/my-profile')
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader className="animate-spin" size={24} />
-      </div>
-    )
-  }
-
-  if (error || !profile) {
+  if (error || (!loading && !profile)) {
     return (
       <div className="min-h-[70vh] w-full relative flex items-center justify-center">
         <div
@@ -144,6 +152,18 @@ const ProfilePage = () => {
     )
   }
 
+  if (!profile && loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="animate-spin" size={24} />
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return null
+  }
+
   const renderProfile = () => {
     if (isArtist(profile.role as UserRole)) {
       return (
@@ -156,6 +176,9 @@ const ProfilePage = () => {
           videos={videos}
           isOwner={isOwnProfile}
           onEdit={handleEdit}
+          loadingVideos={loadingVideos}
+          loadingExperiences={loadingExperiences}
+          loadingGallery={loadingGallery}
         />
       )
     }
@@ -167,6 +190,7 @@ const ProfilePage = () => {
         coverUrl={coverUrl}
         isOwner={isOwnProfile}
         onEdit={handleEdit}
+        loadingGallery={loadingGallery}
       />
     )
   }

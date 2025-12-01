@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import EventCard from '@/components/event/EventCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, Phone, Mail, Globe, Building2 } from 'lucide-react'
@@ -17,6 +18,7 @@ interface VenueProfileViewProps {
   coverUrl?: string | null
   isOwner: boolean
   onEdit?: () => void
+  loadingGallery?: boolean
 }
 
 interface Event {
@@ -89,6 +91,7 @@ export function VenueProfileView({
   coverUrl,
   isOwner,
   onEdit,
+  loadingGallery = false,
 }: VenueProfileViewProps) {
   const venueName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ')
