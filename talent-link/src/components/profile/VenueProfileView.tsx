@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, Phone, Mail, Globe, Building2 } from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
+import { businessTypes } from '@/components/profile/edit/VenueProfileEditor'
 
 interface VenueProfileViewProps {
   profile: User
@@ -18,6 +19,7 @@ interface VenueProfileViewProps {
   coverUrl?: string | null
   isOwner: boolean
   onEdit?: () => void
+  loadingProfile?: boolean
   loadingGallery?: boolean
 }
 
@@ -91,6 +93,7 @@ export function VenueProfileView({
   coverUrl,
   isOwner,
   onEdit,
+  loadingProfile = false,
   loadingGallery = false,
 }: VenueProfileViewProps) {
   const venueName = profile.display_name || profile.username
@@ -101,9 +104,17 @@ export function VenueProfileView({
   const description = profile.open_hour || profile.detail_bio || 'No description available yet.'
   const capacity = profile.capacity || ''
   const amenities = profile.convenient_facilities || []
-  const type = Array.isArray(profile.business_types)
-    ? profile.business_types.join(', ')
-    : profile.business_types?.[0] || ''
+
+  // Map business types to their labels
+  const businessTypeValues = Array.isArray(profile.business_types)
+    ? profile.business_types
+    : profile.business_types
+      ? [profile.business_types]
+      : []
+
+  const businessTypeLabels = businessTypeValues
+    .map((value: string) => businessTypes.find((bt) => bt.value === value)?.label)
+    .filter(Boolean) as string[]
 
   const formatWebsiteUrl = (url: string): string => {
     if (!url) return ''
@@ -133,103 +144,144 @@ export function VenueProfileView({
         <div className="mx-auto max-w-[1320px]">
           <Card className="mb-8 bg-card border-border/40 shadow-lg">
             <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-8">
-                <Image
-                  unoptimized
-                  src={
-                    avatarUrl
-                      ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
-                      : '/images/profile/avatar-default.svg'
-                  }
-                  alt={venueName}
-                  width={128}
-                  height={128}
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-background shadow-lg shrink-0"
-                />
-
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                    <div>
-                      <h1 className="text-4xl font-bold mb-2">{venueName}</h1>
-                      <p className="text-muted-foreground text-lg">{type || 'Performance Venue'}</p>
+              {loadingProfile ? (
+                <div className="flex flex-col md:flex-row gap-8">
+                  <Skeleton className="w-32 h-32 rounded-2xl shrink-0" />
+                  <div className="flex-1 space-y-4">
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
                     </div>
-
-                    {isOwner ? (
-                      <Button onClick={onEdit} size="lg">
-                        Update Information
-                      </Button>
-                    ) : (
-                      <Button size="lg" variant="default" asChild>
-                        <Link href="/booking">Contact Venue</Link>
-                      </Button>
-                    )}
-                  </div>
-
-                  <p className="text-foreground/90 mb-6 leading-relaxed">{description}</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {location ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="w-5 h-5" />
-                        <span>{location}</span>
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-32" />
+                      <div className="flex flex-wrap gap-2">
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-6 w-16" />
                       </div>
-                    ) : null}
-                    {phone ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-5 h-5" />
-                        <a href={`tel:${phone}`} className="hover:text-primary transition-colors">
-                          {phone}
-                        </a>
-                      </div>
-                    ) : null}
-                    {email ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="w-5 h-5" />
-                        <a
-                          href={`mailto:${email}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {email}
-                        </a>
-                      </div>
-                    ) : null}
-                    {website ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Globe className="w-5 h-5" />
-                        <a
-                          href={formatWebsiteUrl(website)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors"
-                        >
-                          {website}
-                        </a>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold mb-3 flex items-center gap-2">
-                      <Building2 className="w-5 h-5" />
-                      Amenities & Services
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {amenities.length ? (
-                        amenities.map((amenity) => (
-                          <Badge key={amenity} variant="secondary">
-                            {amenity}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground">Amenities not updated</span>
-                      )}
+                      <Skeleton className="h-4 w-24" />
                     </div>
-                    {capacity ? (
-                      <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
-                    ) : null}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col md:flex-row gap-8">
+                  <Image
+                    unoptimized
+                    src={
+                      avatarUrl
+                        ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
+                        : '/images/profile/avatar-default.svg'
+                    }
+                    alt={venueName}
+                    width={128}
+                    height={128}
+                    className="w-32 h-32 rounded-2xl object-cover border-4 border-background shadow-lg shrink-0"
+                  />
+
+                  <div className="flex-1">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                      <div>
+                        <h1 className="text-4xl font-bold mb-2">{venueName}</h1>
+                        {businessTypeLabels.length > 0 ? (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {businessTypeLabels.map((label) => (
+                              <Badge
+                                key={label}
+                                variant="secondary"
+                                className="text-sm px-2 py-0.5"
+                              >
+                                {label}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-lg">Performance Venue</p>
+                        )}
+                      </div>
+
+                      {isOwner ? (
+                        <Button onClick={onEdit} size="lg">
+                          Update Information
+                        </Button>
+                      ) : (
+                        <Button size="lg" variant="default" asChild>
+                          <Link href="/booking">Contact Venue</Link>
+                        </Button>
+                      )}
+                    </div>
+
+                    <p className="text-foreground/90 mb-6 leading-relaxed">{description}</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      {location ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="w-5 h-5" />
+                          <span>{location}</span>
+                        </div>
+                      ) : null}
+                      {phone ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="w-5 h-5" />
+                          <a href={`tel:${phone}`} className="hover:text-primary transition-colors">
+                            {phone}
+                          </a>
+                        </div>
+                      ) : null}
+                      {email ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="w-5 h-5" />
+                          <a
+                            href={`mailto:${email}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {email}
+                          </a>
+                        </div>
+                      ) : null}
+                      {website ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Globe className="w-5 h-5" />
+                          <a
+                            href={formatWebsiteUrl(website)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors"
+                          >
+                            {website}
+                          </a>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <Building2 className="w-5 h-5" />
+                        Amenities & Services
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {amenities.length ? (
+                          amenities.map((amenity) => (
+                            <Badge key={amenity} variant="secondary">
+                              {amenity}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground">Amenities not updated</span>
+                        )}
+                      </div>
+                      {capacity ? (
+                        <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

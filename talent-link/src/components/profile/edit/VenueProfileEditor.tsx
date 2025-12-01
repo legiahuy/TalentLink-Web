@@ -25,6 +25,19 @@ import { toast } from 'sonner'
 import { venueService } from '@/services/venueService'
 import { userService } from '@/services/userService'
 import { UserRole } from '@/types/user'
+import { MultiSelect } from '@/components/ui/multi-select'
+
+export const businessTypes = [
+  { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
+  { label: 'Cafe (Quán cà phê)', value: 'cafe' },
+  { label: 'Bar / Club', value: 'bar_club' },
+  { label: 'Restaurant (Nhà hàng)', value: 'restaurant' },
+  { label: 'Outdoor Stage (Sân khấu ngoài trời)', value: 'outdoor_stage' },
+  { label: 'Theater (Nhà hát)', value: 'theater' },
+  { label: 'Event Center (Trung tâm sự kiện)', value: 'event_center' },
+]
+
+export type BusinessType = (typeof businessTypes)[number]['value']
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
@@ -190,7 +203,14 @@ export default function VenueProfileEditor() {
           userService.getMyCover().catch(() => null),
         ])
 
-        setGallery(mediaRes?.media || mediaRes || [])
+        const mediaArray = mediaRes?.media || mediaRes || []
+        // Filter to only show portfolio media (exclude avatar and cover)
+        setGallery(
+          mediaArray.filter(
+            (m: { id: string; file_url?: string; file_name?: string; media_type?: string }) =>
+              m?.file_url && m?.media_type === 'portfolio',
+          ),
+        )
         setAvatarUrl(avatarRes?.file_url || user?.avatar_url || null)
         setCoverUrl(coverRes?.file_url || user?.cover_url || null)
         setCacheBust(Date.now())
@@ -738,17 +758,16 @@ export default function VenueProfileEditor() {
                     </div>
                     <div>
                       <Label htmlFor="business_type">Business Type</Label>
-                      <Input
-                        id="business_type"
-                        name="business_type"
-                        value={formBasic.business_type.join(', ')}
-                        onChange={(e) =>
+                      <MultiSelect
+                        options={businessTypes}
+                        selected={formBasic.business_type}
+                        onChange={(selected) =>
                           setFormBasic((prev) => ({
                             ...prev,
-                            business_type: e.target.value.split(',').map((s) => s.trim()),
+                            business_type: selected,
                           }))
                         }
-                        placeholder="e.g., Live Music Venue, Bar, Restaurant"
+                        placeholder="Select business types..."
                       />
                     </div>
                     <div>
@@ -887,29 +906,31 @@ export default function VenueProfileEditor() {
                     <p className="text-muted-foreground">No portfolio photos yet.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                      {gallery.map((m) => (
-                        <div
-                          key={m.id}
-                          className="group relative overflow-hidden rounded-xl border"
-                        >
-                          <Image
-                            unoptimized
-                            src={m.file_url}
-                            alt={m.file_name || 'Gallery'}
-                            width={300}
-                            height={300}
-                            className="h-44 w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteMedia(m.id)}
-                            disabled={deletingId === m.id}
-                            className="absolute right-2 top-2 hidden rounded-full bg-background/80 p-2 text-destructive shadow transition group-hover:flex"
+                      {gallery
+                        .filter((m) => m?.file_url)
+                        .map((m) => (
+                          <div
+                            key={m.id}
+                            className="group relative overflow-hidden rounded-xl border"
                           >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                            <Image
+                              unoptimized
+                              src={m.file_url}
+                              alt={m.file_name || 'Gallery'}
+                              width={300}
+                              height={300}
+                              className="h-44 w-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteMedia(m.id)}
+                              disabled={deletingId === m.id}
+                              className="absolute right-2 top-2 hidden rounded-full bg-background/80 p-2 text-destructive shadow transition group-hover:flex"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                     </div>
                   )}
                 </SectionCard>

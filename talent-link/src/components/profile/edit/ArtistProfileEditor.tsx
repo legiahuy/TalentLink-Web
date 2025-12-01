@@ -214,7 +214,9 @@ export default function ArtistProfileEditor() {
           userService.getMyCover().catch(() => null),
           userService.getGenres().catch(() => []),
         ])
-        setGallery(mediaRes.media || [])
+        // Filter to only show portfolio media (exclude avatar and cover)
+        const allMedia = mediaRes.media || []
+        setGallery(allMedia.filter((m) => m.media_type === 'portfolio'))
         setAvatarUrl(avatarRes?.file_url || meRes?.avatar_url || null)
         setCoverUrl(coverRes?.file_url || meRes?.cover_url || null)
         // Ensure genresRes is an array before mapping

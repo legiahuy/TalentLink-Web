@@ -53,8 +53,11 @@ const ProfilePage = () => {
     let active = true
 
     if (!username) {
-      setError('Username không hợp lệ')
-      setLoading(false)
+      // set error flags after this synchronous effect
+      Promise.resolve().then(() => {
+        setError('Username không hợp lệ')
+        setLoading(false)
+      })
       return
     }
 
@@ -71,6 +74,7 @@ const ProfilePage = () => {
         setAvatarUrl(userData.avatar_url ?? null)
         setCoverUrl(userData.cover_url ?? null)
         setLoading(false)
+        // Profile data is loaded, so loadingProfile is false
 
         // Load additional data in parallel
         const loadMedia = userService
@@ -190,6 +194,7 @@ const ProfilePage = () => {
         coverUrl={coverUrl}
         isOwner={isOwnProfile}
         onEdit={handleEdit}
+        loadingProfile={loading}
         loadingGallery={loadingGallery}
       />
     )
