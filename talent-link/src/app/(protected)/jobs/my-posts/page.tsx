@@ -251,7 +251,7 @@ const MyJobPostsPage = () => {
                               View listing
                             </Button>
                             <Button variant="outline" asChild>
-                              <Link href={`/jobs/${job.id}#applications`}>
+                              <Link href={`/jobs/${job.id}/applications`}>
                                 <Users className="mr-2 h-4 w-4" />
                                 View applicants
                               </Link>

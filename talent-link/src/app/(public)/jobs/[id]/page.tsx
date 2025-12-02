@@ -10,6 +10,7 @@ import {
   Send,
   MessageCircle,
   BookmarkCheck,
+  FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +21,6 @@ import { MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
 import type { JobPost } from '@/types/job'
 import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 import { jobService } from '@/services/jobService'
-import { userService } from '@/services/userService'
 import { resolveMediaUrl } from '@/lib/utils'
 
 interface JobWithCreator extends JobPost {
@@ -41,6 +41,8 @@ const JobDetailPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [isApplicationOpen, setIsApplicationOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [hasApplied, setHasApplied] = useState(false)
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
 
   // Load saved state from localStorage
   useEffect(() => {
@@ -93,23 +95,22 @@ const JobDetailPage = () => {
           return
         }
 
-        // Fetch creator info
+        // Backend already returns creator_name, creator_username, creator_avatar
+        setJob(jobData)
+
+        // Check if user has already applied
         try {
-          const creator = await userService.getUser(jobData.creator_id)
-          setJob({
-            ...jobData,
-            creatorName: creator.display_name || creator.username,
-            creatorAvatar: creator.avatar_url,
-            creatorUsername: creator.username,
-          })
+          const mySubmissions = await jobService.getMySubmissions()
+          const myApplication = (mySubmissions as any).submissions?.find(
+            (sub: any) => sub.job?.id === jobId,
+          )
+          if (myApplication) {
+            setHasApplied(true)
+            setApplicationStatus(myApplication.status)
+          }
         } catch (err) {
-          console.error('Failed to fetch creator info', err)
-          setJob({
-            ...jobData,
-            creatorName: 'Unknown',
-            creatorAvatar: undefined,
-            creatorUsername: undefined,
-          })
+          // Silently fail - user might not be logged in
+          console.error('Failed to check application status', err)
         }
       } catch (e) {
         console.error('Error loading job', e)
@@ -408,13 +409,50 @@ const JobDetailPage = () => {
             <div className="lg:col-span-1">
               <Card className="lg:sticky lg:top-24 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-6 space-y-4">
-                  <Button
-                    className="w-full bg-primary hover:bg-primary/90 hidden sm:flex"
-                    size="lg"
-                    onClick={() => setIsApplicationOpen(true)}
-                  >
-                    Apply Now
-                  </Button>
+                  {hasApplied ? (
+                    <div className="space-y-2">
+                      <div className="w-full bg-muted/50 border rounded-lg p-4 text-center hidden sm:block">
+                        <p className="text-sm font-medium mb-2">Application Status</p>
+                        <Badge
+                          variant={
+                            applicationStatus === 'accepted'
+                              ? 'default'
+                              : applicationStatus === 'rejected'
+                                ? 'destructive'
+                                : 'secondary'
+                          }
+                          className="text-sm"
+                        >
+                          {applicationStatus === 'pending_review'
+                            ? 'Pending Review'
+                            : applicationStatus === 'under_review'
+                              ? 'Under Review'
+                              : applicationStatus === 'accepted'
+                                ? 'Accepted'
+                                : applicationStatus === 'rejected'
+                                  ? 'Rejected'
+                                  : applicationStatus?.charAt(0).toUpperCase() + applicationStatus?.slice(1).replace('_', ' ') || 'Applied'}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full hidden sm:flex"
+                        size="lg"
+                        asChild
+                      >
+                        <Link href="/jobs/my-applications">View My Applications</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full bg-primary hover:bg-primary/90 hidden sm:flex"
+                      size="lg"
+                      onClick={() => setIsApplicationOpen(true)}
+                      disabled={job?.status !== 'published' || job?.is_deadline_passed}
+                    >
+                      Apply Now
+                    </Button>
+                  )}
 
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={toggleSave}>
@@ -497,13 +535,23 @@ const JobDetailPage = () => {
       {/* Mobile Fixed Bottom Actions */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-3 z-50 shadow-lg">
         <div className="flex gap-2">
-          <Button
-            className="flex-1 h-12 bg-primary hover:bg-primary/90"
-            onClick={() => setIsApplicationOpen(true)}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Apply
-          </Button>
+          {hasApplied ? (
+            <Button variant="outline" className="flex-1 h-12" asChild>
+              <Link href="/jobs/my-applications">
+                <FileText className="w-4 h-4 mr-2" />
+                View Application
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              className="flex-1 h-12 bg-primary hover:bg-primary/90"
+              onClick={() => setIsApplicationOpen(true)}
+              disabled={job?.status !== 'published' || job?.is_deadline_passed}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Apply
+            </Button>
+          )}
           <Button variant="outline" className="flex-1 h-12">
             <MessageCircle className="w-4 h-4 mr-2" />
             Message
@@ -514,10 +562,31 @@ const JobDetailPage = () => {
       {job && (
         <ApplicationDialog
           open={isApplicationOpen}
-          onOpenChange={setIsApplicationOpen}
+          onOpenChange={(open) => {
+            setIsApplicationOpen(open)
+            if (!open) {
+              // Refresh application status after dialog closes
+              const checkApplication = async () => {
+                try {
+                  const mySubmissions = await jobService.getMySubmissions()
+                  const myApplication = (mySubmissions as any).submissions?.find(
+                    (sub: any) => sub.job?.id === jobId,
+                  )
+                  if (myApplication) {
+                    setHasApplied(true)
+                    setApplicationStatus(myApplication.status)
+                  }
+                } catch (err) {
+                  // Silently fail
+                  console.error('Failed to check application status', err)
+                }
+              }
+              checkApplication()
+            }
+          }}
           jobId={job.id}
           jobTitle={job.title}
-          companyName={job.creatorName || 'Unknown'}
+          companyName={job.creator_name || 'Unknown'}
         />
       )}
     </div>

@@ -13,6 +13,9 @@ export interface JobPost {
   // Creator Info
   creator_id: string
   creator_role: string
+  creator_name?: string
+  creator_username?: string
+  creator_avatar?: string
   
   // Location
   location?: string

@@ -17,14 +17,8 @@ import { useRouter } from 'next/navigation'
 import { resolveMediaUrl } from '@/lib/utils'
 import type { JobPost } from '@/types/job'
 
-interface JobWithCreator extends JobPost {
-  creatorName?: string
-  creatorAvatar?: string
-  creatorUsername?: string
-}
-
 interface JobCardProps {
-  job: JobWithCreator
+  job: JobPost
   onApply?: (jobId: string) => void
   onViewDetails?: (jobId: string) => void
   onToggleSave?: (jobId: string, isSaved: boolean) => void
@@ -94,8 +88,8 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
 
   const handleCreatorClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (job.creatorUsername) {
-      router.push(`/profile/${job.creatorUsername}`)
+    if (job.creator_username) {
+      router.push(`/profile/${job.creator_username}`)
     }
   }
 
@@ -105,9 +99,9 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
         <div className="flex items-start gap-4">
           <button onClick={handleCreatorClick} className="shrink-0 cursor-pointer">
             <Avatar className="w-14 h-14 rounded-lg border-2 border-border hover:border-primary transition-colors">
-              <AvatarImage src={resolveMediaUrl(job.creatorAvatar)} alt={job.creatorName || 'Unknown'} />
+              <AvatarImage src={resolveMediaUrl(job.creator_avatar)} alt={job.creator_name || 'Unknown'} />
               <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                {(job.creatorName || 'Unknown')
+                {(job.creator_name || 'Unknown')
                   .split(' ')
                   .map((word) => word[0])
                   .join('')
@@ -128,7 +122,7 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
                   className="text-left hover:underline"
                 >
                   <CardDescription className="font-medium text-base">
-                    {job.creatorName || 'Unknown'}
+                    {job.creator_name || 'Unknown'}
                   </CardDescription>
                 </button>
               </div>

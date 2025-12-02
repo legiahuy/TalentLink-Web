@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Search, Plus, Briefcase, X, Sparkles, Music, Building2, Loader2 } from 'lucide-react'
+import { Search, Plus, Briefcase, X, Sparkles, Loader2, Mic, Disc } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
@@ -18,16 +18,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { jobService } from '@/services/jobService'
-import { userService } from '@/services/userService'
 import type { JobPost, JobPostFilters } from '@/types/job'
 
-type JobType = 'all' | 'job_offer' | 'gig' | 'availability' | 'saved'
+type JobType = 'all' | 'producer' | 'musician' | 'saved'
 
-interface JobWithCreator extends JobPost {
-  creatorName?: string
-  creatorAvatar?: string
-  creatorUsername?: string
-}
+// Backend now returns creator_name, creator_username, creator_avatar directly
+type JobWithCreator = JobPost
 
 const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
 
@@ -94,10 +90,7 @@ const JobPool = () => {
           page_size: 20,
         }
 
-        // Add tab filter (post_type)
-        if (activeTab !== 'all' && activeTab !== 'saved') {
-          filters.post_type = activeTab
-        }
+        // Note: Filter by type will be done on frontend since backend doesn't support it
 
         // Add genre filter
         if (selectedGenre !== 'all') {
@@ -112,37 +105,15 @@ const JobPool = () => {
         response = await jobService.listJobs(filters)
       }
 
-      // Fetch creator info for each job
-      const jobsWithCreators = await Promise.all(
-        response.posts.map(async (job) => {
-          try {
-            const creator = await userService.getUser(job.creator_id)
-            return {
-              ...job,
-              creatorName: creator.display_name || creator.username,
-              creatorAvatar: creator.avatar_url,
-              creatorUsername: creator.username,
-            }
-          } catch (err) {
-            console.error(`Failed to fetch creator for job ${job.id}`, err)
-            return {
-              ...job,
-              creatorName: 'Unknown',
-              creatorAvatar: undefined,
-              creatorUsername: undefined,
-            }
-          }
-        }),
-      )
-
-      setJobs(jobsWithCreators)
+      // Backend already returns creator_name, creator_username, creator_avatar
+      setJobs(response.posts)
     } catch (error) {
       console.error('Failed to fetch jobs', error)
       setJobs([])
     } finally {
       setLoading(false)
     }
-  }, [debouncedSearch, activeTab, selectedGenre, selectedLocation])
+  }, [debouncedSearch, selectedGenre, selectedLocation])
 
   // Fetch jobs when filters or search change
   useEffect(() => {
@@ -171,10 +142,16 @@ const JobPool = () => {
   }, [jobs])
 
   const filteredJobs = useMemo(() => {
+    let filtered = jobs
+
+    // Filter by tab (type field - looking for roles)
     if (activeTab === 'saved') {
-      return jobs.filter((j) => savedJobs.has(j.id))
+      filtered = jobs.filter((j) => savedJobs.has(j.id))
+    } else if (activeTab !== 'all') {
+      filtered = jobs.filter((j) => j.type === activeTab)
     }
-    return jobs
+
+    return filtered
   }, [jobs, activeTab, savedJobs])
 
   const hasActiveFilters =
@@ -398,22 +375,18 @@ const JobPool = () => {
             <div className="flex-1 min-w-0">
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as JobType)}>
                 <div className="flex items-center justify-between mb-6">
-                  <TabsList className="grid w-full max-w-xl grid-cols-5 bg-muted/50">
+                  <TabsList className="grid w-full max-w-xl grid-cols-4 bg-muted/50">
                     <TabsTrigger value="all" className="gap-1.5 text-xs">
                       <Sparkles className="w-3.5 h-3.5" />
                       All
                     </TabsTrigger>
-                    <TabsTrigger value="job_offer" className="gap-1.5 text-xs">
-                      <Briefcase className="w-3.5 h-3.5" />
-                      Jobs
+                    <TabsTrigger value="producer" className="gap-1.5 text-xs">
+                      <Disc className="w-3.5 h-3.5" />
+                      For Producers
                     </TabsTrigger>
-                    <TabsTrigger value="gig" className="gap-1.5 text-xs">
-                      <Music className="w-3.5 h-3.5" />
-                      Gigs
-                    </TabsTrigger>
-                    <TabsTrigger value="availability" className="gap-1.5 text-xs">
-                      <Building2 className="w-3.5 h-3.5" />
-                      Availability
+                    <TabsTrigger value="musician" className="gap-1.5 text-xs">
+                      <Mic className="w-3.5 h-3.5" />
+                      For Singers
                     </TabsTrigger>
                     <TabsTrigger value="saved" className="gap-1.5 text-xs">
                       <Briefcase className="w-3.5 h-3.5" />
@@ -460,7 +433,7 @@ const JobPool = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="job_offer" className="mt-0">
+                <TabsContent value="producer" className="mt-0">
                   {loading ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -479,16 +452,16 @@ const JobPool = () => {
                     </div>
                   ) : (
                     <Card className="p-12 text-center">
-                      <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No job offers found</h3>
+                      <Disc className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">No jobs for producers found</h3>
                       <p className="text-muted-foreground">
-                        No job offers match your current filters.
+                        No jobs looking for producers match your current filters.
                       </p>
                     </Card>
                   )}
                 </TabsContent>
 
-                <TabsContent value="gig" className="mt-0">
+                <TabsContent value="musician" className="mt-0">
                   {loading ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -507,36 +480,10 @@ const JobPool = () => {
                     </div>
                   ) : (
                     <Card className="p-12 text-center">
-                      <Music className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No gigs found</h3>
-                      <p className="text-muted-foreground">No gigs match your current filters.</p>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="availability" className="mt-0">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : filteredJobs.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                      {filteredJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSaved={savedJobs.has(job.id)}
-                          onToggleSave={handleToggleSave}
-                          onViewDetails={handleViewDetails}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card className="p-12 text-center">
-                      <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No availability posts found</h3>
+                      <Mic className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">No jobs for singers found</h3>
                       <p className="text-muted-foreground">
-                        No availability posts match your current filters.
+                        No jobs looking for singers match your current filters.
                       </p>
                     </Card>
                   )}
