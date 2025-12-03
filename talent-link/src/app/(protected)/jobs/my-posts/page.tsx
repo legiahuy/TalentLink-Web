@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { jobService } from '@/services/jobService'
 import type { JobPost } from '@/types/job'
-import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users } from 'lucide-react'
+import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users, Edit } from 'lucide-react'
 
 type StatusFilter = 'all' | 'draft' | 'published' | 'closed'
 
@@ -254,6 +254,12 @@ const MyJobPostsPage = () => {
                               <Link href={`/jobs/${job.id}/applications`}>
                                 <Users className="mr-2 h-4 w-4" />
                                 View applicants
+                              </Link>
+                            </Button>
+                            <Button variant="outline" asChild>
+                              <Link href={`/jobs/${job.id}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
                               </Link>
                             </Button>
                             <Button
