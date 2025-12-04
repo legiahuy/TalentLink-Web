@@ -26,6 +26,7 @@ import { venueService } from '@/services/venueService'
 import { userService } from '@/services/userService'
 import { UserRole } from '@/types/user'
 import { MultiSelect } from '@/components/ui/multi-select'
+import { resolveMediaUrl } from '@/lib/utils'
 
 export const businessTypes = [
   { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
@@ -93,7 +94,7 @@ export default function VenueProfileEditor() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null)
   const [gallery, setGallery] = useState<
-    Array<{ id: string; file_url: string; file_name?: string }>
+    Array<{ id: string; file_url: string; file_name?: string; updated_at?: string }>
   >([])
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -198,18 +199,22 @@ export default function VenueProfileEditor() {
         setFormAdditional(additionalData)
 
         const [mediaRes, avatarRes, coverRes] = await Promise.all([
-          venueService.getMedia().catch(() => ({ media: [] })),
+          userService.getMyMedia(false).catch(() => ({ media: [], total: 0 })),
           userService.getMyAvatar().catch(() => null),
           userService.getMyCover().catch(() => null),
         ])
 
-        const mediaArray = mediaRes?.media || mediaRes || []
         // Filter to only show portfolio media (exclude avatar and cover)
+        const allMedia = mediaRes.media || []
         setGallery(
-          mediaArray.filter(
-            (m: { id: string; file_url?: string; file_name?: string; media_type?: string }) =>
-              m?.file_url && m?.media_type === 'portfolio',
-          ),
+          allMedia
+            .filter((m) => m.media_type === 'portfolio')
+            .map((m) => ({
+              id: m.id,
+              file_url: m.file_url,
+              file_name: m.file_name,
+              updated_at: m.updated_at,
+            })),
         )
         setAvatarUrl(avatarRes?.file_url || user?.avatar_url || null)
         setCoverUrl(coverRes?.file_url || user?.cover_url || null)
@@ -397,10 +402,19 @@ export default function VenueProfileEditor() {
     try {
       setUploadingGallery(true)
       for (const file of files) {
-        const media = await venueService.uploadMedia(file)
-        setGallery((prev) => [media, ...prev])
+        const media = await userService.uploadMedia(file)
+        // Map Media to gallery format (same as ArtistProfileEditor)
+        setGallery((prev) => [
+          {
+            id: media.id,
+            file_url: media.file_url,
+            file_name: media.file_name,
+            updated_at: media.updated_at,
+          },
+          ...prev,
+        ])
       }
-      toast.success(`Uploaded ${files.length} images`)
+      toast.success(`Uploaded ${files.length} image${files.length > 1 ? 's' : ''}`)
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:add' } }))
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to upload images')
@@ -425,7 +439,7 @@ export default function VenueProfileEditor() {
     setDeleteDialogOpen(false)
     setMediaToDelete(null)
     try {
-      await venueService.deleteMedia(id)
+      await userService.deleteMedia(id)
       toast.success('Image deleted')
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'media:delete' } }))
     } catch (error: unknown) {
@@ -915,7 +929,7 @@ export default function VenueProfileEditor() {
                           >
                             <Image
                               unoptimized
-                              src={m.file_url}
+                              src={`${resolveMediaUrl(m.file_url)}?v=${m.updated_at ?? ''}`}
                               alt={m.file_name || 'Gallery'}
                               width={300}
                               height={300}

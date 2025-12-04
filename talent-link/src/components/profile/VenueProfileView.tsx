@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import EventCard from '@/components/event/EventCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Phone, Mail, Globe, Building2 } from 'lucide-react'
+import { MapPin, Phone, Mail, Globe, Building2, Users } from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
 import { businessTypes } from '@/components/profile/edit/VenueProfileEditor'
@@ -257,6 +257,12 @@ export function VenueProfileView({
                           </a>
                         </div>
                       ) : null}
+                      {capacity ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Users className="w-5 h-5" />
+                          <span>Capacity: {capacity}</span>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div>
@@ -275,9 +281,6 @@ export function VenueProfileView({
                           <span className="text-muted-foreground">Amenities not updated</span>
                         )}
                       </div>
-                      {capacity ? (
-                        <p className="text-sm text-muted-foreground mt-3">Capacity: {capacity}</p>
-                      ) : null}
                     </div>
                   </div>
                 </div>

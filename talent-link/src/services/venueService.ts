@@ -47,7 +47,8 @@ export const venueService = {
     const form = new FormData()
     form.append('file', file)
     const res = await axiosClient.post('/users/me/media', form)
-    return res.data.data
+    // Handle different response formats
+    return res.data?.data ?? res.data
   },
 
   deleteMedia: async (id: string): Promise<void> => {
