@@ -1,0 +1,1029 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TalentLink Search and Matching Service API",
+    "description": "API for advanced job search, matching, and user profile search functionality in TalentLink platform",
+    "termsOfService": "https://talentlink.io.vn/terms/",
+    "contact": {
+      "name": "TalentLink Support",
+      "url": "https://talentlink.io.vn/support",
+      "email": "support@talentlink.io.vn"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "host": "//talentlink.io.vn",
+  "basePath": "/api/v1",
+  "paths": {
+    "/api/search/jobs": {
+      "post": {
+        "tags": ["Job Search"],
+        "summary": "Search job posts",
+        "description": "Search job posts with advanced filtering and pagination",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "request",
+            "description": "Job search request with filters and pagination",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.JobSearchRequestDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job search results with pagination",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.JobSearchResultDto"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 400,
+                "message": "Failure",
+                "data": null,
+                "errors": ["Query string must not be empty"]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/search/jobs/{id}": {
+      "get": {
+        "tags": ["Job Search"],
+        "summary": "Get job post by ID",
+        "description": "Get a specific job post by ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Job post ID (UUID)",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job post details",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.JobPostSearchDto"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "404": {
+            "description": "Job post not found",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 404,
+                "message": "Failure",
+                "data": null,
+                "errors": ["Job post with id [some-id] not found"]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/search/jobs/suggestions": {
+      "get": {
+        "tags": ["Job Search"],
+        "summary": "Get job post suggestions",
+        "description": "Get job post suggestions for autocomplete functionality",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Search query for suggestions",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "maxSuggestions",
+            "description": "Maximum number of suggestions to return",
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of job post suggestions",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 400,
+                "message": "Failure",
+                "data": null,
+                "errors": ["Query must be provided"]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/search/jobs/filters": {
+      "get": {
+        "tags": ["Job Search"],
+        "summary": "Get job post filters",
+        "description": "Get available filters for job post search",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Available filters for job search",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.JobPostFiltersDto"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/search/users": {
+      "post": {
+        "tags": ["User Search"],
+        "summary": "Search user profiles",
+        "description": "Search user profiles with filters and pagination",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "request",
+            "description": "User search request with filters and pagination",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Users.UserSearchRequestDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User search results with pagination",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Users.UserSearchResultDto"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 400,
+                "message": "Failure",
+                "data": null,
+                "errors": ["Query string must not be empty"]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/search/users/{id}": {
+      "get": {
+        "tags": ["User Search"],
+        "summary": "Get user profile by ID",
+        "description": "Get a specific user profile by ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User ID (UUID)",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile details",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Users.UserSearchDto"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 404,
+                "message": "Failure",
+                "data": null,
+                "errors": ["User not found"]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Commons.ApiResult"
+            },
+            "examples": {
+              "application/json": {
+                "code": 500,
+                "message": "Failure",
+                "data": null,
+                "errors": ["An unexpected error occurred"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "SearchAndMatchingService.Application.DTOs.Commons.ApiResult": {
+      "required": ["code", "message"],
+      "type": "object",
+      "properties": {
+        "code": {
+          "format": "int32",
+          "description": "HTTP-like status code mirrored in payload",
+          "type": "integer",
+          "example": 200
+        },
+        "message": {
+          "description": "Human-readable status message",
+          "type": "string",
+          "example": "OK"
+        },
+        "data": {
+          "description": "The response data (type varies by endpoint)",
+          "type": "object"
+        },
+        "errors": {
+          "description": "List of error messages (if any)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.JobSearchRequestDto": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "postType": {
+          "type": "string"
+        },
+        "creatorRole": {
+          "type": "string"
+        },
+        "locationType": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "budgetMin": {
+          "format": "double",
+          "type": "number"
+        },
+        "budgetMax": {
+          "format": "double",
+          "type": "number"
+        },
+        "budgetCurrency": {
+          "default": "USD",
+          "type": "string"
+        },
+        "paymentType": {
+          "type": "string"
+        },
+        "deadlineFrom": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deadlineTo": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "startDateFrom": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "startDateTo": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "experienceLevel": {
+          "type": "string"
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredSkills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "page": {
+          "default": 1,
+          "type": "integer"
+        },
+        "pageSize": {
+          "default": 20,
+          "type": "integer"
+        },
+        "sortBy": {
+          "default": "createdAt",
+          "type": "string"
+        },
+        "sortOrder": {
+          "default": "desc",
+          "type": "string"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.JobSearchResultDto": {
+      "required": ["jobPosts", "totalCount", "page", "pageSize", "totalPages", "searchTime"],
+      "type": "object",
+      "properties": {
+        "jobPosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.JobPostSearchDto"
+          }
+        },
+        "totalCount": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        },
+        "totalPages": {
+          "type": "integer"
+        },
+        "searchTime": {
+          "format": "duration",
+          "type": "string"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Users.UserFilterDto": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "openHour": {
+          "type": "string"
+        },
+        "rentPrice": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "string"
+        },
+        "businessTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "convenientFacilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "page": {
+          "default": 1,
+          "type": "integer"
+        },
+        "pageSize": {
+          "default": 20,
+          "type": "integer"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Users.UserSearchRequestDto": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "openHour": {
+          "type": "string"
+        },
+        "rentPrice": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "string"
+        },
+        "businessTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "convenientFacilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "page": {
+          "default": 1,
+          "type": "integer"
+        },
+        "pageSize": {
+          "default": 20,
+          "type": "integer"
+        },
+        "sortBy": {
+          "default": "displayName",
+          "type": "string"
+        },
+        "sortOrder": {
+          "default": "desc",
+          "type": "string"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Users.UserSearchResultDto": {
+      "required": ["userProfiles", "totalCount", "page", "pageSize", "totalPages", "searchTime"],
+      "type": "object",
+      "properties": {
+        "userProfiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Users.UserSearchDto"
+          }
+        },
+        "totalCount": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        },
+        "totalPages": {
+          "type": "integer"
+        },
+        "searchTime": {
+          "format": "duration",
+          "type": "string"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.JobPostSearchDto": {
+      "required": [
+        "id",
+        "creatorId",
+        "creatorRole",
+        "postType",
+        "title",
+        "description",
+        "status",
+        "visibility",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ],
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "creatorId": {
+          "type": "string"
+        },
+        "creatorUsername": {
+          "type": "string"
+        },
+        "creatorDisplayName": {
+          "type": "string"
+        },
+        "creatorAvatarUrl": {
+          "type": "string"
+        },
+        "creatorRole": {
+          "type": "string"
+        },
+        "postType": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "locationType": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "venueAddress": {
+          "type": "string"
+        },
+        "locationText": {
+          "type": "string"
+        },
+        "budgetMin": {
+          "format": "double",
+          "type": "number"
+        },
+        "budgetMax": {
+          "format": "double",
+          "type": "number"
+        },
+        "budgetCurrency": {
+          "type": "string"
+        },
+        "paymentType": {
+          "type": "string"
+        },
+        "deadline": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "experienceLevel": {
+          "type": "string"
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredSkills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "string"
+        },
+        "viewsCount": {
+          "type": "integer"
+        },
+        "applicationsCount": {
+          "type": "integer"
+        },
+        "bookingsCount": {
+          "type": "integer"
+        },
+        "publishedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "closedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.JobSuggestionsRequestDto": {
+      "required": ["query"],
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "maxSuggestions": {
+          "default": 10,
+          "type": "integer"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.JobPostFiltersDto": {
+      "type": "object",
+      "properties": {
+        "postTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "creatorRoles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "locationTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "paymentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experienceLevels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredSkills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "budgetRange": {
+          "$ref": "#/definitions/SearchAndMatchingService.Application.DTOs.Jobs.BudgetRangeDto"
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Jobs.BudgetRangeDto": {
+      "required": ["min", "max", "currencies"],
+      "type": "object",
+      "properties": {
+        "min": {
+          "format": "double",
+          "type": "number"
+        },
+        "max": {
+          "format": "double",
+          "type": "number"
+        },
+        "currencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SearchAndMatchingService.Application.DTOs.Users.UserSearchDto": {
+      "required": ["id", "email", "username", "role", "isValidated", "displayName"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "isValidated": {
+          "type": "boolean"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "genres": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchAndMatchingService.Domain.Users.Genre"
+          }
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "briefBio": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "string"
+        },
+        "openHour": {
+          "type": "string"
+        },
+        "rentPrice": {
+          "type": "string"
+        },
+        "businessTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "convenientFacilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SearchAndMatchingService.Domain.Users.Genre": {
+      "required": ["id", "name"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Type \"Bearer\" followed by a space and JWT token."
+    }
+  }
+}

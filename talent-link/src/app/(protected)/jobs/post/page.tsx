@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { ArrowLeft, Briefcase, Loader2, Plus, X } from 'lucide-react'
+import { ArrowLeft, Loader2, Plus, X } from 'lucide-react'
 
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
@@ -129,7 +129,7 @@ const JobPostFormPage = () => {
   const canSubmit = useMemo(() => {
     if (!title.trim()) return false
     if (!location.trim()) return false
-    if (!description.trim()) return false
+    if (!description.trim() || description.trim().length < 20) return false
     if (!salaryMin) return false
     if (!salaryPeriod) return false
     if (selectedGenres.length === 0) return false
@@ -164,10 +164,22 @@ const JobPostFormPage = () => {
     )
   }
 
+  const formatDeadline = (dateString: string): string => {
+    if (!dateString) return ''
+    // Convert YYYY-MM-DD (from date input) to dd-mm-yyyy (backend format)
+    // dateString format: "2025-12-12" -> "12-12-2025"
+    const [year, month, day] = dateString.split('-')
+    return `${day}-${month}-${year}`
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!canSubmit) {
-      toast.error('Please fill in all required fields.')
+      if (description.trim().length < 20) {
+        toast.error('Description must be at least 20 characters.')
+      } else {
+        toast.error('Please fill in all required fields.')
+      }
       return
     }
     setSubmitting(true)
@@ -187,7 +199,7 @@ const JobPostFormPage = () => {
         payment_type: salaryPeriod,
         is_negotiable: salaryNegotiable,
         work_time: schedule.trim() || undefined,
-        submission_deadline: deadline || undefined,
+        submission_deadline: deadline ? formatDeadline(deadline) : undefined,
         required_skills: requirements.length ? requirements : undefined,
         benefits: benefits.length ? benefits : undefined,
         genres: selectedGenres,
@@ -305,7 +317,19 @@ const JobPostFormPage = () => {
                         onChange={(event) => setDescription(event.target.value)}
                         rows={8}
                         required
+                        minLength={20}
                       />
+                      {description.trim().length > 0 && description.trim().length < 20 && (
+                        <p className="text-xs text-destructive">
+                          Description must be at least 20 characters ({description.trim().length}
+                          /20)
+                        </p>
+                      )}
+                      {description.trim().length >= 20 && (
+                        <p className="text-xs text-muted-foreground">
+                          {description.trim().length} characters
+                        </p>
+                      )}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
@@ -352,7 +376,7 @@ const JobPostFormPage = () => {
                           {requirements.map((item, index) => (
                             <div
                               key={`${item}-${index}`}
-                              className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
+                              className="flex items-center gap-2 rounded-md bg-muted/70 p-3"
                             >
                               <span className="text-primary">•</span>
                               <span className="flex-1 text-sm">{item}</span>
@@ -395,7 +419,7 @@ const JobPostFormPage = () => {
                           {benefits.map((item, index) => (
                             <div
                               key={`${item}-${index}`}
-                              className="flex items-start gap-2 rounded-md bg-muted/70 p-3"
+                              className="flex items-center gap-2 rounded-md bg-muted/70 p-3 justify-center"
                             >
                               <span className="text-primary">•</span>
                               <span className="flex-1 text-sm">{item}</span>

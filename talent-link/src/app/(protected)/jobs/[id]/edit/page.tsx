@@ -77,8 +77,30 @@ const defaultCurrency: NonNullable<UpdateJobPostRequest['budget_currency']> = 'V
 
 const formatDateForInput = (dateString?: string) => {
   if (!dateString) return ''
+  // Parse from backend format dd-mm-yyyy to YYYY-MM-DD (for date input)
+  // dateString format: "12-12-2025" -> "2025-12-12"
+  const parts = dateString.split('-')
+  if (parts.length === 3) {
+    const [day, month, year] = parts
+    // Validate and format
+    if (day && month && year && day.length === 2 && month.length === 2 && year.length === 4) {
+      return `${year}-${month}-${day}`
+    }
+  }
+  // Fallback: try to parse as ISO date
   const date = new Date(dateString)
-  return date.toISOString().split('T')[0]
+  if (!isNaN(date.getTime())) {
+    return date.toISOString().split('T')[0]
+  }
+  return ''
+}
+
+const formatDeadline = (dateString: string): string => {
+  if (!dateString) return ''
+  // Convert YYYY-MM-DD (from date input) to dd-mm-yyyy (backend format)
+  // dateString format: "2025-12-12" -> "12-12-2025"
+  const [year, month, day] = dateString.split('-')
+  return `${day}-${month}-${year}`
 }
 
 const JobEditPage = () => {
@@ -192,7 +214,7 @@ const JobEditPage = () => {
   const canSubmit = useMemo(() => {
     if (!title.trim()) return false
     if (!location.trim()) return false
-    if (!description.trim()) return false
+    if (!description.trim() || description.trim().length < 20) return false
     if (!salaryMin) return false
     if (!salaryPeriod) return false
     if (selectedGenres.length === 0) return false
@@ -233,7 +255,11 @@ const JobEditPage = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!canSubmit) {
-      toast.error('Please fill in all required fields.')
+      if (description.trim().length < 20) {
+        toast.error('Description must be at least 20 characters.')
+      } else {
+        toast.error('Please fill in all required fields.')
+      }
       return
     }
     if (isClosed) {
@@ -257,7 +283,7 @@ const JobEditPage = () => {
         payment_type: salaryPeriod,
         is_negotiable: salaryNegotiable,
         work_time: schedule.trim() || undefined,
-        submission_deadline: deadline || undefined,
+        submission_deadline: deadline ? formatDeadline(deadline) : undefined,
         required_skills: requirements.length ? requirements : undefined,
         benefits: benefits.length ? benefits : undefined,
         genres: selectedGenres,
@@ -301,7 +327,9 @@ const JobEditPage = () => {
           <Card>
             <CardContent className="p-10 text-center">
               <h2 className="text-2xl font-bold mb-4">Job Not Found</h2>
-              <p className="text-muted-foreground mb-6">{error || 'The job you are looking for does not exist.'}</p>
+              <p className="text-muted-foreground mb-6">
+                {error || 'The job you are looking for does not exist.'}
+              </p>
               <div className="flex gap-3 justify-center">
                 <Button variant="outline" asChild>
                   <Link href="/jobs/my-posts">Back to My Jobs</Link>
@@ -372,7 +400,8 @@ const JobEditPage = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Job is Closed</AlertTitle>
               <AlertDescription>
-                This job has been closed and cannot be edited. You can still view it, but changes are not allowed.
+                This job has been closed and cannot be edited. You can still view it, but changes
+                are not allowed.
               </AlertDescription>
             </Alert>
           )}
@@ -382,7 +411,7 @@ const JobEditPage = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Active Applications</AlertTitle>
               <AlertDescription>
-                This job has {job.total_submissions || job.applications_count || 0} application(s). 
+                This job has {job.total_submissions || job.applications_count || 0} application(s).
                 Editing may affect existing applications. Please review carefully.
               </AlertDescription>
             </Alert>
@@ -432,8 +461,20 @@ const JobEditPage = () => {
                         onChange={(event) => setDescription(event.target.value)}
                         rows={8}
                         required
+                        minLength={20}
                         disabled={isClosed}
                       />
+                      {description.trim().length > 0 && description.trim().length < 20 && (
+                        <p className="text-xs text-destructive">
+                          Description must be at least 20 characters ({description.trim().length}
+                          /20)
+                        </p>
+                      )}
+                      {description.trim().length >= 20 && (
+                        <p className="text-xs text-muted-foreground">
+                          {description.trim().length} characters
+                        </p>
+                      )}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
@@ -474,7 +515,12 @@ const JobEditPage = () => {
                           }}
                           disabled={isClosed}
                         />
-                        <Button type="button" variant="outline" onClick={addRequirement} disabled={isClosed}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addRequirement}
+                          disabled={isClosed}
+                        >
                           Add
                         </Button>
                       </div>
@@ -519,7 +565,12 @@ const JobEditPage = () => {
                           }}
                           disabled={isClosed}
                         />
-                        <Button type="button" variant="outline" onClick={addBenefit} disabled={isClosed}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addBenefit}
+                          disabled={isClosed}
+                        >
                           Add
                         </Button>
                       </div>
@@ -834,6 +885,3 @@ const JobEditPage = () => {
 }
 
 export default JobEditPage
-
-
-
