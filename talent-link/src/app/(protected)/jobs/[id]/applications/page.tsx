@@ -37,7 +37,7 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react'
-import type { SubmissionResponse } from '@/types/job'
+import type { SubmissionResponse, SubmissionListResponse } from '@/types/job'
 
 type StatusFilter =
   | 'all'
@@ -47,14 +47,6 @@ type StatusFilter =
   | 'rejected'
   | 'skipped'
   | 'withdrawn'
-
-interface SubmissionListResponse {
-  submissions: SubmissionResponse[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-}
 
 const statusBadgeConfig: Record<
   string,
@@ -148,11 +140,11 @@ const JobApplicationsPage = () => {
   const fetchSubmissions = useCallback(async () => {
     setError(null)
     try {
-      const response = (await jobService.getJobSubmissions(jobId, {
+      const response = await jobService.getJobSubmissions(jobId, {
         status: statusFilter === 'all' ? undefined : statusFilter,
         page: 1,
         page_size: 50,
-      })) as SubmissionListResponse
+      })
       setSubmissions(response.submissions ?? [])
     } catch (err) {
       console.error('Failed to load submissions', err)
@@ -527,5 +519,6 @@ const JobApplicationsPage = () => {
 }
 
 export default JobApplicationsPage
+
 
 

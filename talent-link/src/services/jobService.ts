@@ -7,7 +7,14 @@ import type {
   JobPostFilters,
   CreateSubmissionRequest,
   SubmissionResponse,
+  SubmissionDetailResponse,
+  SubmissionListResponse,
+  SubmissionTimelineResponse,
   MediaResponse,
+  ListMediaResponse,
+  MySubmissionsResponse,
+  PoolStatisticsResponse,
+  BulkActionResponse,
 } from '@/types/job'
 
 export const jobService = {
@@ -77,18 +84,25 @@ export const jobService = {
     return res.data?.data ?? res.data
   },
 
+  getMyMedia: async (includeInactive?: boolean): Promise<ListMediaResponse> => {
+    const res = await axiosClient.get('/submissions/me/media', {
+      params: includeInactive ? { include_inactive: includeInactive } : undefined,
+    })
+    return res.data?.data ?? res.data
+  },
+
   deleteSubmissionMedia: async (id: string): Promise<void> => {
     await axiosClient.delete(`/submissions/me/media/${id}`)
   },
 
-  getMySubmissions: async (page = 1, pageSize = 20) => {
+  getMySubmissions: async (page = 1, pageSize = 20): Promise<MySubmissionsResponse> => {
     const res = await axiosClient.get('/my-submissions', {
       params: { page, page_size: pageSize },
     })
     return res.data?.data ?? res.data
   },
 
-  getSubmissionById: async (id: string) => {
+  getSubmissionById: async (id: string): Promise<SubmissionDetailResponse> => {
     const res = await axiosClient.get(`/submissions/${id}`)
     return res.data?.data ?? res.data
   },
@@ -104,11 +118,11 @@ export const jobService = {
     params?: {
       page?: number
       page_size?: number
-      status?: string
+      status?: 'pending_review' | 'under_review' | 'accepted' | 'rejected' | 'skipped' | 'withdrawn'
       sort_by?: string
       sort_order?: 'asc' | 'desc'
     },
-  ) => {
+  ): Promise<SubmissionListResponse> => {
     const res = await axiosClient.get(`/posts/${jobId}/submissions`, { params })
     return res.data?.data ?? res.data
   },
@@ -117,7 +131,7 @@ export const jobService = {
     submissionId: string,
     action: 'skip' | 'reject' | 'accept' | 'start_review',
     reviewNotes?: string,
-  ) => {
+  ): Promise<SubmissionResponse> => {
     const res = await axiosClient.put(`/submissions/${submissionId}/review`, {
       action,
       review_notes: reviewNotes,
@@ -129,7 +143,7 @@ export const jobService = {
     submissionIds: string[],
     action: 'skip' | 'reject' | 'accept',
     notes?: string,
-  ) => {
+  ): Promise<BulkActionResponse> => {
     const res = await axiosClient.post('/submissions/bulk-action', {
       submission_ids: submissionIds,
       action,
@@ -138,12 +152,12 @@ export const jobService = {
     return res.data?.data ?? res.data
   },
 
-  getReviewStatistics: async (jobId: string) => {
+  getReviewStatistics: async (jobId: string): Promise<PoolStatisticsResponse> => {
     const res = await axiosClient.get(`/posts/${jobId}/review-statistics`)
     return res.data?.data ?? res.data
   },
 
-  getSubmissionTimeline: async (submissionId: string) => {
+  getSubmissionTimeline: async (submissionId: string): Promise<SubmissionTimelineResponse> => {
     const res = await axiosClient.get(`/submissions/${submissionId}/timeline`)
     return res.data?.data ?? res.data
   },

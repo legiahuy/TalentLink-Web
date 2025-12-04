@@ -101,8 +101,8 @@ const JobDetailPage = () => {
         // Check if user has already applied
         try {
           const mySubmissions = await jobService.getMySubmissions()
-          const myApplication = (mySubmissions as any).submissions?.find(
-            (sub: any) => sub.job?.id === jobId,
+          const myApplication = mySubmissions.submissions?.find(
+            (sub) => sub.job?.id === jobId,
           )
           if (myApplication) {
             setHasApplied(true)

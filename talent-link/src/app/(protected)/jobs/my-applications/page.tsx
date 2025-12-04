@@ -10,40 +10,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { jobService } from '@/services/jobService'
+import type { MySubmissionsResponse, MySubmissionItem } from '@/types/job'
 import { ArrowLeft, Briefcase, CheckCircle2, Clock, XCircle, RefreshCcw, ExternalLink, FileText, Eye } from 'lucide-react'
 
 type StatusFilter = 'all' | 'pending_review' | 'under_review' | 'accepted' | 'rejected'
-
-interface MySubmissionItem {
-  id: string
-  status: string
-  created_at: string
-  updated_at: string
-  can_withdraw: boolean
-  cover_letter?: string
-  demo_file: string
-  portfolio_links?: string[]
-  rejection_reason?: string
-  reviewed_at?: string
-  job?: {
-    id: string
-    title: string
-    post_type: string
-    status: string
-    creator_name?: string
-  }
-}
-
-interface MySubmissionsResponse {
-  submissions: MySubmissionItem[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-  pending_count?: number
-  accepted_count?: number
-  rejected_count?: number
-}
 
 const statusBadgeConfig: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'destructive'; label: string; icon: React.ReactNode }> = {
   pending_review: {
@@ -118,7 +88,7 @@ const MyApplicationsPage = () => {
   const fetchSubmissions = useCallback(async () => {
     setError(null)
     try {
-      const response = (await jobService.getMySubmissions()) as MySubmissionsResponse
+      const response = await jobService.getMySubmissions()
       setSubmissions(response.submissions ?? [])
       setStats({
         total: response.total ?? 0,
@@ -285,11 +255,14 @@ const MyApplicationsPage = () => {
                               {submission.job ? (
                                 <>
                                   <h3 className="text-xl font-semibold mb-2">{submission.job.title}</h3>
-                                  {submission.job.creator_name && (
+                                  <button
+                                    onClick={() => handleViewJob(submission.job?.id)}
+                                    className="text-left hover:underline"
+                                  >
                                     <p className="text-sm text-muted-foreground mb-2">
-                                      Posted by {submission.job.creator_name}
+                                      View Job Details
                                     </p>
-                                  )}
+                                  </button>
                                 </>
                               ) : (
                                 <h3 className="text-xl font-semibold mb-2">Job (Details unavailable)</h3>
