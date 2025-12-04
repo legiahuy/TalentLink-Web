@@ -9,31 +9,31 @@ export interface JobPost {
   type?: 'band' | 'musician' | 'dj' | 'producer'
   status: 'draft' | 'published' | 'closed' | 'completed' | 'cancelled'
   visibility: 'public' | 'private' | 'invite_only'
-  
+
   // Creator Info
   creator_id: string
   creator_role: string
   creator_name?: string
   creator_username?: string
   creator_avatar?: string
-  
+
   // Location
   location?: string
   location_type?: 'remote' | 'onsite' | 'hybrid'
-  
+
   // Budget
   budget_min?: number
   budget_max?: number
   budget_currency?: 'USD' | 'EUR' | 'JPY' | 'VND'
   is_negotiable?: boolean
   payment_type?: 'bySession' | 'byHour' | 'byProject' | 'byMonth'
-  
+
   // Requirements
   experience_level?: 'beginner' | 'intermediate' | 'expert' | 'any'
   required_skills?: string[]
   genres?: string[]
   benefits?: string[]
-  
+
   // Dates
   deadline?: string
   submission_deadline?: string
@@ -41,32 +41,32 @@ export interface JobPost {
   updated_at: string
   published_at?: string
   closed_at?: string
-  
+
   // Pool/Opportunity specific
   is_pool?: boolean
   pool_type?: 'opportunity' | 'job'
   max_submissions?: number
-  
+
   // Recruitment
   recruitment_type?: 'full_time' | 'part_time' | 'flexible'
   work_time?: string
-  
+
   // Stats
   total_submissions?: number
   applications_count?: number
   bookings_count?: number
   shortlisted_count?: number
   views_count?: number
-  
+
   // Computed
   can_accept_submissions?: boolean
   is_deadline_passed?: boolean
-  
+
   // Relations (optional)
   assets?: AssetResponse[]
   tags?: TagResponse[]
   invites?: InviteResponse[]
-  
+
   // Notifications
   auto_notify?: boolean
 }
@@ -324,4 +324,83 @@ export interface BulkActionResponse {
   success_count: number
   failure_count: number
   results: BulkActionResultItem[]
+}
+
+// Search and Matching Service Types
+export interface JobSearchRequest {
+  query?: string
+  postType?: string
+  creatorRole?: string
+  locationType?: 'remote' | 'onsite' | 'hybrid'
+  city?: string
+  country?: string
+  budgetMin?: number
+  budgetMax?: number
+  budgetCurrency?: string
+  paymentType?: string
+  deadlineFrom?: string
+  deadlineTo?: string
+  startDateFrom?: string
+  startDateTo?: string
+  experienceLevel?: string
+  genres?: string[]
+  requiredSkills?: string[]
+  status?: string
+  visibility?: string
+  isActive?: boolean
+  page?: number
+  pageSize?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+export interface JobPostSearchDto {
+  id: string
+  creatorId: string
+  creatorUsername?: string
+  creatorDisplayName?: string
+  creatorAvatarUrl?: string
+  creatorRole: string
+  postType: string
+  title: string
+  description: string
+  locationType?: string
+  location?: string
+  venueAddress?: string
+  locationText?: string
+  budgetMin?: number
+  budgetMax?: number
+  budgetCurrency?: string
+  paymentType?: string
+  deadline?: string
+  experienceLevel?: string
+  genres?: string[]
+  requiredSkills?: string[]
+  benefits?: string[]
+  status: string
+  visibility: string
+  viewsCount?: number
+  applicationsCount?: number
+  bookingsCount?: number
+  publishedAt?: string
+  closedAt?: string
+  createdAt: string
+  updatedAt: string
+  isActive: boolean
+}
+
+export interface JobSearchResult {
+  jobPosts: JobPostSearchDto[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+  searchTime?: string
+}
+
+export interface ApiResult<T = any> {
+  code: number
+  message: string
+  data?: T
+  errors?: string[]
 }

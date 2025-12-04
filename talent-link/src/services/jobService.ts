@@ -15,6 +15,9 @@ import type {
   MySubmissionsResponse,
   PoolStatisticsResponse,
   BulkActionResponse,
+  JobSearchRequest,
+  JobSearchResult,
+  ApiResult,
 } from '@/types/job'
 
 export const jobService = {
@@ -29,6 +32,18 @@ export const jobService = {
       params: { q: query, page, page_size: pageSize },
     })
     return res.data?.data ?? res.data
+  },
+
+  // Search and Matching Service - Advanced job search
+  // Endpoint: POST /api/v1/api/search/jobs (basePath + path from swagger)
+  searchJobsAdvanced: async (request: JobSearchRequest): Promise<JobSearchResult> => {
+    const res = await axiosClient.post<ApiResult<JobSearchResult>>('/search/jobs', request)
+    // Handle ApiResult wrapper
+    if (res.data?.data) {
+      return res.data.data
+    }
+    // Fallback if response is direct
+    return res.data as any
   },
 
   getJobById: async (id: string, include?: string): Promise<JobPost> => {
@@ -70,7 +85,10 @@ export const jobService = {
   },
 
   // SUBMISSIONS
-  submitApplication: async (jobId: string, data: CreateSubmissionRequest): Promise<SubmissionResponse> => {
+  submitApplication: async (
+    jobId: string,
+    data: CreateSubmissionRequest,
+  ): Promise<SubmissionResponse> => {
     const res = await axiosClient.post(`/posts/${jobId}/submit`, data)
     return res.data?.data ?? res.data
   },
@@ -162,4 +180,3 @@ export const jobService = {
     return res.data?.data ?? res.data
   },
 }
-

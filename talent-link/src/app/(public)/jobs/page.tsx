@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { jobService } from '@/services/jobService'
-import type { JobPost, JobPostFilters } from '@/types/job'
+import type { JobPost, JobSearchRequest } from '@/types/job'
 
 type JobType = 'all' | 'producer' | 'musician' | 'saved'
 
@@ -73,40 +73,87 @@ const JobPool = () => {
     }
   }, [searchQuery])
 
-  // Fetch jobs from API
+  // Fetch jobs from API using Search and Matching Service
   const fetchJobs = useCallback(async () => {
     setLoading(true)
     try {
-      let response
-
-      if (debouncedSearch.trim()) {
-        // Use search endpoint
-        response = await jobService.searchJobs(debouncedSearch, 1, 20)
-      } else {
-        // Use list endpoint with filters
-        const filters: JobPostFilters = {
-          status: 'published', // Only show published jobs
-          page: 1,
-          page_size: 20,
-        }
-
-        // Note: Filter by type will be done on frontend since backend doesn't support it
-
-        // Add genre filter
-        if (selectedGenre !== 'all') {
-          filters.genres = [selectedGenre]
-        }
-
-        // Add location filter
-        if (selectedLocation !== 'all') {
-          filters.location = selectedLocation
-        }
-
-        response = await jobService.listJobs(filters)
+      // Build search request
+      const searchRequest: JobSearchRequest = {
+        query: debouncedSearch.trim() || undefined,
+        status: 'active', // Only show active jobs (published jobs are active)
+        page: 1,
+        pageSize: 20,
+        sortBy: 'created_at', // Must be one of: created_at, deadline, budget_min, budget_max, title
+        sortOrder: 'desc',
       }
 
-      // Backend already returns creator_name, creator_username, creator_avatar
-      setJobs(response.posts)
+      // Add genre filter
+      if (selectedGenre !== 'all') {
+        searchRequest.genres = [selectedGenre]
+      }
+
+      // Add location filter (use city field)
+      if (selectedLocation !== 'all') {
+        // Try to extract city from location string (e.g., "District 1, Ho Chi Minh City" -> "District 1")
+        const locationParts = selectedLocation.split(',')
+        if (locationParts.length > 0) {
+          searchRequest.city = locationParts[0].trim()
+        }
+      }
+
+      // Filter by type (role being sought) - map to creatorRole if needed
+      // Note: The search API uses creatorRole, but we're filtering by type (role being sought)
+      // We'll do this filtering on frontend for now, or map it if backend supports it
+
+      const searchResult = await jobService.searchJobsAdvanced(searchRequest)
+
+      // Map JobPostSearchDto to JobPost format
+      const mappedJobs: JobPost[] = searchResult.jobPosts.map((job) => ({
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        brief_description: undefined,
+        post_type: job.postType as 'job_offer' | 'gig' | 'availability',
+        type: undefined, // Search API doesn't return type field directly
+        status: job.status as 'draft' | 'published' | 'closed' | 'completed' | 'cancelled',
+        visibility: job.visibility as 'public' | 'private' | 'invite_only',
+        creator_id: job.creatorId,
+        creator_role: job.creatorRole,
+        creator_name: job.creatorDisplayName,
+        creator_username: job.creatorUsername,
+        creator_avatar: job.creatorAvatarUrl,
+        location: job.location || job.locationText,
+        location_type: job.locationType as 'remote' | 'onsite' | 'hybrid' | undefined,
+        budget_min: job.budgetMin,
+        budget_max: job.budgetMax,
+        budget_currency: job.budgetCurrency as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
+        payment_type: job.paymentType as
+          | 'bySession'
+          | 'byHour'
+          | 'byProject'
+          | 'byMonth'
+          | undefined,
+        experience_level: job.experienceLevel as
+          | 'beginner'
+          | 'intermediate'
+          | 'expert'
+          | 'any'
+          | undefined,
+        required_skills: job.requiredSkills,
+        genres: job.genres,
+        benefits: job.benefits,
+        submission_deadline: job.deadline,
+        created_at: job.createdAt,
+        updated_at: job.updatedAt,
+        published_at: job.publishedAt,
+        closed_at: job.closedAt,
+        total_submissions: job.applicationsCount,
+        applications_count: job.applicationsCount,
+        bookings_count: job.bookingsCount,
+        views_count: job.viewsCount,
+      }))
+
+      setJobs(mappedJobs)
     } catch (error) {
       console.error('Failed to fetch jobs', error)
       setJobs([])
