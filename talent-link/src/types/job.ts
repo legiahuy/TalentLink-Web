@@ -6,7 +6,7 @@ export interface JobPost {
   description: string
   brief_description?: string
   post_type: 'job_offer' | 'gig' | 'availability'
-  type?: 'band' | 'musician' | 'dj' | 'producer'
+  type?: 'producer' | 'singer' | 'venue'
   status: 'draft' | 'published' | 'closed' | 'completed' | 'cancelled'
   visibility: 'public' | 'private' | 'invite_only'
 
@@ -48,7 +48,7 @@ export interface JobPost {
   max_submissions?: number
 
   // Recruitment
-  recruitment_type?: 'full_time' | 'part_time' | 'flexible'
+  recruitment_type?: 'full_time' | 'part_time' | 'contract' | 'one_time'
   work_time?: string
 
   // Stats
@@ -120,7 +120,7 @@ export interface CreateJobPostRequest {
   description: string
   brief_description?: string
   post_type: 'job_offer' | 'gig' | 'availability'
-  type?: 'band' | 'musician' | 'dj' | 'producer'
+  type?: 'producer' | 'singer' | 'venue'
   status?: 'draft' | 'published' | 'closed' | 'completed' | 'cancelled'
   visibility?: 'public' | 'private' | 'invite_only'
   location?: string
@@ -130,7 +130,7 @@ export interface CreateJobPostRequest {
   budget_currency?: 'USD' | 'EUR' | 'JPY' | 'VND'
   is_negotiable?: boolean
   payment_type?: 'bySession' | 'byHour' | 'byProject' | 'byMonth'
-  recruitment_type?: 'full_time' | 'part_time' | 'flexible'
+  recruitment_type?: 'full_time' | 'part_time' | 'contract' | 'one_time'
   experience_level?: 'beginner' | 'intermediate' | 'expert' | 'any'
   required_skills?: string[]
   genres?: string[]
@@ -144,7 +144,7 @@ export interface CreateJobPostRequest {
   auto_notify?: boolean
 }
 
-export interface UpdateJobPostRequest extends Partial<CreateJobPostRequest> {}
+export type UpdateJobPostRequest = Partial<CreateJobPostRequest>
 
 export interface JobPostFilters {
   post_type?: 'job_offer' | 'gig' | 'availability'
@@ -332,6 +332,8 @@ export interface JobSearchRequest {
   postType?: string
   creatorRole?: string
   locationType?: 'remote' | 'onsite' | 'hybrid'
+  type?: 'producer' | 'singer' | 'venue'
+  location?: string
   city?: string
   country?: string
   budgetMin?: number
@@ -345,6 +347,7 @@ export interface JobSearchRequest {
   experienceLevel?: string
   genres?: string[]
   requiredSkills?: string[]
+  recruitmentType?: 'full_time' | 'part_time' | 'contract' | 'one_time'
   status?: string
   visibility?: string
   isActive?: boolean
@@ -363,7 +366,9 @@ export interface JobPostSearchDto {
   creatorRole: string
   postType: string
   title: string
-  description: string
+  type?: string
+  description?: string
+  briefDescription?: string
   locationType?: string
   location?: string
   venueAddress?: string
@@ -372,7 +377,8 @@ export interface JobPostSearchDto {
   budgetMax?: number
   budgetCurrency?: string
   paymentType?: string
-  deadline?: string
+  recruitmentType?: string
+  deadline?: string | null
   experienceLevel?: string
   genres?: string[]
   requiredSkills?: string[]
@@ -382,8 +388,8 @@ export interface JobPostSearchDto {
   viewsCount?: number
   applicationsCount?: number
   bookingsCount?: number
-  publishedAt?: string
-  closedAt?: string
+  publishedAt?: string | null
+  closedAt?: string | null
   createdAt: string
   updatedAt: string
   isActive: boolean

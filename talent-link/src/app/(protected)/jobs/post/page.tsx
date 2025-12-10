@@ -34,10 +34,9 @@ type PaymentTypeValue = NonNullable<CreateJobPostRequest['payment_type']>
 type StatusValue = NonNullable<CreateJobPostRequest['status']>
 
 const ROLE_OPTIONS: { label: string; value: RoleTypeValue }[] = [
-  { label: 'Musician / Artist', value: 'musician' },
-  { label: 'Band', value: 'band' },
-  { label: 'DJ', value: 'dj' },
   { label: 'Producer', value: 'producer' },
+  { label: 'Singer', value: 'singer' },
+  { label: 'Venue', value: 'venue' },
 ]
 
 const POST_TYPES: { label: string; value: PostTypeValue }[] = [
@@ -49,7 +48,8 @@ const POST_TYPES: { label: string; value: PostTypeValue }[] = [
 const EMPLOYMENT_TYPES: { label: string; value: RecruitmentTypeValue }[] = [
   { label: 'Full Time', value: 'full_time' },
   { label: 'Part Time', value: 'part_time' },
-  { label: 'Flexible / Session Based', value: 'flexible' },
+  { label: 'Contract', value: 'contract' },
+  { label: 'One Time', value: 'one_time' },
 ]
 
 const EXPERIENCE_LEVELS: { label: string; value: ExperienceLevelValue }[] = [
@@ -79,9 +79,9 @@ const JobPostFormPage = () => {
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
   const [postType, setPostType] = useState<PostTypeValue>('job_offer')
-  const [roleType, setRoleType] = useState<RoleTypeValue>('musician')
+  const [roleType, setRoleType] = useState<RoleTypeValue>('producer')
   const [location, setLocation] = useState('')
-  const [employmentType, setEmploymentType] = useState<RecruitmentTypeValue>('flexible')
+  const [employmentType, setEmploymentType] = useState<RecruitmentTypeValue>('full_time')
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevelValue>('any')
   const [salaryMin, setSalaryMin] = useState('')
   const [salaryMax, setSalaryMax] = useState('')

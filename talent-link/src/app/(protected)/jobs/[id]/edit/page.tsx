@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { ArrowLeft, Briefcase, Loader2, Save, X, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, X, AlertTriangle } from 'lucide-react'
 
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
@@ -35,10 +35,9 @@ type PaymentTypeValue = NonNullable<UpdateJobPostRequest['payment_type']>
 type StatusValue = NonNullable<UpdateJobPostRequest['status']>
 
 const ROLE_OPTIONS: { label: string; value: RoleTypeValue }[] = [
-  { label: 'Musician / Artist', value: 'musician' },
-  { label: 'Band', value: 'band' },
-  { label: 'DJ', value: 'dj' },
   { label: 'Producer', value: 'producer' },
+  { label: 'Singer', value: 'singer' },
+  { label: 'venue', value: 'venue' },
 ]
 
 const POST_TYPES: { label: string; value: PostTypeValue }[] = [
@@ -50,7 +49,8 @@ const POST_TYPES: { label: string; value: PostTypeValue }[] = [
 const EMPLOYMENT_TYPES: { label: string; value: RecruitmentTypeValue }[] = [
   { label: 'Full Time', value: 'full_time' },
   { label: 'Part Time', value: 'part_time' },
-  { label: 'Flexible / Session Based', value: 'flexible' },
+  { label: 'Contract', value: 'contract' },
+  { label: 'One Time', value: 'one_time' },
 ]
 
 const EXPERIENCE_LEVELS: { label: string; value: ExperienceLevelValue }[] = [
@@ -117,9 +117,9 @@ const JobEditPage = () => {
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
   const [postType, setPostType] = useState<PostTypeValue>('job_offer')
-  const [roleType, setRoleType] = useState<RoleTypeValue>('musician')
+  const [roleType, setRoleType] = useState<RoleTypeValue>('producer')
   const [location, setLocation] = useState('')
-  const [employmentType, setEmploymentType] = useState<RecruitmentTypeValue>('flexible')
+  const [employmentType, setEmploymentType] = useState<RecruitmentTypeValue>('full_time')
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevelValue>('any')
   const [salaryMin, setSalaryMin] = useState('')
   const [salaryMax, setSalaryMax] = useState('')
@@ -177,9 +177,9 @@ const JobEditPage = () => {
         setTitle(jobData.title || '')
         setSummary(jobData.brief_description || '')
         setPostType(jobData.post_type || 'job_offer')
-        setRoleType(jobData.type || 'musician')
+        setRoleType(jobData.type || 'producer')
         setLocation(jobData.location || '')
-        setEmploymentType(jobData.recruitment_type || 'flexible')
+        setEmploymentType(jobData.recruitment_type || 'full_time')
         setExperienceLevel(jobData.experience_level || 'any')
         setSalaryMin(jobData.budget_min?.toString() || '')
         setSalaryMax(jobData.budget_max?.toString() || '')

@@ -18,15 +18,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
-import type { JobPost } from '@/types/job'
+import type { JobPost, MySubmissionsResponse, MySubmissionItem } from '@/types/job'
 import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 import { jobService } from '@/services/jobService'
 import { resolveMediaUrl } from '@/lib/utils'
+import Link from 'next/link'
 
 interface JobWithCreator extends JobPost {
-  creatorName?: string
-  creatorAvatar?: string
-  creatorUsername?: string
+  creator_display_name?: string
+  creator_avatar_url?: string
+  creator_username?: string
 }
 
 const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
@@ -101,9 +102,7 @@ const JobDetailPage = () => {
         // Check if user has already applied
         try {
           const mySubmissions = await jobService.getMySubmissions()
-          const myApplication = mySubmissions.submissions?.find(
-            (sub) => sub.job?.id === jobId,
-          )
+          const myApplication = mySubmissions.submissions?.find((sub) => sub.job?.id === jobId)
           if (myApplication) {
             setHasApplied(true)
             setApplicationStatus(myApplication.status)
@@ -151,39 +150,38 @@ const JobDetailPage = () => {
     return `${Math.floor(diffInDays / 30)} month${Math.floor(diffInDays / 30) !== 1 ? 's' : ''} ago`
   }
 
-  const formatSalary = (job: Job) => {
-    if (job.salaryMin && job.salaryMax && job.salaryCurrency && job.salaryPeriod) {
+  const formatSalary = (job: JobWithCreator) => {
+    if (job.budget_min && job.budget_max && job.budget_currency && job.payment_type) {
       const formatNumber = (num: number) => {
-        if (job.salaryCurrency === 'VND') {
-          return `$${(num / 1000000).toFixed(1)}M`
+        if (job.budget_currency === 'VND') {
+          return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            maximumFractionDigits: 0,
+          }).format(num)
         }
-        return `$${num.toLocaleString()}`
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: job.budget_currency,
+          maximumFractionDigits: 0,
+        }).format(num)
       }
 
-      const periodMap = {
-        per_show: '/show',
-        per_hour: '/hour',
-        per_month: '/month',
-        per_project: '/project',
+      type PaymentType = NonNullable<JobWithCreator['payment_type']>
+      const periodMap: Record<PaymentType, '/show' | '/hour' | '/project' | '/month'> = {
+        bySession: '/show',
+        byHour: '/hour',
+        byProject: '/project',
+        byMonth: '/month',
       }
 
-      const range = `${formatNumber(job.salaryMin)} - ${formatNumber(job.salaryMax)}`
-      return `${range}${periodMap[job.salaryPeriod]}${job.salaryNegotiable ? ' (Negotiable)' : ''}`
+      const paymentType = job.payment_type
+      if (!paymentType) return ''
+
+      const range = `${formatNumber(job.budget_min)} - ${formatNumber(job.budget_max)}`
+      return `${range}${periodMap[paymentType]}${job.is_negotiable ? ' (Negotiable)' : ''}`
     }
-    return job.salary
-  }
-
-  const employmentTypeMap = {
-    one_time: 'One-time',
-    part_time: 'Part-time',
-    full_time: 'Full-time',
-    contract: 'Contract',
-  }
-
-  const experienceLevelMap = {
-    entry: 'Entry Level',
-    intermediate: 'Intermediate',
-    expert: 'Expert',
+    return ''
   }
 
   if (loading) {
@@ -239,17 +237,17 @@ const JobDetailPage = () => {
                   <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center sm:items-start">
                     <button
                       onClick={() =>
-                        job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)
+                        job.creator_username && router.push(`/profile/${job.creator_username}`)
                       }
                       className="shrink-0 cursor-pointer"
                     >
                       <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-border hover:border-primary transition-colors">
                         <AvatarImage
-                          src={resolveMediaUrl(job.creatorAvatar)}
-                          alt={job.creatorName || 'Unknown'}
+                          src={resolveMediaUrl(job.creator_avatar_url)}
+                          alt={job.creator_display_name || 'Unknown'}
                         />
                         <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                          {(job.creatorName || 'Unknown')
+                          {(job.creator_display_name || 'Unknown')
                             .split(' ')
                             .map((word) => word[0])
                             .join('')
@@ -262,11 +260,11 @@ const JobDetailPage = () => {
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
                       <button
                         onClick={() =>
-                          job.creatorUsername && router.push(`/profile/${job.creatorUsername}`)
+                          job.creator_username && router.push(`/profile/${job.creator_username}`)
                         }
                         className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
                       >
-                        {job.creatorName || 'Unknown'}
+                        {job.creator_display_name || 'Unknown'}
                       </button>
                     </div>
                   </div>
@@ -277,6 +275,12 @@ const JobDetailPage = () => {
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
                         <span>{job.type.charAt(0).toUpperCase() + job.type.slice(1)}</span>
+                      </div>
+                    )}
+                    {job.recruitment_type && (
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-muted-foreground" />
+                        <span className="capitalize">{job.recruitment_type.replace('_', ' ')}</span>
                       </div>
                     )}
                     {(job.location || job.location_type) && (
@@ -423,23 +427,19 @@ const JobDetailPage = () => {
                           }
                           className="text-sm"
                         >
-                          {applicationStatus === 'pending_review'
-                            ? 'Pending Review'
-                            : applicationStatus === 'under_review'
-                              ? 'Under Review'
-                              : applicationStatus === 'accepted'
-                                ? 'Accepted'
-                                : applicationStatus === 'rejected'
-                                  ? 'Rejected'
-                                  : applicationStatus?.charAt(0).toUpperCase() + applicationStatus?.slice(1).replace('_', ' ') || 'Applied'}
+                          {(() => {
+                            const status = applicationStatus || 'applied'
+                            if (status === 'pending_review') return 'Pending Review'
+                            if (status === 'under_review') return 'Under Review'
+                            if (status === 'accepted') return 'Accepted'
+                            if (status === 'rejected') return 'Rejected'
+                            return (
+                              status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')
+                            )
+                          })()}
                         </Badge>
                       </div>
-                      <Button
-                        variant="outline"
-                        className="w-full hidden sm:flex"
-                        size="lg"
-                        asChild
-                      >
+                      <Button variant="outline" className="w-full hidden sm:flex" size="lg" asChild>
                         <Link href="/jobs/my-applications">View My Applications</Link>
                       </Button>
                     </div>
@@ -568,9 +568,9 @@ const JobDetailPage = () => {
               // Refresh application status after dialog closes
               const checkApplication = async () => {
                 try {
-                  const mySubmissions = await jobService.getMySubmissions()
-                  const myApplication = (mySubmissions as any).submissions?.find(
-                    (sub: any) => sub.job?.id === jobId,
+                  const mySubmissions: MySubmissionsResponse = await jobService.getMySubmissions()
+                  const myApplication = mySubmissions.submissions.find(
+                    (sub: MySubmissionItem) => sub.job?.id === jobId,
                   )
                   if (myApplication) {
                     setHasApplied(true)

@@ -6,7 +6,6 @@ import JobCard from '@/components/jobs/JobCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Search, Plus, Briefcase, X, Sparkles, Loader2, Mic, Disc } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -18,9 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { jobService } from '@/services/jobService'
+import { userService } from '@/services/userService'
 import type { JobPost, JobSearchRequest } from '@/types/job'
 
-type JobType = 'all' | 'producer' | 'musician' | 'saved'
+type JobType = 'all' | 'producer' | 'singer' | 'saved'
 
 // Backend now returns creator_name, creator_username, creator_avatar directly
 type JobWithCreator = JobPost
@@ -33,9 +33,19 @@ const JobPool = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedLocation, setSelectedLocation] = useState('all')
+  const [selectedLocationType, setSelectedLocationType] = useState<
+    'all' | 'remote' | 'onsite' | 'hybrid'
+  >('all')
+  const [selectedExperience, setSelectedExperience] = useState<
+    'all' | 'beginner' | 'intermediate' | 'expert' | 'any'
+  >('all')
+  const [selectedRecruitment, setSelectedRecruitment] = useState<
+    'all' | 'full_time' | 'part_time' | 'contract' | 'one_time'
+  >('all')
   const [activeTab, setActiveTab] = useState<JobType>('all')
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
   const [jobs, setJobs] = useState<JobWithCreator[]>([])
+  const [availableGenres, setAvailableGenres] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -80,11 +90,16 @@ const JobPool = () => {
       // Build search request
       const searchRequest: JobSearchRequest = {
         query: debouncedSearch.trim() || undefined,
-        status: 'active', // Only show active jobs (published jobs are active)
+        status: 'published', // Only show active jobs (published jobs are active)
+        isActive: true,
         page: 1,
         pageSize: 20,
-        sortBy: 'created_at', // Must be one of: created_at, deadline, budget_min, budget_max, title
-        sortOrder: 'desc',
+        sortBy: 'created_at',
+        sortOrder: 'asc',
+      }
+
+      if (activeTab !== 'all' && activeTab !== 'saved') {
+        searchRequest.type = activeTab
       }
 
       // Add genre filter
@@ -92,13 +107,21 @@ const JobPool = () => {
         searchRequest.genres = [selectedGenre]
       }
 
-      // Add location filter (use city field)
+      // Add location filter
       if (selectedLocation !== 'all') {
-        // Try to extract city from location string (e.g., "District 1, Ho Chi Minh City" -> "District 1")
-        const locationParts = selectedLocation.split(',')
-        if (locationParts.length > 0) {
-          searchRequest.city = locationParts[0].trim()
-        }
+        searchRequest.location = selectedLocation
+      }
+
+      if (selectedLocationType !== 'all') {
+        searchRequest.locationType = selectedLocationType
+      }
+
+      if (selectedExperience !== 'all') {
+        searchRequest.experienceLevel = selectedExperience
+      }
+
+      if (selectedRecruitment !== 'all') {
+        searchRequest.recruitmentType = selectedRecruitment
       }
 
       // Filter by type (role being sought) - map to creatorRole if needed
@@ -111,10 +134,10 @@ const JobPool = () => {
       const mappedJobs: JobPost[] = searchResult.jobPosts.map((job) => ({
         id: job.id,
         title: job.title,
-        description: job.description,
-        brief_description: undefined,
+        description: job.description ?? job.briefDescription ?? '',
+        brief_description: job.briefDescription,
         post_type: job.postType as 'job_offer' | 'gig' | 'availability',
-        type: undefined, // Search API doesn't return type field directly
+        type: job.type as 'producer' | 'singer' | 'venue' | undefined,
         status: job.status as 'draft' | 'published' | 'closed' | 'completed' | 'cancelled',
         visibility: job.visibility as 'public' | 'private' | 'invite_only',
         creator_id: job.creatorId,
@@ -133,6 +156,12 @@ const JobPool = () => {
           | 'byProject'
           | 'byMonth'
           | undefined,
+        recruitment_type: job.recruitmentType as
+          | 'full_time'
+          | 'part_time'
+          | 'contract'
+          | 'one_time'
+          | undefined,
         experience_level: job.experienceLevel as
           | 'beginner'
           | 'intermediate'
@@ -142,11 +171,11 @@ const JobPool = () => {
         required_skills: job.requiredSkills,
         genres: job.genres,
         benefits: job.benefits,
-        submission_deadline: job.deadline,
+        submission_deadline: job.deadline ?? undefined,
         created_at: job.createdAt,
         updated_at: job.updatedAt,
-        published_at: job.publishedAt,
-        closed_at: job.closedAt,
+        published_at: job.publishedAt ?? undefined,
+        closed_at: job.closedAt ?? undefined,
         total_submissions: job.applicationsCount,
         applications_count: job.applicationsCount,
         bookings_count: job.bookingsCount,
@@ -160,7 +189,15 @@ const JobPool = () => {
     } finally {
       setLoading(false)
     }
-  }, [debouncedSearch, selectedGenre, selectedLocation])
+  }, [
+    debouncedSearch,
+    selectedGenre,
+    selectedLocation,
+    selectedLocationType,
+    selectedExperience,
+    selectedRecruitment,
+    activeTab,
+  ])
 
   // Fetch jobs when filters or search change
   useEffect(() => {
@@ -171,22 +208,34 @@ const JobPool = () => {
     }
   }, [activeTab, fetchJobs])
 
-  const availableGenres = useMemo(() => {
-    const genres = new Set<string>()
-    jobs.forEach((job) => job.genres?.forEach((genre) => genres.add(genre)))
-    return Array.from(genres).sort()
-  }, [jobs])
-
-  const availableLocations = useMemo(() => {
-    const locations = new Set<string>()
-    jobs.forEach((job) => {
-      if (job.location) {
-        const location = job.location.split(',')[0].trim()
-        locations.add(location)
+  // Load genres from API (independent of current job list)
+  useEffect(() => {
+    let active = true
+    const loadGenres = async () => {
+      try {
+        const genres = await userService.getGenres()
+        if (!active) return
+        setAvailableGenres(genres.map((g) => g.name).sort())
+      } catch (error) {
+        console.error('Failed to load genres', error)
       }
-    })
-    return Array.from(locations).sort()
-  }, [jobs])
+    }
+    loadGenres()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  // const availableLocations = useMemo(() => {
+  //   const locations = new Set<string>()
+  //   jobs.forEach((job) => {
+  //     if (job.location) {
+  //       const location = job.location.split(',')[0].trim()
+  //       locations.add(location)
+  //     }
+  //   })
+  //   return Array.from(locations).sort()
+  // }, [jobs])
 
   const filteredJobs = useMemo(() => {
     let filtered = jobs
@@ -195,19 +244,30 @@ const JobPool = () => {
     if (activeTab === 'saved') {
       filtered = jobs.filter((j) => savedJobs.has(j.id))
     } else if (activeTab !== 'all') {
-      filtered = jobs.filter((j) => j.type === activeTab)
+      filtered = jobs.filter((j) => {
+        console.log(j)
+        return j.type === activeTab
+      })
     }
 
     return filtered
   }, [jobs, activeTab, savedJobs])
 
   const hasActiveFilters =
-    searchQuery !== '' || selectedGenre !== 'all' || selectedLocation !== 'all'
+    searchQuery !== '' ||
+    selectedGenre !== 'all' ||
+    selectedLocation !== 'all' ||
+    selectedLocationType !== 'all' ||
+    selectedExperience !== 'all' ||
+    selectedRecruitment !== 'all'
 
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedGenre('all')
     setSelectedLocation('all')
+    setSelectedLocationType('all')
+    setSelectedExperience('all')
+    setSelectedRecruitment('all')
   }
 
   const handleToggleSave = (jobId: string, isSaved: boolean) => {
@@ -348,7 +408,7 @@ const JobPool = () => {
                       </Select>
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
                         Location
                       </label>
@@ -365,55 +425,74 @@ const JobPool = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div> */}
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                        Location Type
+                      </label>
+                      <Select
+                        value={selectedLocationType}
+                        onValueChange={(v) =>
+                          setSelectedLocationType(v as typeof selectedLocationType)
+                        }
+                      >
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="All location types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="remote">Remote</SelectItem>
+                          <SelectItem value="onsite">Onsite</SelectItem>
+                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                        Experience Level
+                      </label>
+                      <Select
+                        value={selectedExperience}
+                        onValueChange={(v) => setSelectedExperience(v as typeof selectedExperience)}
+                      >
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="All experience levels" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="any">Any</SelectItem>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="expert">Expert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                        Recruitment Type
+                      </label>
+                      <Select
+                        value={selectedRecruitment}
+                        onValueChange={(v) =>
+                          setSelectedRecruitment(v as typeof selectedRecruitment)
+                        }
+                      >
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="All recruitment types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="full_time">Full-time</SelectItem>
+                          <SelectItem value="part_time">Part-time</SelectItem>
+                          <SelectItem value="contract">Contract</SelectItem>
+                          <SelectItem value="one_time">One-time</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-
-                  {/* Active Filters */}
-                  {hasActiveFilters && (
-                    <>
-                      <Separator />
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                          Active Filters
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {searchQuery && (
-                            <Badge variant="secondary" className="text-xs gap-1 py-0.5">
-                              {searchQuery}
-                              <button
-                                onClick={() => setSearchQuery('')}
-                                className="ml-0.5 hover:bg-muted rounded-full p-0.5"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </Badge>
-                          )}
-                          {selectedGenre !== 'all' && (
-                            <Badge variant="secondary" className="text-xs gap-1 py-0.5">
-                              {selectedGenre}
-                              <button
-                                onClick={() => setSelectedGenre('all')}
-                                className="ml-0.5 hover:bg-muted rounded-full p-0.5"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </Badge>
-                          )}
-                          {selectedLocation !== 'all' && (
-                            <Badge variant="secondary" className="text-xs gap-1 py-0.5">
-                              {selectedLocation}
-                              <button
-                                onClick={() => setSelectedLocation('all')}
-                                className="ml-0.5 hover:bg-muted rounded-full p-0.5"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
                 </div>
               </Card>
             </aside>
@@ -431,7 +510,7 @@ const JobPool = () => {
                       <Disc className="w-3.5 h-3.5" />
                       For Producers
                     </TabsTrigger>
-                    <TabsTrigger value="musician" className="gap-1.5 text-xs">
+                    <TabsTrigger value="singer" className="gap-1.5 text-xs">
                       <Mic className="w-3.5 h-3.5" />
                       For Singers
                     </TabsTrigger>
@@ -508,7 +587,7 @@ const JobPool = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="musician" className="mt-0">
+                <TabsContent value="singer" className="mt-0">
                   {loading ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

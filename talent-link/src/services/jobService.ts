@@ -43,7 +43,7 @@ export const jobService = {
       return res.data.data
     }
     // Fallback if response is direct
-    return res.data as any
+    return res.data as unknown as JobSearchResult
   },
 
   getJobById: async (id: string, include?: string): Promise<JobPost> => {
