@@ -71,6 +71,31 @@ const MyJobPostsPage = () => {
     return jobs.filter((job) => job.status === statusFilter)
   }, [jobs, statusFilter])
 
+  const emptyState = useMemo(() => {
+    switch (statusFilter) {
+      case 'draft':
+        return {
+          title: 'No drafts yet',
+          description: 'Start a post and save it as a draft to finish later.',
+        }
+      case 'published':
+        return {
+          title: 'No published jobs',
+          description: 'Publish a job to start receiving applications from artists.',
+        }
+      case 'closed':
+        return {
+          title: 'No closed jobs',
+          description: 'Jobs you close will appear here for your records.',
+        }
+      default:
+        return {
+          title: 'No jobs here yet',
+          description: 'Post your first job to start receiving applications from artists.',
+        }
+    }
+  }, [statusFilter])
+
   const handleRefresh = async () => {
     setRefreshing(true)
     await fetchJobs()
@@ -165,10 +190,8 @@ const MyJobPostsPage = () => {
                     <div className="p-10 text-center space-y-4">
                       <Briefcase className="w-12 h-12 mx-auto text-muted-foreground" />
                       <div>
-                        <h3 className="text-lg font-semibold">No jobs here yet</h3>
-                        <p className="text-muted-foreground">
-                          Post your first job to start receiving applications from artists.
-                        </p>
+                        <h3 className="text-lg font-semibold">{emptyState.title}</h3>
+                        <p className="text-muted-foreground">{emptyState.description}</p>
                       </div>
                       <Button asChild>
                         <Link href="/jobs/post">Create job</Link>

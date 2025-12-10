@@ -196,16 +196,19 @@ export interface SubmissionResponse {
 }
 
 export interface MediaResponse {
-  id: string
-  user_id: string
-  file_url: string
-  file_name: string
-  file_size: number
-  mime_type: string
-  width?: number
-  height?: number
-  created_at: string
-  updated_at: string
+  message: string
+  media: {
+    id: string
+    user_id: string
+    file_url: string
+    file_name: string
+    file_size: number
+    mime_type: string
+    width?: number
+    height?: number
+    created_at: string
+    updated_at: string
+  }
 }
 
 export interface ListMediaResponse {

@@ -11,11 +11,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { jobService } from '@/services/jobService'
 import type { MySubmissionsResponse, MySubmissionItem } from '@/types/job'
-import { ArrowLeft, Briefcase, CheckCircle2, Clock, XCircle, RefreshCcw, ExternalLink, FileText, Eye } from 'lucide-react'
+import {
+  ArrowLeft,
+  Briefcase,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  RefreshCcw,
+  ExternalLink,
+  FileText,
+  Eye,
+} from 'lucide-react'
 
 type StatusFilter = 'all' | 'pending_review' | 'under_review' | 'accepted' | 'rejected'
 
-const statusBadgeConfig: Record<string, { variant: 'default' | 'secondary' | 'outline' | 'destructive'; label: string; icon: React.ReactNode }> = {
+const statusBadgeConfig: Record<
+  string,
+  {
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+    label: string
+    icon: React.ReactNode
+  }
+> = {
   pending_review: {
     variant: 'secondary',
     label: 'Pending Review',
@@ -136,7 +153,9 @@ const MyApplicationsPage = () => {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3 text-foreground">
-              <p className="text-sm uppercase tracking-wider text-muted-foreground">My applications</p>
+              <p className="text-sm uppercase tracking-wider text-muted-foreground">
+                My applications
+              </p>
               <h1 className="text-3xl md:text-4xl font-semibold">Your job applications</h1>
               <p className="text-muted-foreground max-w-2xl">
                 Track the status of your applications and see which jobs you&apos;ve applied to.
@@ -169,7 +188,7 @@ const MyApplicationsPage = () => {
           </div>
 
           {/* Stats Summary */}
-          {!loading && stats.total > 0 && (
+          {/* {!loading && stats.total > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
@@ -196,7 +215,7 @@ const MyApplicationsPage = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
+          )} */}
 
           <Card className="border-border/60 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardContent className="p-0">
@@ -205,15 +224,16 @@ const MyApplicationsPage = () => {
                 onValueChange={(value) => setStatusFilter(value as StatusFilter)}
               >
                 <div className="flex flex-col gap-4 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
-                  <TabsList className="grid w-full max-w-md grid-cols-5">
+                  <TabsList className="grid w-full max-w-md grid-cols-4">
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="pending_review">Pending</TabsTrigger>
-                    <TabsTrigger value="under_review">Reviewing</TabsTrigger>
+                    {/* <TabsTrigger value="under_review">Reviewing</TabsTrigger> */}
                     <TabsTrigger value="accepted">Accepted</TabsTrigger>
                     <TabsTrigger value="rejected">Rejected</TabsTrigger>
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
-                    {filteredSubmissions.length} {filteredSubmissions.length === 1 ? 'application' : 'applications'}
+                    {filteredSubmissions.length}{' '}
+                    {filteredSubmissions.length === 1 ? 'application' : 'applications'}
                   </p>
                 </div>
 
@@ -254,18 +274,14 @@ const MyApplicationsPage = () => {
                             <div className="flex-1">
                               {submission.job ? (
                                 <>
-                                  <h3 className="text-xl font-semibold mb-2">{submission.job.title}</h3>
-                                  <button
-                                    onClick={() => handleViewJob(submission.job?.id)}
-                                    className="text-left hover:underline"
-                                  >
-                                    <p className="text-sm text-muted-foreground mb-2">
-                                      View Job Details
-                                    </p>
-                                  </button>
+                                  <h3 className="text-xl font-semibold mb-2">
+                                    {submission.job.title}
+                                  </h3>
                                 </>
                               ) : (
-                                <h3 className="text-xl font-semibold mb-2">Job (Details unavailable)</h3>
+                                <h3 className="text-xl font-semibold mb-2">
+                                  Job (Details unavailable)
+                                </h3>
                               )}
                               <div className="flex items-center gap-3 mt-2">
                                 {getStatusBadge(submission.status)}
@@ -283,20 +299,29 @@ const MyApplicationsPage = () => {
 
                           {submission.rejection_reason && (
                             <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
-                              <p className="text-sm font-medium text-destructive mb-1">Rejection Reason</p>
-                              <p className="text-sm text-muted-foreground">{submission.rejection_reason}</p>
+                              <p className="text-sm font-medium text-destructive mb-1">
+                                Rejection Reason
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {submission.rejection_reason}
+                              </p>
                             </div>
                           )}
 
                           <div className="flex flex-wrap gap-3 pt-2">
                             {submission.job && (
-                              <Button variant="ghost" onClick={() => handleViewJob(submission.job!.id)}>
+                              <Button
+                                variant="ghost"
+                                onClick={() => handleViewJob(submission.job!.id)}
+                              >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Job
                               </Button>
                             )}
                             <Button variant="outline" asChild>
-                              <Link href={`/jobs/${submission.job?.id || '#'}?submission=${submission.id}`}>
+                              <Link
+                                href={`/jobs/${submission.job?.id || '#'}?submission=${submission.id}`}
+                              >
                                 <FileText className="mr-2 h-4 w-4" />
                                 View Application
                               </Link>
@@ -317,4 +342,3 @@ const MyApplicationsPage = () => {
 }
 
 export default MyApplicationsPage
-

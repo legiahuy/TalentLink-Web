@@ -117,6 +117,21 @@ const Header = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href={'/jobs/my-posts'} className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Postings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={'/jobs/my-applications'}
+                      className="flex items-center cursor-pointer"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Applications</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/settings/my-profile" className="flex items-center cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>{t('userMenu.settings')}</span>

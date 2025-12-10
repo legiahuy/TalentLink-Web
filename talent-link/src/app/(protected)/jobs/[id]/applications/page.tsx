@@ -180,8 +180,14 @@ const JobApplicationsPage = () => {
 
     setProcessing(selectedSubmission.id)
     try {
-      await jobService.reviewSubmission(selectedSubmission.id, reviewAction, reviewNotes || undefined)
-      toast.success(`Application ${reviewAction === 'accept' ? 'accepted' : reviewAction === 'reject' ? 'rejected' : 'skipped'} successfully`)
+      await jobService.reviewSubmission(
+        selectedSubmission.id,
+        reviewAction,
+        reviewNotes || undefined,
+      )
+      toast.success(
+        `Application ${reviewAction === 'accept' ? 'accepted' : reviewAction === 'reject' ? 'rejected' : 'skipped'} successfully`,
+      )
       setReviewDialogOpen(false)
       setSelectedSubmission(null)
       setReviewAction(null)
@@ -232,7 +238,9 @@ const JobApplicationsPage = () => {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3 text-foreground">
-              <p className="text-sm uppercase tracking-wider text-muted-foreground">Job applications</p>
+              <p className="text-sm uppercase tracking-wider text-muted-foreground">
+                Job applications
+              </p>
               <h1 className="text-3xl md:text-4xl font-semibold">
                 {job ? job.title : 'Applications'}
               </h1>
@@ -275,7 +283,7 @@ const JobApplicationsPage = () => {
           </div>
 
           {/* Stats Summary */}
-          {!loading && submissions.length > 0 && (
+          {/* {!loading && submissions.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
@@ -314,7 +322,7 @@ const JobApplicationsPage = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
+          )} */}
 
           <Card className="border-border/60 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardContent className="p-0">
@@ -323,13 +331,13 @@ const JobApplicationsPage = () => {
                 onValueChange={(value) => setStatusFilter(value as StatusFilter)}
               >
                 <div className="flex flex-col gap-4 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
-                  <TabsList className="grid w-full max-w-2xl grid-cols-7">
+                  <TabsList className="grid w-full max-w-2xl grid-cols-5">
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="pending_review">Pending</TabsTrigger>
-                    <TabsTrigger value="under_review">Reviewing</TabsTrigger>
+                    {/* <TabsTrigger value="under_review">Reviewing</TabsTrigger> */}
                     <TabsTrigger value="accepted">Accepted</TabsTrigger>
                     <TabsTrigger value="rejected">Rejected</TabsTrigger>
-                    <TabsTrigger value="skipped">Skipped</TabsTrigger>
+                    {/* <TabsTrigger value="skipped">Skipped</TabsTrigger> */}
                     <TabsTrigger value="withdrawn">Withdrawn</TabsTrigger>
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
@@ -388,7 +396,9 @@ const JobApplicationsPage = () => {
                                 </div>
                                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                   {submission.email && <span>{submission.email}</span>}
-                                  {submission.phone_number && <span>{submission.phone_number}</span>}
+                                  {submission.phone_number && (
+                                    <span>{submission.phone_number}</span>
+                                  )}
                                   <span>Applied {formatDate(submission.created_at)}</span>
                                   {submission.reviewed_at && (
                                     <span>• Reviewed {formatDate(submission.reviewed_at)}</span>
@@ -422,7 +432,7 @@ const JobApplicationsPage = () => {
                                     <X className="w-4 h-4 mr-1" />
                                     Reject
                                   </Button>
-                                  <Button
+                                  {/* <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleReview(submission, 'skip')}
@@ -430,7 +440,7 @@ const JobApplicationsPage = () => {
                                   >
                                     <SkipForward className="w-4 h-4 mr-1" />
                                     Skip
-                                  </Button>
+                                  </Button> */}
                                 </>
                               )}
                               <Button
@@ -501,15 +511,13 @@ const JobApplicationsPage = () => {
                   : ''
               }
             >
-              {processing === selectedSubmission?.id ? (
-                'Processing...'
-              ) : reviewAction === 'accept' ? (
-                'Accept'
-              ) : reviewAction === 'reject' ? (
-                'Reject'
-              ) : (
-                'Skip'
-              )}
+              {processing === selectedSubmission?.id
+                ? 'Processing...'
+                : reviewAction === 'accept'
+                  ? 'Accept'
+                  : reviewAction === 'reject'
+                    ? 'Reject'
+                    : 'Skip'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -519,6 +527,3 @@ const JobApplicationsPage = () => {
 }
 
 export default JobApplicationsPage
-
-
-

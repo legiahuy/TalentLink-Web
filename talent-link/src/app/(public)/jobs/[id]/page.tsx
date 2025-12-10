@@ -415,8 +415,8 @@ const JobDetailPage = () => {
                 <CardContent className="p-6 space-y-4">
                   {hasApplied ? (
                     <div className="space-y-2">
-                      <div className="w-full bg-muted/50 border rounded-lg p-4 text-center hidden sm:block">
-                        <p className="text-sm font-medium mb-2">Application Status</p>
+                      <div className="w-full  py-4 text-center flex items-center justify-between">
+                        <p className="text-sm font-medium">Application Status</p>
                         <Badge
                           variant={
                             applicationStatus === 'accepted'
@@ -552,9 +552,24 @@ const JobDetailPage = () => {
               Apply
             </Button>
           )}
-          <Button variant="outline" className="flex-1 h-12">
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Message
+          <Button
+            variant="outline"
+            className="flex-1 h-12"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: job.title,
+                  text: job.brief_description || job.description,
+                  url: window.location.href,
+                })
+              } else {
+                navigator.clipboard.writeText(window.location.href)
+                // Add toast notification here if you have toast
+              }
+            }}
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
           </Button>
         </div>
       </div>
@@ -586,7 +601,7 @@ const JobDetailPage = () => {
           }}
           jobId={job.id}
           jobTitle={job.title}
-          companyName={job.creator_name || 'Unknown'}
+          companyName={job.creator_display_name || 'Unknown'}
         />
       )}
     </div>
