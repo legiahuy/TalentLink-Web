@@ -22,14 +22,14 @@ const EventCard = ({
   animated,
 }: EventCardProps & { glassy?: boolean; animated?: boolean }) => {
   const statusConfig = {
-    upcoming: { label: 'Sắp diễn ra', color: 'bg-primary text-white' },
-    ongoing: { label: 'Đang diễn ra', color: 'bg-popover text-black' },
-    past: { label: 'Đã kết thúc', color: 'bg-foreground text-white' },
+    upcoming: { label: 'Upcoming', color: 'bg-primary text-white' },
+    ongoing: { label: 'Ongoing', color: 'bg-popover text-black' },
+    past: { label: 'Past', color: 'bg-foreground text-white' },
   }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('vi-VN', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

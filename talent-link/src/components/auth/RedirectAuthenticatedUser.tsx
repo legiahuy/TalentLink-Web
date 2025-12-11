@@ -8,19 +8,20 @@ import LoadingScreen from '@/components/public/LoadingScreen'
 
 export default function RedirectAuthenticated({
   children,
-  redirectTo = '/profile/artist-profile',
+  redirectTo,
 }: {
   children: React.ReactNode
   redirectTo?: string
 }) {
   const router = useRouter()
   const { user, isInitialized } = useAuthStore()
+  const destination = redirectTo ?? (user?.username ? `/profile/${user.username}` : '/')
 
   useEffect(() => {
     if (isInitialized && user) {
-      router.push(redirectTo)
+      router.push(destination)
     }
-  }, [isInitialized, user, router, redirectTo])
+  }, [isInitialized, user, router, destination])
 
   if (!isInitialized) {
     return <LoadingScreen />

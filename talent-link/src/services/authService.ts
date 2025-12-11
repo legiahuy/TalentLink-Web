@@ -1,24 +1,12 @@
 import axiosClient from '@/api/axios'
 import type { User } from '@/types/user'
+import type {
+  LoginResponse,
+  RefreshResponse,
+  SignUpParams,
+  PasswordResetConfirmResponse,
+} from '@/types/auth'
 import axios from 'axios'
-
-export interface LoginResponse {
-  access_token: string
-  refresh_token: string
-}
-
-export interface RefreshResponse {
-  access_token: string
-  refresh_token: string
-}
-
-export interface SignUpParams {
-  display_name: string
-  username: string
-  email: string
-  password: string
-  role: string
-}
 
 /**
  * Service layer for authentication API calls
@@ -91,7 +79,7 @@ export const authService = {
   confirmPasswordResetRequest: async (
     email: string,
     reset_code: string,
-  ): Promise<{ reset_token: string }> => {
+  ): Promise<PasswordResetConfirmResponse> => {
     const res = await axiosClient.post('/auth/confirm-reset-password-request', {
       email,
       reset_code,

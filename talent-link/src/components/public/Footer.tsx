@@ -7,7 +7,7 @@ import { Facebook, Instagram, Youtube } from 'lucide-react'
 const Footer = () => {
   const t = useTranslations('Footer')
   return (
-    <footer className="mt-5 py-5 cursor-default border-t border-border/40 bg-card flex justify-center">
+    <footer className="py-10 cursor-default border-t border-border/40 bg-card flex justify-center">
       <div className="mx-auto max-w-[1320px] px-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">

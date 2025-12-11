@@ -7,7 +7,12 @@
       "about": "Giới thiệu"
     },
     "signup": "Đăng ký",
-    "login": "Đăng nhập"
+    "login": "Đăng nhập",
+    "userMenu": {
+      "myProfile": "Hồ sơ của tôi",
+      "settings": "Cài đặt",
+      "logout": "Đăng xuất"
+    }
   },
   "Footer": {
     "description": "Kết nối nghệ sĩ âm nhạc độc lập với khách hàng một cách chuyên nghiệp.",
