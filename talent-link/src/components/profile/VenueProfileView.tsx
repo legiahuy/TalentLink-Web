@@ -8,10 +8,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import EventCard from '@/components/event/EventCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Phone, Mail, Globe, Building2, Users } from 'lucide-react'
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Building2,
+  Users,
+  MessageCircle,
+} from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
-import { businessTypes } from '@/components/profile/edit/VenueProfileEditor'
 
 interface VenueProfileViewProps {
   profile: User
@@ -86,6 +93,16 @@ const sampleEvents: Record<'upcoming' | 'ongoing' | 'past', Event[]> = {
     },
   ],
 }
+
+const businessTypes: Array<{ label: string; value: string }> = [
+  { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
+  { label: 'Cafe (Quán cà phê)', value: 'cafe' },
+  { label: 'Bar / Club', value: 'bar_club' },
+  { label: 'Restaurant (Nhà hàng)', value: 'restaurant' },
+  { label: 'Outdoor Stage (Sân khấu ngoài trời)', value: 'outdoor_stage' },
+  { label: 'Theater (Nhà hát)', value: 'theater' },
+  { label: 'Event Center (Trung tâm sự kiện)', value: 'event_center' },
+]
 
 export function VenueProfileView({
   profile,
@@ -210,9 +227,20 @@ export function VenueProfileView({
                           Update Information
                         </Button>
                       ) : (
-                        <Button size="lg" variant="default" asChild>
-                          <Link href="/booking">Contact Venue</Link>
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Button size="lg" variant="default" asChild>
+                            <Link href="/booking">Contact Venue</Link>
+                          </Button>
+                          <Button size="lg" variant="outline" asChild>
+                            <Link
+                              href={`/messages?userId=${profile.id}`}
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <MessageCircle className="h-5 w-5" />
+                              Nhắn tin
+                            </Link>
+                          </Button>
+                        </div>
                       )}
                     </div>
 

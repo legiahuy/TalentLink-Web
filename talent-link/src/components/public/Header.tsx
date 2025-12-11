@@ -15,7 +15,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useTranslations } from 'next-intl'
 import LangSwitch from '@/components/public/LangSwitch'
-import { User, Settings, LogOut } from 'lucide-react'
+import { User, Settings, LogOut, MessageCircle } from 'lucide-react'
 import { resolveMediaUrl } from '@/lib/utils'
 
 const Header = () => {
@@ -76,7 +76,18 @@ const Header = () => {
           {/* Buttons and Language Switcher */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
-              <DropdownMenu>
+              <>
+                <Button
+                  variant="link"
+                  size="icon"
+                  className="h-9 w-9"
+                  asChild
+                >
+                  <Link href="/messages">
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -148,6 +159,7 @@ const Header = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               <>
                 <Button variant="ghost" size="sm" asChild>
