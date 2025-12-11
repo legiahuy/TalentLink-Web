@@ -8,15 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import EventCard from '@/components/event/EventCard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
-  Building2,
-  Users,
-  MessageCircle,
-} from 'lucide-react'
+import { MapPin, Phone, Mail, Globe, Building2, Users, MessageCircle } from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
 
@@ -316,7 +308,7 @@ export function VenueProfileView({
             </CardContent>
           </Card>
 
-          <div className="mb-12">
+          {/* <div className="mb-12">
             <Tabs defaultValue="upcoming" className="w-full">
               <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
                 <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -348,7 +340,7 @@ export function VenueProfileView({
                 </div>
               </TabsContent>
             </Tabs>
-          </div>
+          </div> */}
         </div>
       </div>
     </main>

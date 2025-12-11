@@ -9,7 +9,7 @@
     "signup": "Signup",
     "login": "Login",
     "userMenu": {
-      "myProfile": "My Profile",
+      "myProfile": "My profile",
       "settings": "Settings",
       "logout": "Logout"
     }

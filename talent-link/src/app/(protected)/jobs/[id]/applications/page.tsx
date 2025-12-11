@@ -20,6 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { jobService } from '@/services/jobService'
 import { resolveMediaUrl } from '@/lib/utils'
 import {
@@ -37,7 +44,11 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react'
-import type { SubmissionResponse, SubmissionListResponse } from '@/types/job'
+import type {
+  SubmissionResponse,
+  SubmissionListResponse,
+  SubmissionDetailResponse,
+} from '@/types/job'
 
 type StatusFilter =
   | 'all'
@@ -127,6 +138,9 @@ const JobApplicationsPage = () => {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState<string | null>(null)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewingSubmission, setViewingSubmission] = useState<SubmissionDetailResponse | null>(null)
+  const [viewLoading, setViewLoading] = useState(false)
 
   const fetchJob = useCallback(async () => {
     try {
@@ -201,9 +215,20 @@ const JobApplicationsPage = () => {
     }
   }
 
-  const handleViewSubmission = (submissionId: string) => {
-    // TODO: Open submission detail modal/page
-    router.push(`/jobs/${jobId}?submission=${submissionId}`)
+  const handleViewSubmission = async (submissionId: string) => {
+    setViewDialogOpen(true)
+    setViewLoading(true)
+    setViewingSubmission(null)
+    try {
+      const detail = await jobService.getSubmissionById(submissionId)
+      setViewingSubmission(detail)
+    } catch (err) {
+      console.error('Failed to load submission detail', err)
+      toast.error('Unable to load submission details.')
+      setViewDialogOpen(false)
+    } finally {
+      setViewLoading(false)
+    }
   }
 
   const handleViewProfile = (userId: string) => {
@@ -463,6 +488,101 @@ const JobApplicationsPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Submission Detail Dialog */}
+      <Dialog
+        open={viewDialogOpen}
+        onOpenChange={(open) => {
+          setViewDialogOpen(open)
+          if (!open) {
+            setViewingSubmission(null)
+            setViewLoading(false)
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Application details</DialogTitle>
+            <DialogDescription>
+              {viewingSubmission?.full_name || 'Application overview'}
+            </DialogDescription>
+          </DialogHeader>
+          {viewLoading ? (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>Loading submission...</p>
+            </div>
+          ) : viewingSubmission ? (
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-semibold">
+                      {viewingSubmission.full_name || 'Anonymous applicant'}
+                    </p>
+                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                      {viewingSubmission.email && <span>{viewingSubmission.email}</span>}
+                      {viewingSubmission.phone_number && (
+                        <span>{viewingSubmission.phone_number}</span>
+                      )}
+                      <span>Applied {formatDate(viewingSubmission.created_at)}</span>
+                    </div>
+                  </div>
+                  {getStatusBadge(viewingSubmission.status)}
+                </div>
+                {viewingSubmission.review_notes && (
+                  <div className="rounded-lg border border-border/60 bg-muted/40 p-3">
+                    <p className="text-xs uppercase text-muted-foreground mb-1">Review notes</p>
+                    <p className="text-sm text-foreground">{viewingSubmission.review_notes}</p>
+                  </div>
+                )}
+              </div>
+
+              {viewingSubmission.cover_letter && (
+                <div className="space-y-2">
+                  <p className="text-xs uppercase text-muted-foreground">Cover letter</p>
+                  <p className="text-sm leading-relaxed">{viewingSubmission.cover_letter}</p>
+                </div>
+              )}
+
+              {viewingSubmission.portfolio_links &&
+                viewingSubmission.portfolio_links.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase text-muted-foreground">Portfolio</p>
+                    <div className="flex flex-col gap-1">
+                      {viewingSubmission.portfolio_links.map((link) => (
+                        <Link
+                          key={link}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary flex items-center gap-2"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {link}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              <div className="space-y-2">
+                <p className="text-xs uppercase text-muted-foreground">Demo file</p>
+                <Link
+                  href={viewingSubmission.demo_file}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View demo
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No submission details available.</p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Review Dialog */}
       <AlertDialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>

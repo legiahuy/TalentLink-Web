@@ -9,8 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { jobService } from '@/services/jobService'
-import type { MySubmissionsResponse, MySubmissionItem } from '@/types/job'
+import type { MySubmissionsResponse, MySubmissionItem, SubmissionDetailResponse } from '@/types/job'
 import {
   ArrowLeft,
   Briefcase,
@@ -101,6 +108,9 @@ const MyApplicationsPage = () => {
     accepted: number
     rejected: number
   }>({ total: 0, pending: 0, accepted: 0, rejected: 0 })
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewingSubmission, setViewingSubmission] = useState<SubmissionDetailResponse | null>(null)
+  const [viewLoading, setViewLoading] = useState(false)
 
   const fetchSubmissions = useCallback(async () => {
     setError(null)
@@ -139,6 +149,22 @@ const MyApplicationsPage = () => {
 
   const handleViewJob = (jobId: string) => {
     router.push(`/jobs/${jobId}`)
+  }
+
+  const handleViewSubmission = async (submissionId: string) => {
+    setViewDialogOpen(true)
+    setViewLoading(true)
+    setViewingSubmission(null)
+    try {
+      const detail = await jobService.getSubmissionById(submissionId)
+      setViewingSubmission(detail)
+    } catch (err) {
+      console.error('Failed to load submission detail', err)
+      toast.error('Unable to load your submission details.')
+      setViewDialogOpen(false)
+    } finally {
+      setViewLoading(false)
+    }
   }
 
   return (
@@ -319,12 +345,13 @@ const MyApplicationsPage = () => {
                               </Button>
                             )}
                             <Button variant="outline" asChild>
-                              <Link
-                                href={`/jobs/${submission.job?.id || '#'}?submission=${submission.id}`}
+                              <span
+                                onClick={() => handleViewSubmission(submission.id)}
+                                className="flex items-center"
                               >
                                 <FileText className="mr-2 h-4 w-4" />
                                 View Application
-                              </Link>
+                              </span>
                             </Button>
                           </div>
                         </div>
@@ -337,6 +364,99 @@ const MyApplicationsPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Submission Detail Dialog */}
+      <Dialog
+        open={viewDialogOpen}
+        onOpenChange={(open) => {
+          setViewDialogOpen(open)
+          if (!open) {
+            setViewingSubmission(null)
+            setViewLoading(false)
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Your application</DialogTitle>
+            <DialogDescription>
+              {viewingSubmission?.job?.title || 'Submission details'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewLoading ? (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>Loading your submission...</p>
+            </div>
+          ) : viewingSubmission ? (
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-lg font-semibold">{viewingSubmission.full_name || 'You'}</p>
+                  <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                    {viewingSubmission.email && <span>{viewingSubmission.email}</span>}
+                    {viewingSubmission.phone_number && (
+                      <span>{viewingSubmission.phone_number}</span>
+                    )}
+                    <span>Applied {formatDate(viewingSubmission.created_at)}</span>
+                  </div>
+                </div>
+                {getStatusBadge(viewingSubmission.status)}
+              </div>
+
+              {viewingSubmission.review_notes && (
+                <div className="rounded-lg border border-border/60 bg-muted/40 p-3">
+                  <p className="text-xs uppercase text-muted-foreground mb-1">Review notes</p>
+                  <p className="text-sm text-foreground">{viewingSubmission.review_notes}</p>
+                </div>
+              )}
+
+              {viewingSubmission.cover_letter && (
+                <div className="space-y-2">
+                  <p className="text-xs uppercase text-muted-foreground">Cover letter</p>
+                  <p className="text-sm leading-relaxed">{viewingSubmission.cover_letter}</p>
+                </div>
+              )}
+
+              {viewingSubmission.portfolio_links &&
+                viewingSubmission.portfolio_links.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase text-muted-foreground">Portfolio</p>
+                    <div className="flex flex-col gap-1">
+                      {viewingSubmission.portfolio_links.map((link) => (
+                        <Link
+                          key={link}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary flex items-center gap-2"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {link}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              <div className="space-y-2">
+                <p className="text-xs uppercase text-muted-foreground">Demo file</p>
+                <Link
+                  href={viewingSubmission.demo_file}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View demo
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No submission details available.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

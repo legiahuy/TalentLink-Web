@@ -104,7 +104,7 @@ const JobPool = () => {
 
       // Add genre filter
       if (selectedGenre !== 'all') {
-        searchRequest.genres = [selectedGenre]
+        searchRequest.genres = [selectedGenre.toLowerCase()]
       }
 
       // Add location filter
@@ -381,7 +381,7 @@ const JobPool = () => {
                       <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                         <Input
-                          placeholder="Jobs, venues..."
+                          placeholder="Search jobs..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="pl-8 h-9 text-sm"
@@ -441,7 +441,7 @@ const JobPool = () => {
                           <SelectValue placeholder="All location types" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="all">All locations</SelectItem>
                           <SelectItem value="remote">Remote</SelectItem>
                           <SelectItem value="onsite">Onsite</SelectItem>
                           <SelectItem value="hybrid">Hybrid</SelectItem>
@@ -461,7 +461,7 @@ const JobPool = () => {
                           <SelectValue placeholder="All experience levels" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="all">All levels</SelectItem>
                           <SelectItem value="any">Any</SelectItem>
                           <SelectItem value="beginner">Beginner</SelectItem>
                           <SelectItem value="intermediate">Intermediate</SelectItem>
@@ -484,7 +484,7 @@ const JobPool = () => {
                           <SelectValue placeholder="All recruitment types" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="all">All types</SelectItem>
                           <SelectItem value="full_time">Full-time</SelectItem>
                           <SelectItem value="part_time">Part-time</SelectItem>
                           <SelectItem value="contract">Contract</SelectItem>
