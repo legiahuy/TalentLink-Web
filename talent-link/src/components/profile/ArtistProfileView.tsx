@@ -14,7 +14,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { MapPin, Star, Music, MicVocal, Youtube, Facebook, Instagram, Grid3x3 } from 'lucide-react'
+import {
+  MapPin,
+  Star,
+  Music,
+  MicVocal,
+  Youtube,
+  Facebook,
+  Instagram,
+  Grid3x3,
+  MessageCircle,
+} from 'lucide-react'
 import type { User } from '@/types/user'
 import type { Media } from '@/types/media'
 import type { Experience } from '@/types/experience'
@@ -158,16 +168,17 @@ export function ArtistProfileView({
                 </p>
               </div>
 
-              <div className="w-full md:w-auto md:ml-auto md:order-3">
-                {isOwner ? (
-                  <Button
-                    size="lg"
-                    onClick={onEdit}
-                    className="w-full md:w-auto flex items-center justify-center gap-2"
-                  >
-                    Edit Profile
-                  </Button>
-                ) : (
+              <div className="w-full md:w-auto md:ml-auto md:order-3 flex flex-col gap-2">
+              {isOwner ? (
+                <Button
+                  size="lg"
+                  onClick={onEdit}
+                  className="w-full md:w-auto flex items-center justify-center gap-2"
+                >
+                  Edit Profile
+                </Button>
+              ) : (
+                <>
                   <Button size="lg" variant="default" asChild className="w-full md:w-auto">
                     <Link
                       href="/booking"
@@ -176,8 +187,18 @@ export function ArtistProfileView({
                       Contact for Collaboration
                     </Link>
                   </Button>
-                )}
-              </div>
+                  <Button size="lg" variant="outline" asChild className="w-full md:w-auto">
+                    <Link
+                      href={`/messages?userId=${profile.id}`}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      Nhắn tin
+                    </Link>
+                  </Button>
+                </>
+              )}
+            </div>
             </div>
           </div>
 

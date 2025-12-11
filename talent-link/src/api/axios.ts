@@ -7,8 +7,11 @@ const axiosClient = axios.create({
 })
 
 axiosClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken
+  const authState = useAuthStore.getState()
+  const token = authState.accessToken
+  const userId = authState.user?.id
   if (token) config.headers.Authorization = `Bearer ${token}`
+  if (userId) config.headers['X-User-ID'] = userId
   // If sending FormData, let the browser set multipart boundary
   if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
     if (config.headers && 'Content-Type' in config.headers) {
