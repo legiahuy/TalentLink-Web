@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Slider } from '@/components/ui/slider'
 import { Search, Plus, Briefcase, X, Sparkles, Loader2, Mic, Disc } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -42,6 +43,8 @@ const JobPool = () => {
   const [selectedRecruitment, setSelectedRecruitment] = useState<
     'all' | 'full_time' | 'part_time' | 'contract' | 'one_time'
   >('all')
+  const BUDGET_RANGE_DEFAULT: [number, number] = [0, 20000000]
+  const [budgetRange, setBudgetRange] = useState<[number, number]>([...BUDGET_RANGE_DEFAULT])
   const [activeTab, setActiveTab] = useState<JobType>('all')
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
   const [jobs, setJobs] = useState<JobWithCreator[]>([])
@@ -124,6 +127,14 @@ const JobPool = () => {
         searchRequest.recruitmentType = selectedRecruitment
       }
 
+      const isBudgetFiltered =
+        budgetRange[0] > BUDGET_RANGE_DEFAULT[0] || budgetRange[1] < BUDGET_RANGE_DEFAULT[1]
+
+      if (isBudgetFiltered) {
+        searchRequest.budgetMin = budgetRange[0]
+        searchRequest.budgetMax = budgetRange[1]
+      }
+
       // Filter by type (role being sought) - map to creatorRole if needed
       // Note: The search API uses creatorRole, but we're filtering by type (role being sought)
       // We'll do this filtering on frontend for now, or map it if backend supports it
@@ -197,6 +208,7 @@ const JobPool = () => {
     selectedExperience,
     selectedRecruitment,
     activeTab,
+    budgetRange,
   ])
 
   // Fetch jobs when filters or search change
@@ -253,13 +265,17 @@ const JobPool = () => {
     return filtered
   }, [jobs, activeTab, savedJobs])
 
+  const isBudgetFiltered =
+    budgetRange[0] > BUDGET_RANGE_DEFAULT[0] || budgetRange[1] < BUDGET_RANGE_DEFAULT[1]
+
   const hasActiveFilters =
     searchQuery !== '' ||
     selectedGenre !== 'all' ||
     selectedLocation !== 'all' ||
     selectedLocationType !== 'all' ||
     selectedExperience !== 'all' ||
-    selectedRecruitment !== 'all'
+    selectedRecruitment !== 'all' ||
+    isBudgetFiltered
 
   const clearFilters = () => {
     setSearchQuery('')
@@ -268,6 +284,7 @@ const JobPool = () => {
     setSelectedLocationType('all')
     setSelectedExperience('all')
     setSelectedRecruitment('all')
+    setBudgetRange([...BUDGET_RANGE_DEFAULT])
   }
 
   const handleToggleSave = (jobId: string, isSaved: boolean) => {
@@ -491,6 +508,24 @@ const JobPool = () => {
                           <SelectItem value="one_time">One-time</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Budget Range
+                        </label>
+                        <span className="text-xs text-muted-foreground">
+                          ${budgetRange[0].toLocaleString()} - ${budgetRange[1].toLocaleString()}
+                        </span>
+                      </div>
+                      <Slider
+                        value={budgetRange}
+                        min={BUDGET_RANGE_DEFAULT[0]}
+                        max={BUDGET_RANGE_DEFAULT[1]}
+                        step={500}
+                        onValueChange={(vals) => setBudgetRange([vals[0], vals[1]])}
+                      />
                     </div>
                   </div>
                 </div>
