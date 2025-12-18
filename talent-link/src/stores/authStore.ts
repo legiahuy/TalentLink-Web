@@ -41,6 +41,16 @@ interface AuthState {
   resendPasswordReset: (email: string) => Promise<void>
   confirmPasswordReset: (email: string, code: string) => Promise<string>
   resetPassword: (email: string, newPassword: string, resetToken: string) => Promise<void>
+
+  // OAuth
+  oauthLogin: (code: string, codeVerifier: string) => Promise<void>
+  completeOAuth: (
+    registrationToken: string,
+    role: 'producer' | 'singer' | 'venue',
+    username: string,
+  ) => Promise<void>
+
+  pendingRegistrationToken?: string | null
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -57,6 +67,7 @@ export const useAuthStore = create<AuthState>()(
 
       // 🟩 ADD: init role
       userRole: null,
+      pendingRegistrationToken: null,
 
       // 🟩 ADD: setter role
       setUserRole: (role) => {
@@ -64,6 +75,61 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           if (role) document.cookie = `user_role=${role}; path=/`
           else document.cookie = `user_role=; Max-Age=0; path=/`
+        }
+      },
+
+      oauthLogin: async (code, codeVerifier) => {
+        set({ loading: true, error: null })
+        try {
+          const { access_token, refresh_token, is_registered, registration_token } =
+            await authService.oauthLogin(code, codeVerifier)
+
+          if (is_registered) {
+            get().setTokens(access_token, refresh_token)
+            await get().fetchUser()
+
+            const role = get().user?.role
+            if (role) get().setUserRole(role)
+
+            toast.success('Đăng nhập với Google thành công!')
+          } else if (registration_token) {
+            set({ pendingRegistrationToken: registration_token })
+          }
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Đăng nhập Google không thành công!')
+          set({ error: message })
+          toast.error(message)
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
+        }
+      },
+
+      completeOAuth: async (registrationToken, role, username) => {
+        set({ loading: true, error: null })
+        try {
+          const { access_token, refresh_token } = await authService.completeOAuth(
+            registrationToken,
+            role,
+            username,
+          )
+
+          get().setTokens(access_token, refresh_token)
+          set({ pendingRegistrationToken: null })
+
+          await get().fetchUser()
+
+          const finalRole = get().user?.role || role
+          if (finalRole) get().setUserRole(finalRole)
+
+          toast.success('Hoàn tất đăng ký Google thành công!')
+        } catch (err) {
+          const message = authService.getErrorMessage(err, 'Hoàn tất đăng ký Google thất bại!')
+          set({ error: message })
+          toast.error(message)
+          throw new Error(message)
+        } finally {
+          set({ loading: false })
         }
       },
 

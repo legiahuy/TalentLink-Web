@@ -380,7 +380,7 @@ const MyApplicationsPage = () => {
           <DialogHeader>
             <DialogTitle>Your application</DialogTitle>
             <DialogDescription>
-              {viewingSubmission?.job?.title || 'Submission details'}
+              Submission details
             </DialogDescription>
           </DialogHeader>
 

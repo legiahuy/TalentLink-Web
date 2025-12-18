@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'next/navigation'
+import { startGoogleOAuth } from '@/lib/oauth'
 
 type SignUpFormValues = {
   display_name: string
@@ -192,7 +193,12 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
             )}
           </div>
         </div>
-        <Button variant="default" type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          variant="default"
+          type="submit"
+          className="w-full hover:cursor-pointer"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -205,7 +211,14 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
         <FieldSeparator>{t('continueWith')}</FieldSeparator>
 
-        <Button variant="outline" type="button" className="w-full">
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full hover:cursor-pointer"
+          onClick={() => {
+            void startGoogleOAuth()
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

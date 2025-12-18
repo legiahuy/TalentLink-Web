@@ -2,6 +2,7 @@ import axiosClient from '@/api/axios'
 import type { User } from '@/types/user'
 import type {
   LoginResponse,
+  OAuthResponse,
   RefreshResponse,
   SignUpParams,
   PasswordResetConfirmResponse,
@@ -26,6 +27,27 @@ export const authService = {
    */
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const res = await axiosClient.post('/auth/login', { identifier: email, password })
+    return res.data.data
+  },
+
+  /**
+   * Login / register with Google OAuth (PKCE)
+   */
+  oauthLogin: async (code: string, code_verifier: string): Promise<OAuthResponse> => {
+    const res = await axiosClient.post('/auth/oauth', { code, code_verifier })
+    return res.data.data
+  },
+
+  completeOAuth: async (
+    registration_token: string,
+    role: 'producer' | 'singer' | 'venue',
+    username: string,
+  ): Promise<OAuthResponse> => {
+    const res = await axiosClient.post('/auth/complete-oauth', {
+      registration_token,
+      role,
+      username,
+    })
     return res.data.data
   },
 

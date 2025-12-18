@@ -3,6 +3,13 @@ export interface LoginResponse {
   refresh_token: string
 }
 
+export interface OAuthResponse {
+  access_token: string
+  refresh_token: string
+  is_registered: boolean
+  registration_token?: string
+}
+
 export interface RefreshResponse {
   access_token: string
   refresh_token: string

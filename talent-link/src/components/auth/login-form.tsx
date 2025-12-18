@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuthStore } from '@/stores/authStore'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { startGoogleOAuth } from '@/lib/oauth'
 
 type LogInFormValues = {
   email: string
@@ -90,7 +91,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
           </div>
           {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
         </div>
-        <Button variant="default" type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          variant="default"
+          type="submit"
+          className="w-full hover:cursor-pointer"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -103,7 +109,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
 
         <FieldSeparator>{t('continueWith')}</FieldSeparator>
 
-        <Button variant="outline" type="button" className="w-full">
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full hover:cursor-pointer"
+          onClick={() => {
+            void startGoogleOAuth()
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
