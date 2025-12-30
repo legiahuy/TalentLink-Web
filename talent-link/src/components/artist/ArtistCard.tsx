@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image, { StaticImageData } from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Star } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface ArtistCardProps {
   id: string
@@ -16,7 +17,15 @@ interface ArtistCardProps {
 const ArtistCard = ({ id, name, image, genre, location, rating, description }: ArtistCardProps) => {
   return (
     <Link href={`/artist/${id}`} className="group block">
-      <div className="relative overflow-hidden rounded-xl bg-card border border-border/40 transition-all duration-300 hover:shadow-glow hover:border-primary/50 mx-3">
+      <motion.div
+        className="relative overflow-hidden rounded-xl bg-card border border-border/40  mx-3"
+        whileHover={{
+          y: -5,
+          boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
+          borderColor: 'var(--primary)',
+        }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="relative aspect-square overflow-hidden">
           <Image
             src={image}
@@ -55,7 +64,7 @@ const ArtistCard = ({ id, name, image, genre, location, rating, description }: A
             <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
           )}
         </div>
-      </div>
+      </motion.div>
     </Link>
   )
 }

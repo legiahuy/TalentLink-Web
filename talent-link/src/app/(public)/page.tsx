@@ -7,6 +7,7 @@ import { Search, ArrowRight, Music, Users, Shield } from 'lucide-react'
 import ArtistCard from '@/components/artist/ArtistCard'
 import EventCard from '@/components/event/EventCard'
 import { useTranslations } from 'next-intl'
+import { motion, Variants } from 'framer-motion'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
@@ -78,6 +79,22 @@ const LandingPage = () => {
       image: '/images/auth/auth-photo-1.jpg',
     },
   ]
+
+  const fadeInUp: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  }
+
+  const staggerContainer: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  }
+
   return (
     <>
       {/* Hero Section */}
@@ -85,21 +102,37 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(240_10%_3.9%),hsl(240_8%_8%))]" />
         <Image
           className="absolute inset-0 opacity-100 object-cover"
-          src="/images/auth/hero-image-2.jpg"
+          src="/images/auth/hero-image-4.jpg"
           alt="Hero background"
           fill
         />
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-background/50 to-background" />
+        <div className="absolute inset-0 bg-primary/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/20 to-black/60 opacity-50" />
 
-        <div className="mx-auto relative z-10 px-4 py-20 text-center">
-          <h1 className="text-5xl md:text-7xl leading-tight font-bold mb-6 text-white">
+        <motion.div
+          className="mx-auto relative z-10 px-4 py-20 text-center"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.h1
+            className="text-5xl md:text-7xl leading-tight font-bold mb-6 text-white"
+            variants={fadeInUp}
+          >
             {t('hero.title')}
-          </h1>
-          <p className="text-xl md:text-2xl text-white mb-8 max-w-4xl mx-auto leading-relaxed opacity-90">
+          </motion.h1>
+          <motion.p
+            className="text-xl md:text-2xl text-white mb-8 max-w-4xl mx-auto leading-relaxed opacity-90"
+            variants={fadeInUp}
+          >
             {t('hero.subtitle')}
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-8">
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-8"
+            variants={fadeInUp}
+          >
             <div className="relative flex-1">
               <Search className="absolute z-1 left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -112,16 +145,8 @@ const LandingPage = () => {
                 {t('hero.exploreButton')} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-          </div>
-
-          {/* <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-            <span>🎤 Ca sĩ</span>
-            <span>🎸 Nhạc công</span>
-            <span>🎹 Producer</span>
-            <span>🎧 DJ</span>
-            <span>✍️ Nhạc sĩ</span>
-          </div> */}
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       <div
@@ -132,93 +157,136 @@ const LandingPage = () => {
       >
         {/* Featured Artists */}
         <section className="py-20">
-          <div className="mx-auto px-4 max-w-[1320px]">
-            <div className="text-center mb-12">
+          <motion.div
+            className="mx-auto px-4 max-w-[1320px]"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
+            <motion.div className="text-center mb-12" variants={fadeInUp}>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredArtists.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                 {t('featuredArtists.subtitle')}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              variants={staggerContainer}
+            >
               {featuredArtists.map((artist) => (
-                <ArtistCard key={artist.id} {...artist} />
+                <motion.div key={artist.id} variants={fadeInUp}>
+                  <ArtistCard {...artist} />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
-            <div className="text-center mt-12">
+            <motion.div className="text-center mt-12" variants={fadeInUp}>
               <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link href="/discovery">
                   {t('featuredArtists.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Featured Events */}
         <section className="py-20">
-          <div className="mx-auto px-4 max-w-[1320px]">
-            <div className="text-center mb-12">
+          <motion.div
+            className="mx-auto px-4 max-w-[1320px]"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
+            <motion.div className="text-center mb-12" variants={fadeInUp}>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredEvents.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                 {t('featuredEvents.subtitle')}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+              variants={staggerContainer}
+            >
               {featuredEvents.map((event, index) => (
-                <EventCard key={index} event={event} />
+                <motion.div key={index} variants={fadeInUp}>
+                  <EventCard event={event} />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
-            <div className="text-center mt-12">
+            <motion.div className="text-center mt-12" variants={fadeInUp}>
               <Button variant="outline" size="lg" asChild className="border-primary/50">
                 <Link href="/discovery">
                   {t('featuredEvents.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
       </div>
 
       {/* Features */}
       <section className="py-20">
-        <div className="mx-auto px-4 max-w-[1320px]">
-          <div className="text-center mb-12">
+        <motion.div
+          className="mx-auto px-4 max-w-[1320px]"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-100px' }}
+          variants={staggerContainer}
+        >
+          <motion.div className="text-center mb-12" variants={fadeInUp}>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('features.title')}</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('features.subtitle')}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+            variants={staggerContainer}
+          >
+            <motion.div
+              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              variants={fadeInUp}
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+            >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Music className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="text-xl font-semibold mb-3">{t('features.diverseGenres.title')}</h3>
               <p className="text-muted-foreground">{t('features.diverseGenres.description')}</p>
-            </div>
+            </motion.div>
 
-            <div className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow">
+            <motion.div
+              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              variants={fadeInUp}
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+            >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Users className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="text-xl font-semibold mb-3">{t('features.easyConnection.title')}</h3>
               <p className="text-muted-foreground">{t('features.easyConnection.description')}</p>
-            </div>
+            </motion.div>
 
-            <div className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow">
+            <motion.div
+              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              variants={fadeInUp}
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+            >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                 <Shield className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="text-xl font-semibold mb-3">{t('features.professional.title')}</h3>
               <p className="text-muted-foreground">{t('features.professional.description')}</p>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </section>
 
       <div
@@ -245,7 +313,13 @@ const LandingPage = () => {
         {/* CTA Section */}
         <section className="py-20">
           <div className="mx-auto px-4 max-w-[1320px]">
-            <div className="max-w-3xl mx-auto text-center">
+            <motion.div
+              className="max-w-3xl mx-auto text-center"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
               <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('cta.title')}</h2>
               <p className="text-muted-foreground text-lg mb-8">{t('cta.subtitle')}</p>
               <Button size="lg" className="bg-primary text-lg" asChild>
@@ -253,7 +327,7 @@ const LandingPage = () => {
                   {t('cta.button')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
+            </motion.div>
           </div>
         </section>
       </div>
