@@ -38,7 +38,6 @@ export default function OAuthCallbackPage() {
     }
 
     sessionStorage.removeItem(OAUTH_CODE_VERIFIER_KEY)
-
     ;(async () => {
       try {
         await oauthLogin(code, codeVerifier)
@@ -67,5 +66,3 @@ export default function OAuthCallbackPage() {
     </div>
   )
 }
-
-

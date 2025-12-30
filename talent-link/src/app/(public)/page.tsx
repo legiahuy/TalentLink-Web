@@ -8,77 +8,58 @@ import ArtistCard from '@/components/artist/ArtistCard'
 import EventCard from '@/components/event/EventCard'
 import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { landingService } from '@/services/landingService'
+import type { FeaturedUser, FeaturedJob } from '@/types/admin'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
-  const featuredArtists = [
-    {
-      id: '1',
-      name: 'Minh Anh',
-      image: '/images/auth/auth-photo-1.jpg',
-      genre: 'Pop/Ballad',
-      location: 'Hà Nội',
-      rating: 4.9,
-      description: 'Ca sĩ với giọng hát trữ tình, chuyên về nhạc pop và ballad Việt',
-    },
-    {
-      id: '2',
-      name: 'Tuấn Anh',
-      image: '/images/auth/auth-photo-1.jpg',
-      genre: 'Indie/Rock',
-      location: 'TP. Hồ Chí Minh',
-      rating: 4.8,
-      description: 'Nghệ sĩ guitar indie với phong cách hiện đại và sáng tạo',
-    },
-    {
-      id: '3',
-      name: 'DJ Minh',
-      image: '/images/auth/auth-photo-1.jpg',
-      genre: 'EDM/House',
-      location: 'TP. Hồ Chí Minh',
-      rating: 4.9,
-      description: 'DJ chuyên nghiệp với kinh nghiệm biểu diễn tại các sự kiện lớn',
-    },
-    {
-      id: '4',
-      name: 'Thu Hà',
-      image: '/images/auth/auth-photo-1.jpg',
-      genre: 'Classical/Acoustic',
-      location: 'Hà Nội',
-      rating: 5.0,
-      description: 'Nghệ sĩ violin cổ điển với kỹ thuật tinh tế và cảm xúc sâu lắng',
-    },
-  ]
+  const [featuredArtists, setFeaturedArtists] = useState<any[]>([])
+  const [featuredEvents, setFeaturedEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const featuredEvents = [
-    {
-      id: '1',
-      title: 'Đêm Nhạc Acoustic',
-      date: '2025-11-15',
-      time: '20:00',
-      status: 'upcoming' as const,
-      artists: ['Minh Anh', 'Thu Hà'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-    {
-      id: '2',
-      title: 'EDM Night Party',
-      date: '2025-11-20',
-      time: '21:00',
-      status: 'upcoming' as const,
-      artists: ['DJ Minh'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-    {
-      id: '3',
-      title: 'Indie Rock Live',
-      date: '2025-11-25',
-      time: '19:30',
-      status: 'upcoming' as const,
-      artists: ['Tuấn Anh'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-  ]
+  useEffect(() => {
+    const fetchFeaturedContent = async () => {
+      try {
+        const [users, jobs] = await Promise.all([
+          landingService.getFeaturedUsers(4),
+          landingService.getFeaturedJobs(3),
+        ])
+
+        // Transform FeaturedUser to ArtistCard format
+        const transformedUsers = users.map((user: FeaturedUser) => ({
+          id: user.id,
+          name: user.display_name,
+          image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
+          genre: user.genres?.map((g) => g.name).join('/') || user.role,
+          location: [user.city, user.country].filter(Boolean).join(', '),
+          rating: user.is_verified ? 5.0 : 4.5,
+          description: user.brief_bio || '',
+        }))
+
+        // Transform FeaturedJob to EventCard format
+        const transformedJobs = jobs.map((job: FeaturedJob) => ({
+          id: job.id,
+          title: job.title,
+          date: job.deadline || new Date().toISOString(),
+          time: '20:00',
+          status: 'upcoming' as const,
+          artists: [job.creator_name || job.creator_username || 'Unknown'],
+          image: '/images/auth/auth-photo-1.jpg',
+        }))
+
+        setFeaturedArtists(transformedUsers)
+        setFeaturedEvents(transformedJobs)
+      } catch (error) {
+        console.error('Failed to fetch featured content:', error)
+        // Keep empty arrays as fallback
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedContent()
+  }, [])
 
   const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -106,8 +87,8 @@ const LandingPage = () => {
           alt="Hero background"
           fill
         />
-        <div className="absolute inset-0 bg-primary/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-primary/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/20 to-black/60 opacity-50" />
 
         <motion.div
@@ -175,11 +156,22 @@ const LandingPage = () => {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
               variants={staggerContainer}
             >
-              {featuredArtists.map((artist) => (
-                <motion.div key={artist.id} variants={fadeInUp}>
-                  <ArtistCard {...artist} />
-                </motion.div>
-              ))}
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-96 rounded-xl border border-border bg-card animate-pulse" />
+                ))
+              ) : featuredArtists.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">No featured artists available</p>
+                </div>
+              ) : (
+                featuredArtists.map((artist) => (
+                  <motion.div key={artist.id} variants={fadeInUp}>
+                    <ArtistCard {...artist} />
+                  </motion.div>
+                ))
+              )}
             </motion.div>
 
             <motion.div className="text-center mt-12" variants={fadeInUp}>
@@ -212,11 +204,22 @@ const LandingPage = () => {
               className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
               variants={staggerContainer}
             >
-              {featuredEvents.map((event, index) => (
-                <motion.div key={index} variants={fadeInUp}>
-                  <EventCard event={event} />
-                </motion.div>
-              ))}
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-80 rounded-xl border border-border bg-card animate-pulse" />
+                ))
+              ) : featuredEvents.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">No featured events available</p>
+                </div>
+              ) : (
+                featuredEvents.map((event, index) => (
+                  <motion.div key={index} variants={fadeInUp}>
+                    <EventCard event={event} />
+                  </motion.div>
+                ))
+              )}
             </motion.div>
 
             <motion.div className="text-center mt-12" variants={fadeInUp}>
