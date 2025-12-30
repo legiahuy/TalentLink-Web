@@ -79,6 +79,30 @@ export const adminService = {
     return res.data
   },
 
+  // ===== SEARCH =====
+  
+  searchUsers: async (query: string): Promise<FeaturedUser[]> => {
+    if (useMockData) {
+      return mockAdminData.searchUsers(query)
+    }
+    
+    const res = await axiosClient.get('/search/users', {
+      params: { q: query },
+    })
+    return res.data.data || []
+  },
+
+  searchJobs: async (query: string): Promise<FeaturedJob[]> => {
+    if (useMockData) {
+      return mockAdminData.searchJobs(query)
+    }
+    
+    const res = await axiosClient.get('/search/posts', {
+      params: { q: query },
+    })
+    return res.data.data || []
+  },
+
   // ===== UTILITY =====
   
   isMockMode: (): boolean => {

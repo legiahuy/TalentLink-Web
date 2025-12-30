@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AdminJobCard } from '@/components/admin/AdminJobCard'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
-import { ChevronLeft, ChevronRight, Briefcase } from 'lucide-react'
+import { SearchJobsDialog } from '@/components/admin/SearchJobsDialog'
+import { ChevronLeft, ChevronRight, Briefcase, Plus } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import type { FeaturedJob } from '@/types/admin'
 import { toast } from 'sonner'
@@ -14,6 +15,7 @@ export default function FeaturedJobsPage() {
   const [jobs, setJobs] = useState<FeaturedJob[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false)
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
@@ -121,10 +123,14 @@ export default function FeaturedJobsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
             Featured Jobs
           </h1>
+          <Button onClick={() => setSearchDialogOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Featured Job
+          </Button>
         </div>
         <p className="text-muted-foreground text-lg">
           Manage which job posts appear on the landing page
@@ -263,6 +269,16 @@ export default function FeaturedJobsPage() {
         confirmText={confirmDialog.isFeatured ? 'Unfeature' : 'Feature'}
         onConfirm={handleConfirmToggle}
         variant={confirmDialog.isFeatured ? 'destructive' : 'default'}
+      />
+
+      {/* Search Dialog */}
+      <SearchJobsDialog
+        open={searchDialogOpen}
+        onOpenChange={setSearchDialogOpen}
+        onJobFeatured={() => {
+          fetchJobs()
+          setSearchDialogOpen(false)
+        }}
       />
     </div>
   )

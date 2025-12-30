@@ -326,6 +326,19 @@ export const mockAdminData = {
     return filtered
   },
 
+  // Search jobs (for featuring)
+  searchJobs: async (query: string) => {
+    await delay(300)
+    const allJobs = mockFeaturedJobs // In real app, would include non-featured jobs
+    const filtered = allJobs.filter(
+      (j) =>
+        j.title.toLowerCase().includes(query.toLowerCase()) ||
+        j.description?.toLowerCase().includes(query.toLowerCase()) ||
+        j.brief_description?.toLowerCase().includes(query.toLowerCase())
+    )
+    return filtered
+  },
+
   // Get all mock data for landing page
   getLandingFeaturedUsers: async (limit = 10) => {
     await delay(200)
