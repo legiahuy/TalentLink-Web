@@ -11,7 +11,6 @@ export default function NotFound() {
   const router = useRouter()
   return (
     <div className="min-h-screen w-full relative">
-      {/* Dual Gradient Overlay (Top) Background */}
       <div
         className="absolute inset-0 -z-10"
         style={{
