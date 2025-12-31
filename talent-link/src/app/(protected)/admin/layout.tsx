@@ -14,24 +14,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const { user } = useAuthStore()
 
-  // useEffect(() => {
-  //   // Check if user is admin
-  //   if (user && user.role !== 'admin') {
-  //     router.push('/')
-  //   }
-  // }, [user, router])
+  useEffect(() => {
+    // Check if user is admin
+    if (user && user.role !== 'admin') {
+      router.push('/')
+    }
+  }, [user, router])
 
-  // // Don't render if not admin
-  // if (!user || user.role !== 'admin') {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-  //         <p className="text-muted-foreground">You need admin privileges to access this page.</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  // Don't render if not admin
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">You need admin privileges to access this page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const navItems = [
     {
@@ -122,6 +122,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )
               })}
             </nav>
+
+            <div>
+              
+            </div>
 
             {/* Mock Data Indicator - Subtle corner badge */}
             {process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true' && (

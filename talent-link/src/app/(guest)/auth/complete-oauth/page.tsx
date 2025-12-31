@@ -23,9 +23,7 @@ type Role = 'producer' | 'singer' | 'venue'
 
 const schema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  role: z.enum(['producer', 'singer', 'venue'], {
-    required_error: 'Please select a role',
-  }),
+  role: z.enum(['producer', 'singer', 'venue']),
 })
 
 type FormValues = z.infer<typeof schema>

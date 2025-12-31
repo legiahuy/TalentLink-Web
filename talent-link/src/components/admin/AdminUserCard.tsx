@@ -15,17 +15,17 @@ interface AdminUserCardProps {
 
 export function AdminUserCard({ user, onFeatureToggle, isLoading }: AdminUserCardProps) {
   return (
-    <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-[420px] flex flex-col">
+    <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-[360px] flex flex-col">
       <CardContent className="p-6 flex flex-col h-full">
         {/* Featured Badge */}
-        {user.is_featured && (
+        {/* {user.is_featured && (
           <div className="absolute top-4 right-4">
             <Badge className="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-primary/30 shadow-sm">
               <Star className="w-3 h-3 mr-1 fill-current" />
               Featured
             </Badge>
           </div>
-        )}
+        )} */}
 
         {/* User Avatar & Info */}
         <div className="flex items-start gap-4 mb-4">
@@ -49,9 +49,9 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading }: AdminUserCar
               <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
                 {user.display_name}
               </h3>
-              {user.is_verified && (
+              {/* {user.is_verified && (
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              )}
+              )} */}
             </div>
             <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
           </div>

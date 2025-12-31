@@ -33,14 +33,14 @@ export function AdminJobCard({ job, onFeatureToggle, isLoading }: AdminJobCardPr
     <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-[480px] flex flex-col">
       <CardContent className="p-6 flex flex-col h-full">
         {/* Featured Badge */}
-        {job.is_featured && (
+        {/* {job.is_featured && (
           <div className="absolute top-4 right-4">
             <Badge className="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-primary/30 shadow-sm">
               <Star className="w-3 h-3 mr-1 fill-current" />
               Featured
             </Badge>
           </div>
-        )}
+        )} */}
 
         {/* Job Title & Type */}
         <div className="mb-3">
