@@ -96,8 +96,16 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Artists and producers displayed on the landing page
               </p>
-              <Button asChild variant="outline" size="sm" className="w-full group-hover:bg-primary/10 transition-colors">
-                <Link href="/admin/featured-users" className="flex items-center justify-center gap-2">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full group-hover:bg-primary/10 transition-colors"
+              >
+                <Link
+                  href="/admin/featured-users"
+                  className="flex items-center justify-center gap-2"
+                >
                   Manage Users
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -124,8 +132,16 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Job opportunities highlighted on the landing page
               </p>
-              <Button asChild variant="outline" size="sm" className="w-full group-hover:bg-primary/10 transition-colors">
-                <Link href="/admin/featured-jobs" className="flex items-center justify-center gap-2">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full group-hover:bg-primary/10 transition-colors"
+              >
+                <Link
+                  href="/admin/featured-jobs"
+                  className="flex items-center justify-center gap-2"
+                >
                   Manage Jobs
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -143,26 +159,29 @@ export default function AdminDashboardPage() {
       >
         <Card className="border-border/50 bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              Quick Guide
-            </h3>
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">Quick Guide</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Use <strong className="text-foreground">Featured Users</strong> to manage which artists and producers appear on the landing page
+                  Use <strong className="text-foreground">Featured Users</strong> to manage which
+                  artists and producers appear on the landing page
                 </span>
               </li>
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Use <strong className="text-foreground">Featured Jobs</strong> to highlight important job opportunities and gigs
+                  Use <strong className="text-foreground">Featured Jobs</strong> to highlight
+                  important job opportunities and gigs
                 </span>
               </li>
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Recommended maximum: <strong className="text-foreground">50 featured users</strong> and <strong className="text-foreground">50 featured jobs</strong> (10 displayed on landing page)
+                  Recommended maximum:{' '}
+                  <strong className="text-foreground">50 featured users</strong> and{' '}
+                  <strong className="text-foreground">50 featured jobs</strong> (10 displayed on
+                  landing page)
                 </span>
               </li>
             </ul>

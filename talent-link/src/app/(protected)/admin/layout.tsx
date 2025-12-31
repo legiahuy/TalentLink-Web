@@ -9,29 +9,31 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
+export const avatarPlaceholderURL = 'https://avatar.iran.liara.run/public'
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const { user } = useAuthStore()
 
-  useEffect(() => {
-    // Check if user is admin
-    if (user && user.role !== 'admin') {
-      router.push('/')
-    }
-  }, [user, router])
+  // useEffect(() => {
+  //   // Check if user is admin
+  //   if (user && user.role !== 'admin') {
+  //     router.push('/')
+  //   }
+  // }, [user, router])
 
-  // Don't render if not admin
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">You need admin privileges to access this page.</p>
-        </div>
-      </div>
-    )
-  }
+  // // Don't render if not admin
+  // if (!user || user.role !== 'admin') {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+  //         <p className="text-muted-foreground">You need admin privileges to access this page.</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   const navItems = [
     {
@@ -81,15 +83,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               transition={{ delay: 0.2, duration: 0.5 }}
             >
               <div className="mb-8 px-4">
-              <Link href="/">
-                <Image
-                  src="/TalentLink.svg"
-                  alt="TalentLink Logo"
-                  width={120}
-                  height={32}
-                  className="h-8 w-auto"
-                />
-              </Link>
+                <Link href="/">
+                  <Image
+                    src="/TalentLink.svg"
+                    alt="TalentLink Logo"
+                    width={120}
+                    height={32}
+                    className="h-8 w-auto"
+                  />
+                </Link>
               </div>
             </motion.div>
 
@@ -112,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         'hover:bg-primary/10 hover:translate-x-1',
                         active
                           ? 'bg-primary/15 text-primary font-medium shadow-sm border border-primary/20'
-                          : 'text-muted-foreground hover:text-foreground'
+                          : 'text-muted-foreground hover:text-foreground',
                       )}
                     >
                       <Icon className={cn('w-5 h-5', active && 'text-primary')} />
@@ -122,10 +124,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )
               })}
             </nav>
-
-            <div>
-              
-            </div>
 
             {/* Mock Data Indicator - Subtle corner badge */}
             {process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true' && (
@@ -138,11 +136,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
                   Mock Data Mode
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Using test data
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Using test data</p>
               </motion.div>
             )}
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-lg  bg-primary/15 p-1 text-light-100 lg:justify-start lg:p-3 text-primary font-medium border border-primary/20">
+                <Image
+                  src={avatarPlaceholderURL}
+                  alt="avatar"
+                  width={44}
+                  height={44}
+                  className="aspect-square w-10 rounded-full object-cover !important"
+                />
+                <div className="hidden lg:block">
+                  <p className="text-[14px] font-semibold leading-[20px] capitalize">{'Admin'}</p>
+                  <p className="text-[12px] font-normal leading-[16px]">{'admin@admin.com'}</p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.aside>
 

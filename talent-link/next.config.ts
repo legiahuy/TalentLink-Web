@@ -7,17 +7,14 @@ const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts')
 
 const nextConfig: NextConfig = {
   images: {
-    // Cách khuyến nghị: khai báo remotePatterns cho CDN/domain ảnh
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'talentlink.io.vn',
-        pathname: '/storage/**', // ảnh của bạn đang nằm dưới /storage/...
+        pathname: '/storage/**',
       },
     ],
-
-    // Hoặc dùng cách đơn giản (bật 1 trong 2, KHÔNG cần cả hai):
-    // domains: ['talentlink.io.vn'],
+    domains: ['avatar.iran.liara.run'],
   },
 }
 
