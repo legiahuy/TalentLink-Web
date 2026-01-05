@@ -91,12 +91,12 @@ export const useAuthStore = create<AuthState>()(
             const role = get().user?.role
             if (role) get().setUserRole(role)
 
-            toast.success('Đăng nhập với Google thành công!')
+            toast.success('Login with Google successful!')
           } else if (registration_token) {
             set({ pendingRegistrationToken: registration_token })
           }
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Đăng nhập Google không thành công!')
+          const message = authService.getErrorMessage(err, 'Login with Google failed!')
           set({ error: message })
           toast.error(message)
           throw new Error(message)
@@ -122,9 +122,9 @@ export const useAuthStore = create<AuthState>()(
           const finalRole = get().user?.role || role
           if (finalRole) get().setUserRole(finalRole)
 
-          toast.success('Hoàn tất đăng ký Google thành công!')
+          toast.success('Google registration completed successfully!')
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Hoàn tất đăng ký Google thất bại!')
+          const message = authService.getErrorMessage(err, 'Google registration completion failed!')
           set({ error: message })
           toast.error(message)
           throw new Error(message)
@@ -177,9 +177,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.signUp({ display_name, username, email, password, role })
 
-          toast.success('Đăng ký thành công! Vui lòng xác minh email của bạn.')
+          toast.success('Registration successful! Please verify your email.')
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Đăng ký không thành công!')
+          const message = authService.getErrorMessage(err, 'Registration failed!')
           set({ error: message })
           toast.error(message)
           throw new Error(message)
@@ -200,7 +200,7 @@ export const useAuthStore = create<AuthState>()(
           const role = get().user?.role
           if (role) get().setUserRole(role)
 
-          toast.success('Chào mừng bạn quay lại TalentLink!')
+          toast.success('Welcome back to TalentLink!')
 
           // if (typeof window !== 'undefined') {
           //   const targetUsername = get().user?.username || username
@@ -211,7 +211,7 @@ export const useAuthStore = create<AuthState>()(
           //   }
           // }
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Đăng nhập không thành công!')
+          const message = authService.getErrorMessage(err, 'Login failed!')
           set({ error: message })
           toast.error(message)
           throw new Error(message)
@@ -262,7 +262,7 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: null,
             isAuthenticated: false,
           })
-          toast.error('Lỗi xảy ra khi lấy dữ liệu người dùng. Hãy thử lại!')
+          toast.error('Error fetching user data. Please try again!')
           throw err
         } finally {
           // set({ loading: false })
@@ -286,10 +286,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
           })
 
-          toast.success('Đăng xuất thành công!')
+          toast.success('Logout successful!')
         } catch (err) {
           console.error(err)
-          toast.error('Lỗi xảy ra khi logout. Hãy thử lại!')
+          toast.error('Error during logout. Please try again!')
         }
       },
 
@@ -298,7 +298,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.verifyEmail(email, code)
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Xác minh email không thành công!')
+          const message = authService.getErrorMessage(err, 'Email verification failed!')
           set({ error: message })
           throw new Error(message)
         } finally {
@@ -311,7 +311,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.resendVerificationEmail(email)
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Gửi lại email xác minh thất bại!')
+          const message = authService.getErrorMessage(err, 'Resending verification email failed!')
           set({ error: message })
           throw new Error(message)
         } finally {
@@ -326,7 +326,7 @@ export const useAuthStore = create<AuthState>()(
           await authService.requestPasswordReset(email)
           // backend returns generic success even if email does not exist
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Yêu cầu đặt lại mật khẩu thất bại!')
+          const message = authService.getErrorMessage(err, 'Password reset request failed!')
           set({ error: message })
           throw new Error(message)
         } finally {
@@ -339,7 +339,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.resendPasswordResetRequest(email)
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Gửi lại mã đặt lại mật khẩu thất bại!')
+          const message = authService.getErrorMessage(err, 'Resending password reset code failed!')
           set({ error: message })
           throw new Error(message)
         } finally {
@@ -353,7 +353,7 @@ export const useAuthStore = create<AuthState>()(
           const { reset_token } = await authService.confirmPasswordResetRequest(email, code)
           return reset_token
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Mã xác minh không hợp lệ!')
+          const message = authService.getErrorMessage(err, 'Invalid verification code!')
           set({ error: message })
           throw new Error(message)
         } finally {
@@ -366,7 +366,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.resetPassword(email, newPassword, resetToken)
         } catch (err) {
-          const message = authService.getErrorMessage(err, 'Đặt lại mật khẩu thất bại!')
+          const message = authService.getErrorMessage(err, 'Password reset failed!')
           set({ error: message })
           throw new Error(message)
         } finally {

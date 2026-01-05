@@ -106,7 +106,7 @@ const MessagesPage = () => {
         id: 'm1',
         conversationId: '1',
         senderId: 'other-user-1',
-        content: 'Cảm ơn bạn đã quan tâm! Chúng tôi sẽ liên hệ lại trong tuần này.',
+        content: 'Thank you for your interest! We will get back to you this week.',
         isRead: false,
         createdAt: new Date(Date.now() - 10 * 60000).toISOString(),
         updatedAt: new Date().toISOString(),
@@ -122,7 +122,7 @@ const MessagesPage = () => {
         {
           id: 'other-user-2',
           username: 'minhtam',
-          displayName: 'Minh Tâm (Nghệ sĩ)',
+          displayName: 'Minh Tam (Artist)',
           avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         },
       ],
@@ -130,7 +130,7 @@ const MessagesPage = () => {
         id: 'm2',
         conversationId: '2',
         senderId: 'other-user-2',
-        content: 'Mình có thể biểu diễn vào thứ 7 tuần sau nhé!',
+        content: 'I can perform next Saturday!',
         isRead: true,
         createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
         updatedAt: new Date().toISOString(),
@@ -145,7 +145,7 @@ const MessagesPage = () => {
       conversationId: '1',
       senderId: 'other-user-1',
       senderName: 'Acoustic Cafe & Bar',
-      content: 'Xin chào! Cảm ơn bạn đã gửi yêu cầu hợp tác đến venue của chúng tôi.',
+      content: 'Hello! Thank you for sending a collaboration request to our venue.',
       isRead: true,
       createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
       updatedAt: new Date().toISOString(),
@@ -154,8 +154,8 @@ const MessagesPage = () => {
       id: '2',
       conversationId: '1',
       senderId: user?.id || 'current-user',
-      senderName: 'Bạn',
-      content: 'Chào venue! Mình rất quan tâm đến việc biểu diễn tại không gian của bạn.',
+      senderName: 'You',
+      content: 'Hi venue! I am very interested in performing at your space.',
       isRead: true,
       createdAt: new Date(Date.now() - 25 * 60000).toISOString(),
       updatedAt: new Date().toISOString(),
@@ -165,7 +165,7 @@ const MessagesPage = () => {
       conversationId: '1',
       senderId: 'other-user-1',
       senderName: 'Acoustic Cafe & Bar',
-      content: 'Cảm ơn bạn đã quan tâm! Chúng tôi sẽ liên hệ lại trong tuần này.',
+      content: 'Thank you for your interest! We will get back to you this week.',
       isRead: false,
       createdAt: new Date(Date.now() - 10 * 60000).toISOString(),
       updatedAt: new Date().toISOString(),
@@ -397,7 +397,7 @@ const MessagesPage = () => {
   // Delete conversation
   const handleDeleteConversation = useCallback(
     async (conversationId: string) => {
-      if (!confirm('Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?')) return
+      if (!confirm('Are you sure you want to delete this conversation?')) return
 
       try {
         if (USE_MOCK_DATA) {
@@ -446,7 +446,7 @@ const MessagesPage = () => {
           id: Date.now().toString(),
           conversationId: selectedConversation,
           senderId: user?.id || 'current-user',
-          senderName: user?.display_name || 'Bạn',
+          senderName: user?.display_name || 'You',
           content: messageInput.trim(),
           attachmentUrl: selectedFile ? URL.createObjectURL(selectedFile) : undefined,
           attachmentType: selectedFile ? getAttachmentType(selectedFile) : undefined,
@@ -497,7 +497,7 @@ const MessagesPage = () => {
   const getOtherParticipant = (conversation: Conversation) => {
     if (conversation.isGroup) {
       return {
-        name: conversation.name || 'Nhóm',
+        name: conversation.name || 'Group',
         avatar: undefined,
       }
     }
@@ -522,25 +522,25 @@ const MessagesPage = () => {
       if (diffMins < 60) return `${diffMins} phút trước`
       if (diffHours < 24) return `${diffHours} giờ trước`
       if (diffDays < 7) return `${diffDays} ngày trước`
-      return date.toLocaleDateString('vi-VN')
+      return date.toLocaleDateString('en-US')
     } catch {
       return ''
     }
   }
 
   const getPreviewText = (conv: Conversation): string => {
-    if (!conv.lastMessage) return 'Chưa có tin nhắn'
+    if (!conv.lastMessage) return 'No messages yet'
 
     const lastMsg = conv.lastMessage
     const isOwn = lastMsg.senderId === user?.id
     
     // Tìm tên người gửi
-    let senderName = 'Người dùng'
+    let senderName = 'User'
     if (isOwn) {
-      senderName = 'Bạn'
+      senderName = 'You'
     } else {
       const sender = conv.participants.find((p) => p.id === lastMsg.senderId)
-      senderName = sender?.displayName || sender?.username || 'Người dùng'
+      senderName = sender?.displayName || sender?.username || 'User'
     }
 
     // Kiểm tra attachment URL trước (có thể attachmentType chưa set)
@@ -549,13 +549,13 @@ const MessagesPage = () => {
       const attachmentType = lastMsg.attachmentType
       
       if (attachmentType === 'image') {
-        return `${senderName}: 📷 Ảnh`
+        return `${senderName}: 📷 Photo`
       } else if (attachmentType === 'video') {
         return `${senderName}: 🎥 Video`
       } else if (attachmentType === 'audio') {
         return `${senderName}: 🎵 Audio`
       } else {
-        return `${senderName}: 📎 File đính kèm`
+        return `${senderName}: 📎 Attachment`
       }
     }
 
@@ -566,7 +566,7 @@ const MessagesPage = () => {
       return content.length > 50 ? `${content.substring(0, 50)}...` : content
     }
 
-    return 'Chưa có tin nhắn'
+    return 'No messages yet'
   }
 
   const filteredConversations = conversations.filter((conv) => {
@@ -581,11 +581,11 @@ const MessagesPage = () => {
     const map: Record<string, string> = {}
     if (selectedConv) {
       selectedConv.participants.forEach((participant) => {
-        map[participant.id] = participant.displayName || participant.username || 'Người dùng'
+        map[participant.id] = participant.displayName || participant.username || 'User'
       })
     }
     if (user?.id) {
-      map[user.id] = user.display_name || user.username || 'Bạn'
+      map[user.id] = user.display_name || user.username || 'You'
     }
     return map
   }, [selectedConv, user])
@@ -607,9 +607,9 @@ const MessagesPage = () => {
     id: msg.id,
     senderId: msg.senderId,
     senderName:
-      msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? 'Bạn' : 'Người dùng'),
+      msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? 'You' : 'User'),
     content: msg.content,
-    timestamp: new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
+    timestamp: new Date(msg.createdAt).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
     }),
@@ -624,6 +624,7 @@ const MessagesPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
       <Header />
+      
 
       <main className="flex-1 pt-20">
         <div className="max-w-[1600px] mx-auto px-4 py-6">
@@ -636,12 +637,12 @@ const MessagesPage = () => {
               <div className="w-full md:w-1/3 border-r border-border/50 flex flex-col bg-gradient-to-b from-muted/20 to-transparent">
                 <div className="p-5 border-b border-border/50 backdrop-blur-sm bg-background/50">
                   <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                    Tin Nhắn
+                    Messages
                   </h2>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                     <Input
-                      placeholder="Tìm kiếm cuộc trò chuyện..."
+                      placeholder="Search conversations..."
                       className="pl-10 bg-background/80 border-border/50 focus:border-primary/50 transition-all"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -655,7 +656,7 @@ const MessagesPage = () => {
                     </div>
                   ) : filteredConversations.length === 0 ? (
                     <div className="flex items-center justify-center h-32 text-muted-foreground">
-                      Không có cuộc trò chuyện nào
+                      No conversations
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
@@ -758,7 +759,7 @@ const MessagesPage = () => {
                         </Avatar>
                         <div>
                           <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
-                          <p className="text-xs text-muted-foreground">Đang hoạt động</p>
+                          <p className="text-xs text-muted-foreground">Active now</p>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -773,7 +774,7 @@ const MessagesPage = () => {
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Xóa cuộc trò chuyện</span>
+                            <span>Delete conversation</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -785,7 +786,7 @@ const MessagesPage = () => {
                         <div className="flex items-center justify-center h-full">
                           <div className="flex flex-col items-center gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                            <p className="text-sm text-muted-foreground">Đang tải tin nhắn...</p>
+                            <p className="text-sm text-muted-foreground">Loading messages...</p>
                           </div>
                         </div>
                       ) : (
@@ -809,7 +810,7 @@ const MessagesPage = () => {
                             <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                             <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                           </div>
-                          <span>Đang nhập...</span>
+                          <span>Typing...</span>
                         </div>
                       </div>
                     )}
@@ -861,7 +862,7 @@ const MessagesPage = () => {
                           </Button>
                         </label>
                         <Input
-                          placeholder="Nhập tin nhắn..."
+                          placeholder="Type a message..."
                           value={messageInput}
                           onChange={(e) => {
                             setMessageInput(e.target.value)
@@ -902,8 +903,8 @@ const MessagesPage = () => {
                   <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-transparent">
                     <div className="text-center">
                       <div className="mb-4 text-6xl">💬</div>
-                      <h3 className="text-xl font-semibold mb-2">Chọn một cuộc trò chuyện</h3>
-                      <p className="text-sm text-muted-foreground">Chọn từ danh sách bên trái để bắt đầu nhắn tin</p>
+                      <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+                      <p className="text-sm text-muted-foreground">Choose from the list on the left to start messaging</p>
                     </div>
                   </div>
                 )}

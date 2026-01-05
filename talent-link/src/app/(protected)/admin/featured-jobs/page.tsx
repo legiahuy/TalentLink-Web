@@ -170,7 +170,7 @@ export default function FeaturedJobsPage() {
             />
           ))}
         </div>
-      ) : jobs.length === 0 ? (
+      ) : !jobs ? (
         <motion.div
           className="text-center py-16 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm"
           initial={{ opacity: 0, scale: 0.95 }}

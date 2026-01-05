@@ -8,32 +8,60 @@ import { LayoutDashboard, Users, Briefcase } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-
-export const avatarPlaceholderURL = 'https://avatar.iran.liara.run/public'
+import { Frown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { resolveMediaUrl } from '@/lib/utils'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const { user } = useAuthStore()
 
-  // useEffect(() => {
-  //   // Check if user is admin
-  //   if (user && user.role !== 'admin') {
-  //     router.push('/')
-  //   }
-  // }, [user, router])
+  useEffect(() => {
+    // Check if user is admin
+    if (!user) {
+      router.push('/auth/login')
+    }
+  }, [user, router])
 
-  // // Don't render if not admin
-  // if (!user || user.role !== 'admin') {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-  //         <p className="text-muted-foreground">You need admin privileges to access this page.</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  // Don't render if not admin
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-[70vh] w-full relative flex items-center justify-center">
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundImage: `
+        linear-gradient(to right, rgba(229,231,235,0.8) 0.3px, transparent 1px),
+        linear-gradient(to bottom, rgba(229,231,235,0.8) 0.3px, transparent 1px),
+        radial-gradient(circle 500px at 0% 20%, rgba(139,92,246,0.3), transparent),
+        radial-gradient(circle 500px at 100% 0%, rgba(59,130,246,0.3), transparent)
+      `,
+            backgroundSize: '48px 48px, 48px 48px, 100% 100%, 100% 100%',
+          }}
+        />
+
+        <div className="min-h-screen flex items-center justify-center items-center">
+          <div className="p-8 flex flex-col items-center text-center gap-4">
+            <Frown className="z-10 size-10" />
+            <h1 className="text-2xl font-bold z-10">Access Denied</h1>
+            <p className="text-muted-foreground z-10">
+              You need admin privileges to access this page.
+            </p>
+            <Button
+              onClick={() => router.replace('/')}
+              variant="link"
+              size="lg"
+              className="z-10 text-md"
+            >
+              Go Back
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const navItems = [
     {
@@ -146,16 +174,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               transition={{ delay: 0.6, duration: 0.5 }}
             >
               <div className="mt-4 flex items-center justify-center gap-2 rounded-lg  bg-primary/15 p-1 text-light-100 lg:justify-start lg:p-3 text-primary font-medium border border-primary/20">
-                <Image
-                  src={avatarPlaceholderURL}
-                  alt="avatar"
-                  width={44}
-                  height={44}
-                  className="aspect-square w-10 rounded-full object-cover !important"
-                />
+                <div className="relative h-9 w-9 rounded-full p-0 hover:opacity-80">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage
+                      src={user?.avatar_url ? resolveMediaUrl(user.avatar_url) : undefined}
+                      alt={user?.display_name || user?.username || 'User'}
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {user?.display_name?.charAt(0).toUpperCase() ||
+                        user?.username?.charAt(0).toUpperCase() ||
+                        'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 <div className="hidden lg:block">
-                  <p className="text-[14px] font-semibold leading-[20px] capitalize">{'Admin'}</p>
-                  <p className="text-[12px] font-normal leading-[16px]">{'admin@admin.com'}</p>
+                  <p className="text-[14px] font-semibold leading-[20px] capitalize">
+                    {user?.display_name}
+                  </p>
+                  <p className="text-[12px] font-normal leading-[16px]">{user?.email}</p>
                 </div>
               </div>
             </motion.div>

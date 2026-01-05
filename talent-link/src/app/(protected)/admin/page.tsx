@@ -23,6 +23,9 @@ export default function AdminDashboardPage() {
           adminService.listFeaturedJobs({ limit: 1, offset: 0 }),
         ])
 
+        console.log('user:', usersRes)
+        console.log('job:', jobsRes)
+        
         setStats({
           totalFeaturedUsers: usersRes.data.total,
           totalFeaturedJobs: jobsRes.data.total,

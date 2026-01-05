@@ -179,7 +179,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
                     <div className="group relative">
                       <img
                         src={message.attachmentUrl}
-                        alt="Ảnh đính kèm"
+                        alt="Attached image"
                         className="max-h-64 rounded-2xl object-cover shadow-lg hover:shadow-xl transition-shadow border-2 border-background"
                       />
                       {/* Dropdown menu cho ảnh - chỉ hiển thị cho tin nhắn của mình */}
@@ -200,7 +200,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Xóa</span>
+                              <span>Delete</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -233,7 +233,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Xóa</span>
+                                <span>Delete</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -299,7 +299,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
                         {onEditMessage && !message.attachmentUrl && (
                           <DropdownMenuItem onClick={() => handleStartEdit(message)}>
                             <Pencil className="mr-2 h-4 w-4" />
-                            <span>Chỉnh sửa</span>
+                            <span>Edit</span>
                           </DropdownMenuItem>
                         )}
                         {onDeleteMessage && (
@@ -308,7 +308,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Xóa</span>
+                            <span>Delete</span>
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -324,7 +324,7 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
       {/* Read status with avatar - hiển thị sau tin nhắn cuối cùng đã đọc */}
       {lastReadOwnMessageId && otherParticipantAvatar && (
         <div className="flex justify-end items-center gap-1.5 mt-2 mb-2 mr-1">
-          <span className="text-xs font-medium text-foreground/70 tracking-wide">Đã xem</span>
+          <span className="text-xs font-medium text-foreground/70 tracking-wide">Seen</span>
           <Avatar className="h-5 w-5 ring-2 ring-primary/30 shadow-md">
             <AvatarImage src={otherParticipantAvatar} />
             <AvatarFallback className="text-[8px] bg-primary text-primary-foreground font-bold">✓</AvatarFallback>
@@ -336,19 +336,19 @@ const MessageThread = ({ messages, onEditMessage, onDeleteMessage, otherParticip
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa tin nhắn?</AlertDialogTitle>
+            <AlertDialogTitle>Delete message?</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa tin nhắn này không? Hành động này không thể hoàn tác.
+              Are you sure you want to delete this message? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteConfirmId && handleDeleteMessage(deleteConfirmId)}
               disabled={isDeleting}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {isDeleting ? 'Đang xóa...' : 'Xóa'}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -401,7 +401,7 @@ const AttachmentLink = ({
       )}>
         <Icon className={cn("h-5 w-5", isOwn ? "text-primary-foreground" : "text-primary")} />
       </div>
-      <span className="truncate flex-1 font-medium tracking-wide">{name || 'Tệp đính kèm'}</span>
+      <span className="truncate flex-1 font-medium tracking-wide">{name || 'Attachment'}</span>
     </a>
   )
 }

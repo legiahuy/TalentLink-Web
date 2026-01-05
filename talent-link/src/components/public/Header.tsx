@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import {ShieldUser} from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -146,6 +147,13 @@ const Header = () => {
                         <span>{t('userMenu.settings')}</span>
                       </Link>
                     </DropdownMenuItem>
+                    {user?.role === 'admin' &&  <DropdownMenuItem asChild>
+                      <Link href={'/admin'} className="flex items-center cursor-pointer">
+                        <ShieldUser className="mr-2 h-4 w-4" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>}
+                    
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}

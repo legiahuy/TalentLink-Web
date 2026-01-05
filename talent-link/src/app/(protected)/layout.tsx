@@ -10,13 +10,13 @@ export default function MainLayout({ children }: { children?: React.ReactNode })
   const isAdminRoute = pathname?.startsWith('/admin')
 
   return (
-    // <ProtectedRoute>
+    <ProtectedRoute>
     <div className="flex h-lvh min-h-lvh flex-col overflow-x-clip">
       {!isAdminRoute && <Header />}
 
       <main className="mx-auto w-full grow">{children}</main>
       {!isAdminRoute && <Footer />}
     </div>
-    // </ProtectedRoute>
+   </ProtectedRoute>
   )
 }
