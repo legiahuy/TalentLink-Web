@@ -22,9 +22,8 @@ const LandingPage = () => {
     name: string
     username: string
     image: string | StaticImageData
-    genre: string
+    genres: string[]
     location: string
-    rating?: number
     description?: string
   }
 
@@ -53,12 +52,11 @@ const LandingPage = () => {
         // Transform FeaturedUser to ArtistCard format
         const transformedUsers = users.map((user: FeaturedUser) => ({
           id: user.id,
-          name: user.display_name,
+          name: user.display_name || 'Unknown Artist',
           username: user.username || user.id,
           image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
-          genre: user.genres?.map((g) => g.name).join('/') || user.role,
-          location: [user.city, user.country].filter(Boolean).join(', '),
-          rating: user.is_verified ? 5.0 : 4.5,
+          genres: user.genres?.map((g) => g.name) || [],
+          location: [user.city, user.country].filter(Boolean).join(', ') || 'Location not specified',
           description: user.brief_bio || '',
         }))
 
@@ -253,15 +251,18 @@ const LandingPage = () => {
       </div>
 
       {/* Features */}
-      <section className="py-20">
+      <section className="py-20 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        
         <motion.div
-          className="mx-auto px-4 max-w-[1320px]"
+          className="mx-auto px-4 max-w-[1320px] relative z-10"
           initial="hidden"
           whileInView="show"
           viewport={{ margin: '-50px' }}
           variants={staggerContainer}
         >
-          <motion.div className="text-center mb-12" variants={fadeInUp}>
+          <motion.div className="text-center mb-16" variants={fadeInUp}>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('features.title')}</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('features.subtitle')}
@@ -269,43 +270,76 @@ const LandingPage = () => {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
             variants={staggerContainer}
           >
             <motion.div
-              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              className="group relative p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-sm border border-border/10 transition-all duration-300 hover:from-primary/8 hover:to-primary/3 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
               variants={fadeInUp}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-                <Music className="h-8 w-8 text-primary-foreground" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
+                  <Music className="h-7 w-7 text-primary" />
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+                  {t('features.diverseGenres.title')}
+                </h3>
+                
+                <p className="text-muted-foreground leading-relaxed">
+                  {t('features.diverseGenres.description')}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('features.diverseGenres.title')}</h3>
-              <p className="text-muted-foreground">{t('features.diverseGenres.description')}</p>
             </motion.div>
 
             <motion.div
-              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              className="group relative p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-sm border border-border/10 transition-all duration-300 hover:from-primary/8 hover:to-primary/3 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
               variants={fadeInUp}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-                <Users className="h-8 w-8 text-primary-foreground" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
+                  <Users className="h-7 w-7 text-primary" />
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+                  {t('features.easyConnection.title')}
+                </h3>
+                
+                <p className="text-muted-foreground leading-relaxed">
+                  {t('features.easyConnection.description')}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('features.easyConnection.title')}</h3>
-              <p className="text-muted-foreground">{t('features.easyConnection.description')}</p>
             </motion.div>
 
             <motion.div
-              className="text-center p-6 rounded-2xl bg-gradient-card border border-border/40 transition-all hover:shadow-glow"
+              className="group relative p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-sm border border-border/10 transition-all duration-300 hover:from-primary/8 hover:to-primary/3 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5"
               variants={fadeInUp}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-                <Shield className="h-8 w-8 text-primary-foreground" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
+                  <Shield className="h-7 w-7 text-primary" />
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+                  {t('features.professional.title')}
+                </h3>
+                
+                <p className="text-muted-foreground leading-relaxed">
+                  {t('features.professional.description')}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('features.professional.title')}</h3>
-              <p className="text-muted-foreground">{t('features.professional.description')}</p>
             </motion.div>
           </motion.div>
         </motion.div>

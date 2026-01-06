@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image, { StaticImageData } from 'next/image'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Star } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface ArtistCardProps {
@@ -9,15 +9,22 @@ interface ArtistCardProps {
   name: string
   username: string
   image: string | StaticImageData
-  genre: string
+  genres: string[]
   location: string
-  rating?: number
   description?: string
 }
 
-const ArtistCard = ({ name, username, image, genre, location, rating, description }: ArtistCardProps) => {
+const ArtistCard = ({ name, username, image, genres, location, description }: ArtistCardProps) => {
+  const handleClick = () => {
+    // Scroll to top before navigation for better back button UX
+    window.scrollTo(0, 0)
+  }
+
+  const displayGenres = genres.slice(0, 2)
+  const remainingCount = genres.length - 2
+
   return (
-    <Link href={`/profile/${username}`} className="group block h-full">
+    <Link href={`/profile/${username}`} className="group block h-full" onClick={handleClick}>
       <motion.div
         className="relative overflow-hidden rounded-xl bg-card border border-border/40  mx-3 h-full flex flex-col"
         whileHover={{
@@ -42,19 +49,22 @@ const ArtistCard = ({ name, username, image, genre, location, rating, descriptio
             <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
               {name}
             </h3>
-            {rating && (
-              <div className="flex items-center gap-1 text-sm shrink-0">
-                <Star className="h-4 w-4 fill-accent text-accent" />
-                <span className="font-medium">{rating}</span>
-              </div>
-            )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-gradient-card">
-              {genre}
-            </Badge>
-          </div>
+          {genres.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {displayGenres.map((genre) => (
+                <Badge key={genre} className="bg-primary">
+                  {genre}
+                </Badge>
+              ))}
+              {remainingCount > 0 && (
+                <Badge className="bg-muted text-muted-foreground">
+                  +{remainingCount}
+                </Badge>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 shrink-0" />
