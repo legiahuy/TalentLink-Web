@@ -21,13 +21,13 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
   return (
     <Card 
       className={cn(
-        "group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg",
+        "group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg min-h-[240px] h-full",
         selectable ? "cursor-pointer hover:border-primary/50" : "hover:-translate-y-1 hover:border-primary/30",
         selected && "border-primary bg-primary/5 shadow-md"
       )}
       onClick={() => selectable && onSelect && onSelect(user.id)}
     >
-      <CardContent className="p-4 sm:p-5 flex flex-col h-full gap-4">
+      <CardContent className="p-4 flex flex-col h-full gap-3">
         {/* Selection Indicator */}
         {selectable && (
           <div className="absolute top-4 right-4 z-10">
@@ -40,7 +40,7 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
         )}
 
         {/* User Avatar & Info */}
-        <div className="flex items-start gap-4 mb-4">
+        <div className="flex flex-col items-center text-center gap-2 mb-2">
           <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex-shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
             {user.avatar_url ? (
               <Image
@@ -50,27 +50,22 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary">
+              <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary">
                 {user.display_name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
-                {user.display_name}
-              </h3>
-              {/* {user.is_verified && (
-                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              )} */}
-            </div>
-            <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
+          <div className="w-full">
+            <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors mb-0.5">
+              {user.display_name}
+            </h3>
+            <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
           </div>
         </div>
 
         {/* Role Badge */}
-        <div className="mb-3">
+        <div className="flex justify-center mb-2">
           <Badge variant="outline" className="capitalize border-primary/30 text-primary">
             {user.role}
           </Badge>
@@ -78,21 +73,21 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
 
         {/* Bio */}
         {user.brief_bio && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
             {user.brief_bio}
           </p>
         )}
 
         {/* Genres */}
         {user.genres && user.genres.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1 mb-2">
             {user.genres.slice(0, 3).map((genre) => (
-              <Badge key={genre.id} variant="secondary" className="text-xs">
+              <Badge key={genre.id} variant="secondary" className="text-xs px-2 py-0">
                 {genre.name}
               </Badge>
             ))}
             {user.genres.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs px-2 py-0">
                 +{user.genres.length - 3}
               </Badge>
             )}
@@ -101,7 +96,7 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
 
         {/* Location */}
         {(user.city || user.country) && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
             <MapPin className="w-3 h-3" />
             <span className="truncate">
               {[user.city, user.country].filter(Boolean).join(', ')}

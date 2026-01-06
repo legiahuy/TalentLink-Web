@@ -38,20 +38,24 @@ const mapSearchResultToFeaturedUser = (user: UserSearchDto): FeaturedUser => {
 
 export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: SearchUsersDialogProps) {
   const [query, setQuery] = useState('')
-  const debouncedQuery = useDebounce(query, 500)
+  const debouncedQuery = useDebounce(query, 300)
   const [results, setResults] = useState<FeaturedUser[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searching, setSearching] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [featuring, setFeaturing] = useState(false)
 
   useEffect(() => {
     const search = async () => {
       if (!debouncedQuery.trim()) {
         setResults([])
+        setSearching(false)
+        setIsTyping(false)
         return
       }
 
       setSearching(true)
+      setIsTyping(false)
       try {
         const response = await searchService.searchUsers({
           query: debouncedQuery,
@@ -59,8 +63,10 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
           pageSize: 50,
         })
         
-        // Map search results
-        const mappedUsers = response.userProfiles.map(mapSearchResultToFeaturedUser)
+        // Map search results and filter to only include producer and singer roles
+        const mappedUsers = response.userProfiles
+          .filter(user => user.role === 'producer' || user.role === 'singer')
+          .map(mapSearchResultToFeaturedUser)
         setResults(mappedUsers)
       } catch (error) {
         console.error('Search failed:', error)
@@ -78,8 +84,20 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
       setQuery('')
       setResults([])
       setSelectedIds(new Set())
+      setSearching(false)
+      setIsTyping(false)
     }
   }, [open])
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value)
+    if (value.trim()) {
+      setIsTyping(true)
+    } else {
+      setIsTyping(false)
+      setSearching(false)
+    }
+  }
 
   const handleSelect = (userId: string) => {
     const newSelected = new Set(selectedIds)
@@ -142,7 +160,7 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
+      <DialogContent className="!max-w-[40vw] w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
         <DialogHeader className="p-6 pb-2 border-b border-border/50">
           <DialogTitle className="text-2xl">Search Users to Feature</DialogTitle>
         </DialogHeader>
@@ -154,11 +172,11 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
             <Input
               placeholder="Search by username or display name..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
               className="pl-10 h-12 text-lg bg-background border-border/50 focus-visible:ring-primary/20"
               autoFocus
             />
-            {searching && (
+            {(searching || isTyping) && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
               </div>
@@ -188,14 +206,17 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
               </p>
             </div>
           ) : (
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 pt-2"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
+            <div
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6 auto-rows-fr transition-opacity duration-200 ${searching ? 'opacity-50' : 'opacity-100'}`}
             >
               {results.map((user) => (
-                <motion.div key={user.id} variants={fadeInUp}>
+                <motion.div 
+                  key={user.id} 
+                  variants={fadeInUp} 
+                  initial="hidden"
+                  animate="show"
+                  className="h-full"
+                >
                   <AdminUserCard
                     user={user}
                     selectable={true}
@@ -205,7 +226,7 @@ export function SearchUsersDialog({ open, onOpenChange, onUserFeatured }: Search
                   />
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
 

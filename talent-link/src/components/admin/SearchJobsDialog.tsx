@@ -51,20 +51,24 @@ const mapSearchResultToFeaturedJob = (job: JobPostSearchDto): FeaturedJob => {
 
 export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJobsDialogProps) {
   const [query, setQuery] = useState('')
-  const debouncedQuery = useDebounce(query, 500)
+  const debouncedQuery = useDebounce(query, 300)
   const [results, setResults] = useState<FeaturedJob[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searching, setSearching] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [featuring, setFeaturing] = useState(false)
 
   useEffect(() => {
     const search = async () => {
       if (!debouncedQuery.trim()) {
         setResults([])
+        setSearching(false)
+        setIsTyping(false)
         return
       }
 
       setSearching(true)
+      setIsTyping(false)
       try {
         const response = await searchService.searchJobs({
           query: debouncedQuery,
@@ -92,8 +96,20 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
       setQuery('')
       setResults([])
       setSelectedIds(new Set())
+      setSearching(false)
+      setIsTyping(false)
     }
   }, [open])
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value)
+    if (value.trim()) {
+      setIsTyping(true)
+    } else {
+      setIsTyping(false)
+      setSearching(false)
+    }
+  }
 
   const handleSelect = (jobId: string) => {
     const newSelected = new Set(selectedIds)
@@ -158,7 +174,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
+      <DialogContent className="!max-w-[98vw] w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
         <DialogHeader className="p-6 pb-2 border-b border-border/50">
           <DialogTitle className="text-2xl">Search Jobs to Feature</DialogTitle>
         </DialogHeader>
@@ -167,14 +183,14 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
         <div className="p-4 border-b border-border/50 bg-muted/20">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+             <Input
               placeholder="Search by job title, description, or creator..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
               className="pl-10 h-12 text-lg bg-background border-border/50 focus-visible:ring-primary/20"
               autoFocus
             />
-            {searching && (
+            {(searching || isTyping) && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
               </div>
@@ -204,14 +220,17 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
               </p>
             </div>
           ) : (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
+            <div
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6 auto-rows-fr transition-opacity duration-200 ${searching ? 'opacity-50' : 'opacity-100'}`}
             >
               {results.map((job) => (
-                <motion.div key={job.id} variants={fadeInUp}>
+                <motion.div 
+                  key={job.id} 
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="show"
+                  className="h-full"
+                >
                   <AdminJobCard
                     job={job}
                     selectable={true}
@@ -221,7 +240,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
                   />
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
 
