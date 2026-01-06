@@ -1,15 +1,18 @@
-'use client'
-
-import { useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, Check } from 'lucide-react'
 import { adminService } from '@/services/adminService'
+import { searchService } from '@/services/searchService'
 import { AdminJobCard } from './AdminJobCard'
+// We might need to map between search result and FeaturedJob, as the types might slightly differ.
+// Assuming FeaturedJob is compatible or we cast it for now.
 import type { FeaturedJob } from '@/types/admin'
+import type { JobPostSearchDto } from '@/types/search'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface SearchJobsDialogProps {
   open: boolean
@@ -17,54 +20,124 @@ interface SearchJobsDialogProps {
   onJobFeatured: () => void
 }
 
+// Helper to map search result to AdminJobCard prop type if needed
+const mapSearchResultToFeaturedJob = (job: JobPostSearchDto): FeaturedJob => {
+  return {
+    id: job.id,
+    title: job.title,
+    post_type: job.postType as 'job' | 'collaboration' | 'event',
+    status: job.status as 'open' | 'closed' | 'filled' | 'cancelled' | 'draft',
+    visibility: job.visibility as 'public' | 'private' | 'connections',
+    creator_id: job.creatorId,
+    creator_role: job.creatorRole,
+    creator_username: job.creatorUsername,
+    creator_name: job.creatorDisplayName,
+    creator_avatar: job.creatorAvatarUrl,
+    created_at: job.createdAt,
+    updated_at: job.updatedAt,
+    is_featured: false, // Search results shouldn't be featured yet normally, or we check
+    location: job.location,
+    brief_description: job.description, 
+    genres: job.genres,
+    budget_min: job.budgetMin,
+    budget_max: job.budgetMax,
+    budget_currency: job.budgetCurrency as 'VND' | 'USD',
+    views_count: job.viewsCount,
+    total_submissions: job.applicationsCount, // Assuming applications count
+    deadline: job.deadline,
+    // Add other mapped fields as compatible
+  } as unknown as FeaturedJob
+}
+
 export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJobsDialogProps) {
   const [query, setQuery] = useState('')
+  const debouncedQuery = useDebounce(query, 500)
   const [results, setResults] = useState<FeaturedJob[]>([])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searching, setSearching] = useState(false)
-  const [featuringId, setFeaturingId] = useState<string | null>(null)
+  const [featuring, setFeaturing] = useState(false)
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) {
+  useEffect(() => {
+    const search = async () => {
+      if (!debouncedQuery.trim()) {
+        setResults([])
+        return
+      }
+
+      setSearching(true)
+      try {
+        const response = await searchService.searchJobs({
+          query: debouncedQuery,
+          page: 1,
+          pageSize: 50,
+        })
+        
+        // Map search results to FeaturedJob type for the card
+        const mappedJobs = response.jobPosts.map(mapSearchResultToFeaturedJob)
+        setResults(mappedJobs)
+      } catch (error) {
+        console.error('Search failed:', error)
+        toast.error('Failed to search jobs')
+      } finally {
+        setSearching(false)
+      }
+    }
+
+    search()
+  }, [debouncedQuery])
+
+  // Clear state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setQuery('')
       setResults([])
-      return
+      setSelectedIds(new Set())
     }
+  }, [open])
 
-    setSearching(true)
-    try {
-      const jobs = await adminService.searchJobs(query)
-      setResults(jobs)
-    } catch (error) {
-      console.error('Search failed:', error)
-      toast.error('Failed to search jobs')
-    } finally {
-      setSearching(false)
+  const handleSelect = (jobId: string) => {
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(jobId)) {
+      newSelected.delete(jobId)
+    } else {
+      newSelected.add(jobId)
     }
-  }, [query])
-
-  const handleFeature = async (jobId: string, isFeatured: boolean) => {
-    if (isFeatured) {
-      toast.info('This job is already featured')
-      return
-    }
-
-    setFeaturingId(jobId)
-    try {
-      await adminService.featureJob(jobId)
-      toast.success('Job featured successfully')
-      onJobFeatured()
-      // Remove from results or update status
-      setResults(results.map(j => j.id === jobId ? { ...j, is_featured: true } : j))
-    } catch (error) {
-      console.error('Failed to feature job:', error)
-      toast.error('Failed to feature job')
-    } finally {
-      setFeaturingId(null)
-    }
+    setSelectedIds(newSelected)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
+  const handleFeatureSelected = async () => {
+    if (selectedIds.size === 0) return
+
+    setFeaturing(true)
+    let successCount = 0
+    let failCount = 0
+
+    try {
+      // Process features in parallel or sequence. Parallel for speed.
+      // Note: If API had bulk feature endpoint, we'd use that.
+      const promises = Array.from(selectedIds).map(id => 
+        adminService.featureJob(id)
+          .then(() => { successCount++ })
+          .catch(() => { failCount++ })
+      )
+
+      await Promise.all(promises)
+
+      if (successCount > 0) {
+        toast.success(`Successfully featured ${successCount} jobs`)
+        onJobFeatured()
+        onOpenChange(false)
+      }
+      
+      if (failCount > 0) {
+        toast.error(`Failed to feature ${failCount} jobs`)
+      }
+
+    } catch (error) {
+      console.error('Failed to feature jobs:', error)
+      toast.error('An error occurred while featuring jobs')
+    } finally {
+      setFeaturing(false)
     }
   }
 
@@ -85,51 +158,54 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
+        <DialogHeader className="p-6 pb-2 border-b border-border/50">
           <DialogTitle className="text-2xl">Search Jobs to Feature</DialogTitle>
         </DialogHeader>
 
-        {/* Search Input */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
+        {/* Search Input Area */}
+        <div className="p-4 border-b border-border/50 bg-muted/20">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by job title or description..."
+              placeholder="Search by job title, description, or creator..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="pl-10"
+              className="pl-10 h-12 text-lg bg-background border-border/50 focus-visible:ring-primary/20"
+              autoFocus
             />
-          </div>
-          <Button onClick={handleSearch} disabled={searching || !query.trim()}>
-            {searching ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Searching...
-              </>
-            ) : (
-              'Search'
+            {searching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              </div>
             )}
-          </Button>
+          </div>
         </div>
 
         {/* Results */}
-        <div className="flex-1 overflow-y-auto">
-          {searching ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex-1 overflow-y-auto p-6 bg-muted/5">
+          {searching && results.length === 0 ? (
+             <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+              <p className="text-muted-foreground">Searching for jobs...</p>
             </div>
           ) : results.length === 0 ? (
-            <div className="text-center py-12">
-              <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="text-muted-foreground">
-                {query.trim() ? 'No jobs found' : 'Enter a search query to find jobs'}
+            <div className="text-center py-20 flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-lg font-medium mb-1">
+                {query.trim() ? 'No jobs found' : 'Start searching'}
+              </h3>
+              <p className="text-muted-foreground max-w-sm">
+                {query.trim() 
+                  ? `We couldn't find any jobs matching "${query}"` 
+                  : 'Enter keywords like job title, type, or creator name to find jobs to feature.'}
               </p>
             </div>
           ) : (
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4"
               variants={staggerContainer}
               initial="hidden"
               animate="show"
@@ -138,13 +214,44 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
                 <motion.div key={job.id} variants={fadeInUp}>
                   <AdminJobCard
                     job={job}
-                    onFeatureToggle={handleFeature}
-                    isLoading={featuringId === job.id}
+                    selectable={true}
+                    selected={selectedIds.has(job.id)}
+                    onSelect={handleSelect}
+                    isLoading={featuring}
                   />
                 </motion.div>
               ))}
             </motion.div>
           )}
+        </div>
+
+        {/* Footer with Actions */}
+        <div className="p-4 border-t border-border/50 bg-background flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            {selectedIds.size} job{selectedIds.size !== 1 && 's'} selected
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleFeatureSelected} 
+              disabled={selectedIds.size === 0 || featuring}
+              className="gap-2 min-w-[140px]"
+            >
+              {featuring ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Feature Selected
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

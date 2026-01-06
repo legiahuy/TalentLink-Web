@@ -45,12 +45,12 @@ interface ArtistProfileViewProps {
   loadingGallery?: boolean
 }
 
-const staticServices = [
-  { name: 'Event Performance', price: 'Contact' },
-  { name: 'Vocal Recording', price: '500,000 VND/song' },
-  { name: 'Songwriting', price: 'Contact' },
-  { name: 'Vocal Lessons', price: '300,000 VND/session' },
-]
+// const staticServices = [
+//   { name: 'Event Performance', price: 'Contact' },
+//   { name: 'Vocal Recording', price: '500,000 VND/song' },
+//   { name: 'Songwriting', price: 'Contact' },
+//   { name: 'Vocal Lessons', price: '300,000 VND/session' },
+// ]
 
 export function ArtistProfileView({
   profile,
@@ -68,13 +68,15 @@ export function ArtistProfileView({
   const [galleryModalOpen, setGalleryModalOpen] = useState(false)
   const displayName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ') || '—'
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const briefBio = (profile as any)?.brief_bio || ''
   const detailBio = (profile as any)?.detail_bio || ''
-  const email = profile.email || ''
-  const phone = (profile as any)?.phone_number || ''
+  // const email = profile.email || ''
+  // const phone = (profile as any)?.phone_number || ''
   const facebook = (profile as any)?.facebook_url || ''
   const instagram = (profile as any)?.instagram_url || ''
   const youtube = (profile as any)?.youtube_url || ''
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   const genres = (profile.genres || []).map((g) => g.name)
 
   // Sort experiences by end date (most recent first), then by start date
@@ -193,7 +195,7 @@ export function ArtistProfileView({
                       className="flex items-center justify-center gap-2"
                     >
                       <MessageCircle className="h-5 w-5" />
-                      Nhắn tin
+                      Message
                     </Link>
                   </Button>
                 </>

@@ -3,13 +3,17 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Star, MapPin, Calendar, DollarSign, Eye, FileText } from 'lucide-react'
+import { MapPin, Calendar, DollarSign, Eye, FileText, CheckCircle2, Circle } from 'lucide-react'
 import type { FeaturedJob } from '@/types/admin'
+import { cn } from '@/lib/utils'
 
 interface AdminJobCardProps {
   job: FeaturedJob
-  onFeatureToggle: (jobId: string, isFeatured: boolean) => void
+  onFeatureToggle?: (jobId: string, isFeatured: boolean) => void
   isLoading?: boolean
+  selectable?: boolean
+  selected?: boolean
+  onSelect?: (jobId: string) => void
 }
 
 const formatCurrency = (amount: number, currency: string) => {
@@ -28,19 +32,27 @@ const formatDate = (dateString: string) => {
   }
 }
 
-export function AdminJobCard({ job, onFeatureToggle, isLoading }: AdminJobCardProps) {
+export function AdminJobCard({ job, onFeatureToggle, isLoading, selectable, selected, onSelect }: AdminJobCardProps) {
   return (
-    <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-[480px] flex flex-col">
-      <CardContent className="p-6 flex flex-col h-full">
-        {/* Featured Badge */}
-        {/* {job.is_featured && (
-          <div className="absolute top-4 right-4">
-            <Badge className="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-primary/30 shadow-sm">
-              <Star className="w-3 h-3 mr-1 fill-current" />
-              Featured
-            </Badge>
+    <Card 
+      className={cn(
+        "group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg h-full",
+        selectable ? "cursor-pointer hover:border-primary/50" : "hover:-translate-y-1 hover:border-primary/30",
+        selected && "border-primary bg-primary/5 shadow-md"
+      )}
+      onClick={() => selectable && onSelect && onSelect(job.id)}
+    >
+      <CardContent className="p-5 flex flex-col h-full gap-3">
+        {/* Selection Indicator */}
+        {selectable && (
+          <div className="absolute top-4 right-4 z-10">
+            {selected ? (
+              <CheckCircle2 className="w-6 h-6 text-primary fill-primary/20" />
+            ) : (
+              <Circle className="w-6 h-6 text-muted-foreground/30" />
+            )}
           </div>
-        )} */}
+        )}
 
         {/* Job Title & Type */}
         <div className="mb-3">
@@ -151,15 +163,21 @@ export function AdminJobCard({ job, onFeatureToggle, isLoading }: AdminJobCardPr
         <div className="flex-grow" />
 
         {/* Action Button */}
-        <Button
-          onClick={() => onFeatureToggle(job.id, job.is_featured)}
-          disabled={isLoading}
-          variant={job.is_featured ? 'outline' : 'default'}
-          className="w-full group-hover:shadow-md transition-all"
-          size="sm"
-        >
-          {isLoading ? 'Processing...' : job.is_featured ? 'Unfeature' : 'Feature'}
-        </Button>
+        {/* Action Button - Only show if not selectable */}
+        {!selectable && onFeatureToggle && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation()
+              onFeatureToggle(job.id, job.is_featured)
+            }}
+            disabled={isLoading}
+            variant={job.is_featured ? 'outline' : 'default'}
+            className="w-full group-hover:shadow-md transition-all"
+            size="sm"
+          >
+            {isLoading ? 'Processing...' : job.is_featured ? 'Unfeature' : 'Feature'}
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

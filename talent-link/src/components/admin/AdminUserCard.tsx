@@ -4,28 +4,40 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Star, MapPin, CheckCircle2 } from 'lucide-react'
+import { MapPin, CheckCircle2, Circle } from 'lucide-react'
 import type { FeaturedUser } from '@/types/admin'
+import { cn } from '@/lib/utils'
 
 interface AdminUserCardProps {
   user: FeaturedUser
-  onFeatureToggle: (userId: string, isFeatured: boolean) => void
+  onFeatureToggle?: (userId: string, isFeatured: boolean) => void
   isLoading?: boolean
+  selectable?: boolean
+  selected?: boolean
+  onSelect?: (userId: string) => void
 }
 
-export function AdminUserCard({ user, onFeatureToggle, isLoading }: AdminUserCardProps) {
+export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, selected, onSelect }: AdminUserCardProps) {
   return (
-    <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-[360px] flex flex-col">
-      <CardContent className="p-6 flex flex-col h-full">
-        {/* Featured Badge */}
-        {/* {user.is_featured && (
-          <div className="absolute top-4 right-4">
-            <Badge className="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-primary/30 shadow-sm">
-              <Star className="w-3 h-3 mr-1 fill-current" />
-              Featured
-            </Badge>
+    <Card 
+      className={cn(
+        "group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg",
+        selectable ? "cursor-pointer hover:border-primary/50" : "hover:-translate-y-1 hover:border-primary/30",
+        selected && "border-primary bg-primary/5 shadow-md"
+      )}
+      onClick={() => selectable && onSelect && onSelect(user.id)}
+    >
+      <CardContent className="p-4 sm:p-5 flex flex-col h-full gap-4">
+        {/* Selection Indicator */}
+        {selectable && (
+          <div className="absolute top-4 right-4 z-10">
+            {selected ? (
+              <CheckCircle2 className="w-6 h-6 text-primary fill-primary/20" />
+            ) : (
+              <Circle className="w-6 h-6 text-muted-foreground/30" />
+            )}
           </div>
-        )} */}
+        )}
 
         {/* User Avatar & Info */}
         <div className="flex items-start gap-4 mb-4">
@@ -101,15 +113,21 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading }: AdminUserCar
         <div className="flex-grow" />
 
         {/* Action Button */}
-        <Button
-          onClick={() => onFeatureToggle(user.id, user.is_featured)}
-          disabled={isLoading}
-          variant={user.is_featured ? 'outline' : 'default'}
-          className="w-full group-hover:shadow-md transition-all"
-          size="sm"
-        >
-          {isLoading ? 'Processing...' : user.is_featured ? 'Unfeature' : 'Feature'}
-        </Button>
+        {/* Action Button - Only show if not selectable */}
+        {!selectable && onFeatureToggle && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation()
+              onFeatureToggle(user.id, user.is_featured)
+            }}
+            disabled={isLoading}
+            variant={user.is_featured ? 'outline' : 'default'}
+            className="w-full group-hover:shadow-md transition-all"
+            size="sm"
+          >
+            {isLoading ? 'Processing...' : user.is_featured ? 'Unfeature' : 'Feature'}
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

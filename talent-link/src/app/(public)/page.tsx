@@ -1,5 +1,5 @@
 'use client'
-import Image from 'next/image'
+import Image, { StaticImageData } from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,8 +14,32 @@ import type { FeaturedUser, FeaturedJob } from '@/types/admin'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
-  const [featuredArtists, setFeaturedArtists] = useState<any[]>([])
-  const [featuredEvents, setFeaturedEvents] = useState<any[]>([])
+  // ArtistCard expects { id, name, username, image, genre, location, rating?, description? }
+  // EventCard expects { event: { id, title, date, time, status, artists, image } }
+  
+  interface ArtistData {
+    id: string
+    name: string
+    username: string
+    image: string | StaticImageData
+    genre: string
+    location: string
+    rating?: number
+    description?: string
+  }
+
+  interface EventData {
+    id: string
+    title: string
+    date: string
+    time: string
+    status: 'upcoming' | 'ongoing' | 'past'
+    artists: string[]
+    image: string | StaticImageData
+  }
+
+  const [featuredArtists, setFeaturedArtists] = useState<ArtistData[]>([])
+  const [featuredEvents, setFeaturedEvents] = useState<EventData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -30,6 +54,7 @@ const LandingPage = () => {
         const transformedUsers = users.map((user: FeaturedUser) => ({
           id: user.id,
           name: user.display_name,
+          username: user.username || user.id,
           image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
           genre: user.genres?.map((g) => g.name).join('/') || user.role,
           location: [user.city, user.country].filter(Boolean).join(', '),
@@ -62,16 +87,16 @@ const LandingPage = () => {
   }, [])
 
   const fadeInUp: Variants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0.2, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
   }
 
   const staggerContainer: Variants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 1 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.1,
       },
     },
   }
@@ -79,7 +104,7 @@ const LandingPage = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-[650px] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[850px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(240_10%_3.9%),hsl(240_8%_8%))]" />
         <Image
           className="absolute inset-0 opacity-100 object-cover"
@@ -142,7 +167,7 @@ const LandingPage = () => {
             className="mx-auto px-4 max-w-[1320px]"
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-100px' }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={staggerContainer}
           >
             <motion.div className="text-center mb-12" variants={fadeInUp}>
@@ -152,27 +177,24 @@ const LandingPage = () => {
               </p>
             </motion.div>
 
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-              variants={staggerContainer}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {loading ? (
                 // Loading skeleton
                 Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="h-96 rounded-xl border border-border bg-card animate-pulse" />
                 ))
-              ) : featuredArtists.length === 0 ? (
+              ) : !featuredArtists ? (
                 <div className="col-span-full text-center py-12">
                   <p className="text-muted-foreground">No featured artists available</p>
                 </div>
               ) : (
                 featuredArtists.map((artist) => (
-                  <motion.div key={artist.id} variants={fadeInUp}>
+                  <motion.div key={artist.id} variants={fadeInUp} className="h-full">
                     <ArtistCard {...artist} />
                   </motion.div>
                 ))
               )}
-            </motion.div>
+            </div>
 
             <motion.div className="text-center mt-12" variants={fadeInUp}>
               <Button variant="outline" size="lg" asChild className="border-primary/50">
@@ -190,7 +212,7 @@ const LandingPage = () => {
             className="mx-auto px-4 max-w-[1320px]"
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-100px' }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={staggerContainer}
           >
             <motion.div className="text-center mb-12" variants={fadeInUp}>
@@ -200,10 +222,7 @@ const LandingPage = () => {
               </p>
             </motion.div>
 
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
-              variants={staggerContainer}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {loading ? (
                 // Loading skeleton
                 Array.from({ length: 3 }).map((_, i) => (
@@ -220,7 +239,7 @@ const LandingPage = () => {
                   </motion.div>
                 ))
               )}
-            </motion.div>
+            </div>
 
             <motion.div className="text-center mt-12" variants={fadeInUp}>
               <Button variant="outline" size="lg" asChild className="border-primary/50">
@@ -239,7 +258,7 @@ const LandingPage = () => {
           className="mx-auto px-4 max-w-[1320px]"
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true, margin: '-100px' }}
+          viewport={{ margin: '-50px' }}
           variants={staggerContainer}
         >
           <motion.div className="text-center mb-12" variants={fadeInUp}>

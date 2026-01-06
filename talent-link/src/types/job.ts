@@ -285,7 +285,7 @@ export interface SubmissionActionDTO {
   previous_status?: string
   new_status?: string
   notes?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   created_at: string
 }
 
@@ -407,7 +407,7 @@ export interface JobSearchResult {
   searchTime?: string
 }
 
-export interface ApiResult<T = any> {
+export interface ApiResult<T = unknown> {
   code: number
   message: string
   data?: T

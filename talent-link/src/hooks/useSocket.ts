@@ -161,8 +161,12 @@ export const useSocket = (options: UseSocketOptions = {}) => {
     [],
   )
 
+  const getSocket = useCallback(() => {
+    return socketRef.current
+  }, [])
+
   return {
-    socket: socketRef.current,
+    getSocket,
     joinConversation,
     leaveConversation,
     sendTyping,

@@ -6,8 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import EventCard from '@/components/event/EventCard'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapPin, Phone, Mail, Globe, Building2, Users, MessageCircle } from 'lucide-react'
 import type { User } from '@/types/user'
 import { resolveMediaUrl } from '@/lib/utils'
@@ -22,69 +20,6 @@ interface VenueProfileViewProps {
   loadingGallery?: boolean
 }
 
-interface Event {
-  id: string
-  title: string
-  date: string
-  time: string
-  status: 'upcoming' | 'ongoing' | 'past'
-  artists: string[]
-  image: string
-}
-
-const sampleEvents: Record<'upcoming' | 'ongoing' | 'past', Event[]> = {
-  upcoming: [
-    {
-      id: '1',
-      title: 'Acoustic Night - Love Songs',
-      date: '2025-10-15',
-      time: '19:30',
-      status: 'upcoming',
-      artists: ['Minh Tâm', 'Thu Hà'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-    {
-      id: '2',
-      title: 'Live Session - Indie Night',
-      date: '2025-10-20',
-      time: '20:00',
-      status: 'upcoming',
-      artists: ['The Vibe Band', 'Acoustic Soul'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-  ],
-  ongoing: [
-    {
-      id: '3',
-      title: 'Weekend Jazz Vibes',
-      date: '2025-10-08',
-      time: '20:00',
-      status: 'ongoing',
-      artists: ['Jazz Collective'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-  ],
-  past: [
-    {
-      id: '4',
-      title: 'Trinh Music Night - In Memory',
-      date: '2025-09-30',
-      time: '19:00',
-      status: 'past',
-      artists: ['Văn Anh', 'Hoàng Long'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-    {
-      id: '5',
-      title: 'Open Mic Night',
-      date: '2025-09-25',
-      time: '19:30',
-      status: 'past',
-      artists: ['Various Artists'],
-      image: '/images/auth/auth-photo-1.jpg',
-    },
-  ],
-}
 
 const businessTypes: Array<{ label: string; value: string }> = [
   { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
@@ -229,7 +164,7 @@ export function VenueProfileView({
                               className="flex items-center justify-center gap-2"
                             >
                               <MessageCircle className="h-5 w-5" />
-                              Nhắn tin
+                              Message
                             </Link>
                           </Button>
                         </div>

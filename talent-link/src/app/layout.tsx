@@ -31,7 +31,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`}>
+      <body className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
         <AuthInitializer>
           <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
           <Toaster position="top-right" richColors />
