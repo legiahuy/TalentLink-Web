@@ -1,22 +1,36 @@
 'use client'
 import Image, { StaticImageData } from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, ArrowRight, Music, Users, Shield } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Search, ArrowRight, Music, Users, Shield, Briefcase } from 'lucide-react'
 import ArtistCard from '@/components/artist/ArtistCard'
 import EventCard from '@/components/event/EventCard'
 import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
-import { useEffect, useState } from 'react'
 import { landingService } from '@/services/landingService'
+import { searchService } from '@/services/searchService'
 import type { FeaturedUser, FeaturedJob } from '@/types/admin'
+import type { JobPostSearchDto } from '@/types/job'
+import type { UserSearchDto } from '@/types/search'
+import { resolveMediaUrl } from '@/lib/utils'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
-  // ArtistCard expects { id, name, username, image, genre, location, rating?, description? }
-  // EventCard expects { event: { id, title, date, time, status, artists, image } }
-  
+  const router = useRouter()
+
+  // -- Search State --
+  const [searchQuery, setSearchQuery] = useState('')
+  const [suggestions, setSuggestions] = useState<
+    { jobs: JobPostSearchDto[]; users: UserSearchDto[] } | null
+  >(null)
+  const [loadingSuggest, setLoadingSuggest] = useState(false)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  // -- Featured Content State --
   interface ArtistData {
     id: string
     name: string
@@ -24,6 +38,7 @@ const LandingPage = () => {
     image: string | StaticImageData
     genres: string[]
     location: string
+    rating?: number
     description?: string
   }
 
@@ -41,6 +56,36 @@ const LandingPage = () => {
   const [featuredEvents, setFeaturedEvents] = useState<EventData[]>([])
   const [loading, setLoading] = useState(true)
 
+  // -- Autocomplete Logic --
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const q = searchQuery.trim()
+    if (!q) {
+      setSuggestions(null)
+      return
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        setLoadingSuggest(true)
+        const result = await searchService.searchAll(q)
+        setSuggestions({
+          jobs: result.jobs.jobPosts || [],
+          users: result.users.userProfiles || [],
+        })
+      } catch (error) {
+        console.error('Autocomplete search failed', error)
+        setSuggestions(null)
+      } finally {
+        setLoadingSuggest(false)
+      }
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [searchQuery])
+
+  // -- Fetch Featured Content --
   useEffect(() => {
     const fetchFeaturedContent = async () => {
       try {
@@ -84,6 +129,7 @@ const LandingPage = () => {
     fetchFeaturedContent()
   }, [])
 
+  // -- Animations --
   const fadeInUp: Variants = {
     hidden: { opacity: 0.2, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
@@ -140,14 +186,73 @@ const LandingPage = () => {
             <div className="relative flex-1">
               <Search className="absolute z-1 left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('hero.searchPlaceholder')}
                 className="pl-10 bg-card/50 backdrop-blur border-border/40 h-10"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const q = searchQuery.trim()
+                    if (q) router.push(`/search?query=${encodeURIComponent(q)}`)
+                  }
+                }}
               />
+              {suggestions && (suggestions.jobs.length > 0 || suggestions.users.length > 0) && (
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border/60 bg-background shadow-lg overflow-hidden z-20">
+                  {suggestions.users.slice(0, 5).map((u) => {
+                    const avatarSrc = u.avatarUrl ? resolveMediaUrl(u.avatarUrl) : undefined
+                    const fallback = (u.displayName || u.username || '?').charAt(0).toUpperCase()
+                    return (
+                      <Link
+                        key={`u-${u.id}`}
+                        href={`/profile/${u.username}`}
+                        className="w-full text-left px-3 py-2 hover:bg-muted/60 transition-colors flex items-center gap-3"
+                        onClick={() => setSuggestions(null)}
+                      >
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={avatarSrc} alt={u.displayName || u.username} />
+                          <AvatarFallback>{fallback}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate text-start">{u.displayName || u.username}</div>
+                          <div className="text-xs text-muted-foreground truncate text-start">{u.role}</div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                  {suggestions.jobs.slice(0, 5).map((j) => (
+                    <Link
+                      key={`j-${j.id}`}
+                      href={`/jobs/${j.id}`}
+                      className="w-full text-left px-3 py-2 hover:bg-muted/60 transition-colors flex items-center gap-3"
+                      onClick={() => setSuggestions(null)}
+                    >
+                      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <Briefcase className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate text-start">{j.title}</div>
+                        <div className="text-xs text-muted-foreground truncate text-start">
+                          {j.creatorDisplayName || j.creatorUsername || j.creatorRole}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                  {loadingSuggest && (
+                    <div className="px-3 py-2 text-xs text-muted-foreground">Thinking...</div>
+                  )}
+                </div>
+              )}
             </div>
-            <Button size="lg" variant="default" asChild>
-              <Link href="/discovery">
-                {t('hero.exploreButton')} <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() => {
+                const q = searchQuery.trim()
+                if (q) router.push(`/search?query=${encodeURIComponent(q)}`)
+              }}
+            >
+              {t('hero.exploreButton')} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </motion.div>
         </motion.div>
@@ -254,7 +359,7 @@ const LandingPage = () => {
       <section className="py-20 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-        
+
         <motion.div
           className="mx-auto px-4 max-w-[1320px] relative z-10"
           initial="hidden"
@@ -280,16 +385,16 @@ const LandingPage = () => {
               transition={{ duration: 0.3 }}
             >
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+
               <div className="relative">
                 <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
                   <Music className="h-7 w-7 text-primary" />
                 </div>
-                
+
                 <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                   {t('features.diverseGenres.title')}
                 </h3>
-                
+
                 <p className="text-muted-foreground leading-relaxed">
                   {t('features.diverseGenres.description')}
                 </p>
@@ -303,16 +408,16 @@ const LandingPage = () => {
               transition={{ duration: 0.3 }}
             >
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+
               <div className="relative">
                 <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
                   <Users className="h-7 w-7 text-primary" />
                 </div>
-                
+
                 <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                   {t('features.easyConnection.title')}
                 </h3>
-                
+
                 <p className="text-muted-foreground leading-relaxed">
                   {t('features.easyConnection.description')}
                 </p>
@@ -326,16 +431,16 @@ const LandingPage = () => {
               transition={{ duration: 0.3 }}
             >
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+
               <div className="relative">
                 <div className="mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
                   <Shield className="h-7 w-7 text-primary" />
                 </div>
-                
+
                 <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                   {t('features.professional.title')}
                 </h3>
-                
+
                 <p className="text-muted-foreground leading-relaxed">
                   {t('features.professional.description')}
                 </p>

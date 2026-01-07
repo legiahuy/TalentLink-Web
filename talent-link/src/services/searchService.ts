@@ -28,4 +28,25 @@ export const searchService = {
     const res = await axiosClient.post<ApiResult<UserSearchResultDto>>('/search/users', request)
     return res.data.data
   },
+
+  // ===== COMBINED =====
+
+  searchAll: async (query: string): Promise<{ jobs: JobSearchResultDto; users: UserSearchResultDto }> => {
+    const [jobs, users] = await Promise.all([
+      searchService.searchJobs({
+        query,
+        isActive: true,
+        status: 'published',
+        page: 1,
+        pageSize: 10,
+      }),
+      searchService.searchUsers({
+        query,
+        page: 1,
+        pageSize: 10,
+      }),
+    ])
+
+    return { jobs, users }
+  },
 }
