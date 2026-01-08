@@ -55,7 +55,7 @@ const ProfilePage = () => {
     if (!username) {
       // set error flags after this synchronous effect
       Promise.resolve().then(() => {
-        setError('Username không hợp lệ')
+        setError(t('description'))
         setLoading(false)
       })
       return
@@ -100,7 +100,7 @@ const ProfilePage = () => {
       } catch (e) {
         console.error('Error loading profile', e)
         if (!active) return
-        const message = e instanceof Error ? e.message : 'Không thể tải hồ sơ'
+        const message = e instanceof Error ? e.message : t('description')
         setError(message)
         toast.error(message)
         setLoading(false)
@@ -140,7 +140,7 @@ const ProfilePage = () => {
         <div className="w-full max-w-lg p-6">
           <div className="p-8 flex flex-col items-center text-center gap-4">
             <Frown className="z-10 size-10" />
-            <h2 className="text-2xl font-bold z-10">Profile Not Found</h2>
+            <h2 className="text-2xl font-bold z-10">{t('profileNotFound')}</h2>
             <p className="z-10">{t('description')}</p>
             <Button
               onClick={() => router.replace('/')}

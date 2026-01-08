@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Camera, Save, UploadCloud, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { venueService } from '@/services/venueService'
 import { userService } from '@/services/userService'
@@ -28,23 +29,13 @@ import { UserRole } from '@/types/user'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { resolveMediaUrl } from '@/lib/utils'
 
-export const businessTypes = [
-  { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
-  { label: 'Cafe (Quán cà phê)', value: 'cafe' },
-  { label: 'Bar / Club', value: 'bar_club' },
-  { label: 'Restaurant (Nhà hàng)', value: 'restaurant' },
-  { label: 'Outdoor Stage (Sân khấu ngoài trời)', value: 'outdoor_stage' },
-  { label: 'Theater (Nhà hát)', value: 'theater' },
-  { label: 'Event Center (Trung tâm sự kiện)', value: 'event_center' },
-]
+export type BusinessType = string
 
-export type BusinessType = (typeof businessTypes)[number]['value']
-
-const tabs = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'contact', label: 'Contact & Address' },
-  { id: 'details', label: 'Venue Details' },
+const venueTabs = (t: (key: string) => string) => [
+  { id: 'overview', label: t('profile.tabs.overview') },
+  { id: 'photos', label: t('profile.tabs.media') },
+  { id: 'contact', label: t('profile.tabs.contact') },
+  { id: 'details', label: t('profile.tabs.details') },
 ]
 
 interface SectionCardProps {
@@ -82,8 +73,17 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 }
 
 export default function VenueProfileEditor() {
+  const t = useTranslations('Settings')
+  const tOptions = useTranslations('options')
+  const tCommon = useTranslations('Common')
+  const tProfile = useTranslations('Profile')
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+
+  const businessTypes = Object.keys(tOptions.raw('businessTypes')).map(key => ({
+    label: tOptions(`businessTypes.${key}`),
+    value: key
+  }))
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
@@ -154,7 +154,7 @@ export default function VenueProfileEditor() {
   const venueName = formBasic.display_name || 'Venue'
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const me = await userService.getMe()
       if (me.role !== UserRole.VENUE) {
         router.replace('/not-authorized')
@@ -260,7 +260,7 @@ export default function VenueProfileEditor() {
       formBasic.display_name.trim() !== initialFormBasic.display_name.trim() ||
       formBasic.brief_bio.trim() !== initialFormBasic.brief_bio.trim() ||
       JSON.stringify([...formBasic.business_type].sort()) !==
-        JSON.stringify([...initialFormBasic.business_type].sort()) ||
+      JSON.stringify([...initialFormBasic.business_type].sort()) ||
       formBasic.capacity.trim() !== initialFormBasic.capacity.trim()
     )
   }, [formBasic, initialFormBasic])
@@ -279,7 +279,7 @@ export default function VenueProfileEditor() {
   const hasAdditionalChanges = useMemo(() => {
     return (
       formAdditional.convenient_facilities.trim() !==
-        initialFormAdditional.convenient_facilities.trim() ||
+      initialFormAdditional.convenient_facilities.trim() ||
       formAdditional.open_hour.trim() !== initialFormAdditional.open_hour.trim() ||
       formAdditional.rent_price.trim() !== initialFormAdditional.rent_price.trim()
     )
@@ -484,14 +484,14 @@ export default function VenueProfileEditor() {
           <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground relative z-10">
-                Settings
+                {t('profile.settings')}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight relative">
-                <span className="relative z-10">Manage Your Venue Profile</span>
+                <span className="relative z-10">{tProfile('editor.manageTitle')}</span>
                 <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
               </h1>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
-                Update information to make your venue appear more professional.
+                {tProfile('editor.manageSubtitle')}
               </p>
             </div>
           </div>
@@ -508,7 +508,7 @@ export default function VenueProfileEditor() {
             {/* Tabs - Static Content Always Visible */}
             <Tabs defaultValue="overview" className="space-y-8">
               <TabsList className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
+                {venueTabs(t).map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="px-4 py-2 capitalize">
                     {tab.label}
                   </TabsTrigger>
@@ -602,14 +602,14 @@ export default function VenueProfileEditor() {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground relative z-10">
-              Settings
+              {t('profile.settings')}
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight relative">
-              <span className="relative z-10">Manage Your Venue Profile</span>
+              <span className="relative z-10">{t('profile.title')}</span>
               <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
-              Update information to make your venue appear more professional.
+              {t('profile.subtitle')}
             </p>
           </div>
         </div>
@@ -627,7 +627,7 @@ export default function VenueProfileEditor() {
           <div className="space-y-8">
             <Tabs defaultValue="overview" className="space-y-8">
               <TabsList className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
+                {venueTabs(t).map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="px-4 py-2 capitalize">
                     {tab.label}
                   </TabsTrigger>
@@ -656,7 +656,7 @@ export default function VenueProfileEditor() {
                         <div className="flex flex-wrap gap-3">
                           <label className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow">
                             <UploadCloud className="h-4 w-4" />
-                            <span>Change Cover Photo</span>
+                            <span>{tProfile('editor.changeCover')}</span>
                             <input
                               type="file"
                               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -669,12 +669,12 @@ export default function VenueProfileEditor() {
                               {savingImages ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Saving...
+                                  {tProfile('editor.saving')}
                                 </>
                               ) : (
                                 <>
                                   <Save className="mr-2 h-4 w-4" />
-                                  Save Photos
+                                  {tProfile('editor.savePhotos')}
                                 </>
                               )}
                             </Button>
@@ -713,14 +713,14 @@ export default function VenueProfileEditor() {
                         <div className="space-y-2">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                              Venue Profile
+                              {t('profile.venueProfile')}
                             </p>
                             <h2 className="text-2xl font-semibold">{venueName}</h2>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {formContact.city || formContact.country
                               ? `${formContact.city}, ${formContact.country}`
-                              : 'Location not updated'}
+                              : t('profile.locationNotUpdated')}
                           </p>
                         </div>
                       </div>
@@ -729,8 +729,8 @@ export default function VenueProfileEditor() {
                 </Card>
 
                 <SectionCard
-                  title="Basic Information"
-                  description="Set venue name, type, and capacity."
+                  title={tProfile('venue.basicInformation')}
+                  description={tProfile('venue.basicInformationDesc')}
                   action={
                     <Button onClick={handleSaveBasic} disabled={savingBasic || !hasBasicChanges}>
                       {savingBasic ? (
@@ -749,7 +749,7 @@ export default function VenueProfileEditor() {
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="display_name">Venue Name *</Label>
+                      <Label htmlFor="display_name">{tProfile('venue.venueName')} *</Label>
                       <Input
                         id="display_name"
                         name="display_name"
@@ -759,19 +759,19 @@ export default function VenueProfileEditor() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="brief_bio">Brief Description</Label>
+                      <Label htmlFor="brief_bio">{tProfile('venue.briefIntroduction')}</Label>
                       <textarea
                         id="brief_bio"
                         name="brief_bio"
                         rows={3}
                         value={formBasic.brief_bio}
                         onChange={onBasicChange}
-                        placeholder="Brief description about your venue"
+                        placeholder={tProfile('venue.noDescription')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="business_type">Business Type</Label>
+                      <Label htmlFor="business_type">{tProfile('venue.venueType')}</Label>
                       <MultiSelect
                         options={businessTypes}
                         selected={formBasic.business_type}
@@ -781,17 +781,17 @@ export default function VenueProfileEditor() {
                             business_type: selected,
                           }))
                         }
-                        placeholder="Select business types..."
+                        placeholder={tProfile('venue.venueTypePlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="capacity">Capacity</Label>
+                      <Label htmlFor="capacity">{tProfile('venue.capacityLabel') || 'Capacity'}</Label>
                       <Input
                         id="capacity"
                         name="capacity"
                         value={formBasic.capacity}
                         onChange={onBasicChange}
-                        placeholder="e.g., 200 people"
+                        placeholder={tProfile('venue.capacityPlaceholder')}
                       />
                     </div>
                   </div>
@@ -800,8 +800,8 @@ export default function VenueProfileEditor() {
 
               <TabsContent value="photos" className="space-y-8">
                 <SectionCard
-                  title="Profile Photos"
-                  description="Profile picture and cover photo will appear on your public profile page."
+                  title={tProfile('editor.profilePhotos')}
+                  description={tProfile('editor.profilePhotosDesc')}
                   action={
                     <Button
                       onClick={handleSaveImages}
@@ -823,7 +823,7 @@ export default function VenueProfileEditor() {
                 >
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-3">
-                      <Label>Profile Picture</Label>
+                      <Label>{tProfile('editor.profilePicture')}</Label>
                       <div className="flex items-center gap-4 rounded-lg border p-4">
                         <div className="h-20 w-20 overflow-hidden rounded-full border bg-muted">
                           {avatarPreviewUrl || avatarUrl ? (
@@ -840,7 +840,7 @@ export default function VenueProfileEditor() {
                           )}
                         </div>
                         <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                          Avatar image file (max 5MB, JPEG/PNG/GIF/WebP)
+                          {tProfile('editor.avatarFileDesc')}
                           <input
                             type="file"
                             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -851,7 +851,7 @@ export default function VenueProfileEditor() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <Label>Cover Photo</Label>
+                      <Label>{tProfile('editor.coverPhoto')}</Label>
                       <div className="flex items-center gap-4 rounded-lg border p-4">
                         <div className="h-20 w-32 overflow-hidden rounded-lg border bg-muted">
                           {coverPreviewUrl || coverUrl ? (
@@ -868,7 +868,7 @@ export default function VenueProfileEditor() {
                           )}
                         </div>
                         <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                          Cover image file (max 10MB, JPEG/PNG/GIF/WebP)
+                          {tProfile('editor.coverFileDesc')}
                           <input
                             type="file"
                             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -882,8 +882,8 @@ export default function VenueProfileEditor() {
                 </SectionCard>
 
                 <SectionCard
-                  title="Photo Gallery"
-                  description="Showcase your venue with high-quality photos."
+                  title={tProfile('editor.photoGallery')}
+                  description={tProfile('editor.photoGalleryDesc')}
                   action={
                     <>
                       <input
@@ -904,12 +904,12 @@ export default function VenueProfileEditor() {
                         {uploadingGallery ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading...
+                            {tProfile('editor.uploading')}
                           </>
                         ) : (
                           <>
                             <UploadCloud className="mr-2 h-4 w-4" />
-                            Add Photos
+                            {tProfile('editor.addPhotos')}
                           </>
                         )}
                       </Button>
@@ -952,8 +952,8 @@ export default function VenueProfileEditor() {
 
               <TabsContent value="contact" className="space-y-8">
                 <SectionCard
-                  title="Contact & Address"
-                  description="Help artists and organizers easily reach out to you."
+                  title={t('profile.tabs.contact')}
+                  description={tProfile('venue.contactVenue')}
                   action={
                     <Button
                       onClick={handleSaveContact}
@@ -962,12 +962,12 @@ export default function VenueProfileEditor() {
                       {savingContact ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
+                          {tProfile('editor.saving')}
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Changes
+                          {tProfile('editor.saveChanges')}
                         </>
                       )}
                     </Button>
@@ -976,7 +976,7 @@ export default function VenueProfileEditor() {
                   <div className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label htmlFor="city">City *</Label>
+                        <Label htmlFor="city">{tProfile('venue.city')} *</Label>
                         <Input
                           id="city"
                           name="city"
@@ -986,7 +986,7 @@ export default function VenueProfileEditor() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="country">Country *</Label>
+                        <Label htmlFor="country">{tProfile('venue.country')} *</Label>
                         <Input
                           id="country"
                           name="country"
@@ -997,18 +997,18 @@ export default function VenueProfileEditor() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="detailed_address">Detailed Address</Label>
+                      <Label htmlFor="detailed_address">{tProfile('venue.detailedAddress')}</Label>
                       <Input
                         id="detailed_address"
                         name="detailed_address"
                         value={formContact.detailed_address}
                         onChange={onContactChange}
-                        placeholder="Street address, building, floor"
+                        placeholder={tProfile('venue.detailedAddressPlaceholder')}
                       />
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label htmlFor="email">Email *</Label>
+                        <Label htmlFor="email">{tProfile('venue.email')} *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -1019,7 +1019,7 @@ export default function VenueProfileEditor() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone_number">Phone Number *</Label>
+                        <Label htmlFor="phone_number">{tProfile('venue.phoneNumber')} *</Label>
                         <Input
                           id="phone_number"
                           name="phone_number"
@@ -1030,13 +1030,13 @@ export default function VenueProfileEditor() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="website_url">Website</Label>
+                      <Label htmlFor="website_url">{tProfile('venue.website')}</Label>
                       <Input
                         id="website_url"
                         name="website_url"
                         value={formContact.website_url}
                         onChange={onContactChange}
-                        placeholder="https://yourwebsite.com"
+                        placeholder={tProfile('venue.websitePlaceholder')}
                       />
                     </div>
                   </div>
@@ -1045,8 +1045,8 @@ export default function VenueProfileEditor() {
 
               <TabsContent value="details" className="space-y-8">
                 <SectionCard
-                  title="Venue Details"
-                  description="Provide information about amenities, hours, and pricing."
+                  title={tProfile('venue.venueDetails')}
+                  description={tProfile('venue.venueDetailsDesc')}
                   action={
                     <Button
                       onClick={handleSaveAdditional}
@@ -1068,39 +1068,39 @@ export default function VenueProfileEditor() {
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="convenient_facilities">Amenities</Label>
+                      <Label htmlFor="convenient_facilities">{tProfile('venue.amenities')}</Label>
                       <Input
                         id="convenient_facilities"
                         name="convenient_facilities"
                         value={formAdditional.convenient_facilities}
                         onChange={onAdditionalChange}
-                        placeholder="e.g., Sound System, Stage Lighting, Parking"
+                        placeholder={tProfile('venue.amenitiesPlaceholder')}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Separate amenities with commas
+                        {tProfile('venue.amenitiesSeparatorDesc')}
                       </p>
                     </div>
                     <div>
-                      <Label htmlFor="open_hour">Opening Hours</Label>
+                      <Label htmlFor="open_hour">{tProfile('venue.openingHours')}</Label>
                       <textarea
                         id="open_hour"
                         name="open_hour"
                         rows={3}
                         value={formAdditional.open_hour}
                         onChange={onAdditionalChange}
-                        placeholder="e.g., Mon-Fri: 6PM-2AM, Sat-Sun: 5PM-3AM"
+                        placeholder={tProfile('venue.openingHoursPlaceholder')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="rent_price">Rental Price</Label>
+                      <Label htmlFor="rent_price">{tProfile('venue.rentalPrice')}</Label>
                       <textarea
                         id="rent_price"
                         name="rent_price"
                         rows={3}
                         value={formAdditional.rent_price}
                         onChange={onAdditionalChange}
-                        placeholder="e.g., $500/night for weekdays, $800/night for weekends"
+                        placeholder={tProfile('venue.rentalPricePlaceholder')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
@@ -1112,15 +1112,14 @@ export default function VenueProfileEditor() {
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                  <AlertDialogTitle>{tProfile('editor.deleteImageTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this image from your library? This action cannot
-                    be undone.
+                    {tProfile('editor.deleteImageDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmDeleteMedia}>Delete</AlertDialogAction>
+                  <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteMedia}>{tCommon('delete')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

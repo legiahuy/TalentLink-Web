@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
 import type { JobPost } from '@/types/job'
 import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users, Edit } from 'lucide-react'
@@ -16,19 +17,15 @@ import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users, Edit } from
 type StatusFilter = 'all' | 'draft' | 'published' | 'closed'
 
 const statusBadges: Record<JobPost['status'], 'default' | 'secondary' | 'outline' | 'destructive'> =
-  {
-    draft: 'secondary',
-    published: 'default',
-    closed: 'outline',
-    completed: 'outline',
-    cancelled: 'destructive',
-  }
-
-const postTypeLabels: Record<JobPost['post_type'], string> = {
-  job_offer: 'Job Offer',
-  gig: 'Gig',
-  availability: 'Availability',
+{
+  draft: 'secondary',
+  published: 'default',
+  closed: 'outline',
+  completed: 'outline',
+  cancelled: 'destructive',
 }
+
+
 
 const formatDate = (value?: string) => {
   if (!value) return '—'
@@ -41,6 +38,10 @@ const formatDate = (value?: string) => {
 
 const MyJobPostsPage = () => {
   const router = useRouter()
+  const t = useTranslations('MyPosts')
+  const tDetail = useTranslations('JobDetail')
+  const tCommon = useTranslations('Common')
+  const tOptions = useTranslations('options')
   const [jobs, setJobs] = useState<JobPost[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -117,8 +118,8 @@ const MyJobPostsPage = () => {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3 text-foreground">
-              <p className="text-sm uppercase tracking-wider text-muted-foreground">Manage posts</p>
-              <h1 className="text-3xl md:text-4xl font-semibold">Your job postings</h1>
+              <p className="text-sm uppercase tracking-wider text-muted-foreground">{t('title')}</p>
+              <h1 className="text-3xl md:text-4xl font-semibold">{t('title')}</h1>
               <p className="text-muted-foreground max-w-2xl">
                 Track performance, check applications, and keep your listings up to date. Candidates
                 only see published jobs.
@@ -126,7 +127,7 @@ const MyJobPostsPage = () => {
             </div>
             <div className="flex flex-col gap-3">
               <Button asChild size="lg">
-                <Link href="/jobs/post">Post a job</Link>
+                <Link href="/jobs/post">{t('createJob')}</Link>
               </Button>
             </div>
           </div>
@@ -142,7 +143,7 @@ const MyJobPostsPage = () => {
           <div className="flex justify-between w-full">
             <Button variant="ghost" onClick={() => router.back()} className="mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to jobs
+              {tCommon('back')}
             </Button>
             <Button
               variant="ghost"
@@ -151,7 +152,7 @@ const MyJobPostsPage = () => {
               className="justify-start gap-2"
             >
               <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing' : 'Refresh list'}
+              {refreshing ? tCommon('loading') : tCommon('tryAgain')}
             </Button>
           </div>
           <Card className="border-border/60 bg-card/80 shadow-lg backdrop-blur-sm">
@@ -162,10 +163,10 @@ const MyJobPostsPage = () => {
               >
                 <div className="flex flex-col gap-4 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
                   <TabsList className="grid w-full max-w-md grid-cols-4">
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="published">Published</TabsTrigger>
-                    <TabsTrigger value="draft">Drafts</TabsTrigger>
-                    <TabsTrigger value="closed">Closed</TabsTrigger>
+                    <TabsTrigger value="all">{t('tabs.all')}</TabsTrigger>
+                    <TabsTrigger value="published">{t('tabs.published')}</TabsTrigger>
+                    <TabsTrigger value="draft">{t('tabs.drafts')}</TabsTrigger>
+                    <TabsTrigger value="closed">{t('tabs.closed')}</TabsTrigger>
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
                     {filteredJobs.length} {filteredJobs.length === 1 ? 'listing' : 'listings'}
@@ -190,11 +191,11 @@ const MyJobPostsPage = () => {
                     <div className="p-10 text-center space-y-4">
                       <Briefcase className="w-12 h-12 mx-auto text-muted-foreground" />
                       <div>
-                        <h3 className="text-lg font-semibold">{emptyState.title}</h3>
-                        <p className="text-muted-foreground">{emptyState.description}</p>
+                        <h3 className="text-lg font-semibold">{t(`noPosts.title`, { status: statusFilter })}</h3>
+                        <p className="text-muted-foreground">{t('noPosts.description')}</p>
                       </div>
                       <Button asChild>
-                        <Link href="/jobs/post">Create job</Link>
+                        <Link href="/jobs/post">{t('createJob')}</Link>
                       </Button>
                     </div>
                   ) : (
@@ -204,7 +205,7 @@ const MyJobPostsPage = () => {
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline">{postTypeLabels[job.post_type]}</Badge>
+                                <Badge variant="outline">{tOptions(`postTypes.${job.post_type}`)}</Badge>
                                 {job.genres && job.genres.length > 0 && (
                                   <span className="text-xs text-muted-foreground">
                                     {job.genres.slice(0, 2).join(', ')}
@@ -222,7 +223,7 @@ const MyJobPostsPage = () => {
 
                             <div className="flex flex-wrap gap-2">
                               <Badge variant={statusBadges[job.status] ?? 'outline'}>
-                                {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                                {job.status === 'draft' ? t('tabs.drafts') : t(`tabs.${job.status}`)}
                               </Badge>
                               <Badge variant="secondary" className="capitalize">
                                 {job.recruitment_type?.replace('_', ' ') ?? 'Flexible'}

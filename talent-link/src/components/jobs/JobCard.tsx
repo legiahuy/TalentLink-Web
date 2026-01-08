@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { resolveMediaUrl } from '@/lib/utils'
 import type { JobPost } from '@/types/job'
 
@@ -28,6 +29,10 @@ interface JobCardProps {
 const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }: JobCardProps) => {
   const [saved, setSaved] = useState(isSaved)
   const router = useRouter()
+  const t = useTranslations('JobDetail')
+
+  const tOptions = useTranslations('options')
+  const tCommon = useTranslations('Common')
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -37,47 +42,63 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
 
-    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`
-    if (diffInDays === 0) return 'Today'
-    if (diffInDays === 1) return 'Yesterday'
-    if (diffInDays < 7) return `${diffInDays} days ago`
-    if (diffInDays < 30)
-      return `${Math.floor(diffInDays / 7)} week${Math.floor(diffInDays / 7) !== 1 ? 's' : ''} ago`
-    return `${Math.floor(diffInDays / 30)} month${Math.floor(diffInDays / 30) !== 1 ? 's' : ''} ago`
+    let timeAgoStr = ''
+    if (diffInMinutes < 60) {
+      timeAgoStr = diffInMinutes === 1 ? t('timeAgo.minute', { count: 1 }) : t('timeAgo.minutes', { count: diffInMinutes })
+    } else if (diffInHours < 24) {
+      timeAgoStr = diffInHours === 1 ? t('timeAgo.hour', { count: 1 }) : t('timeAgo.hours', { count: diffInHours })
+    } else if (diffInDays === 0) {
+      timeAgoStr = t('today')
+    } else if (diffInDays === 1) {
+      timeAgoStr = t('yesterday')
+    } else if (diffInDays < 7) {
+      timeAgoStr = t('timeAgo.days', { count: diffInDays })
+    } else if (diffInDays < 30) {
+      const weeks = Math.floor(diffInDays / 7)
+      timeAgoStr = weeks === 1 ? t('timeAgo.week', { count: 1 }) : t('timeAgo.weeks', { count: weeks })
+    } else {
+      const months = Math.floor(diffInDays / 30)
+      timeAgoStr = months === 1 ? t('timeAgo.month', { count: 1 }) : t('timeAgo.months', { count: months })
+    }
+    return t('updatedOn', { timeAgo: timeAgoStr })
   }
 
   const formatSalary = () => {
-    if (!job.budget_min && !job.budget_max) return 'Negotiable'
-    
+    if (!job.budget_min && !job.budget_max) return t('negotiable')
+
     const currency = job.budget_currency || 'USD'
     const currencySymbol = currency === 'VND' ? '₫' : currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '¥'
-    const period = job.payment_type ? `/${job.payment_type.replace('by', '').toLowerCase()}` : ''
-    
+
+    const period = job.payment_type ? ` / ${tOptions(`payment.${job.payment_type}`)}` : ''
+
     if (job.budget_min && job.budget_max) {
       return `${currencySymbol}${job.budget_min}-${job.budget_max}${period}`
     } else if (job.budget_min) {
       return `${currencySymbol}${job.budget_min}+ ${period}`
     } else if (job.budget_max) {
-      return `Up to ${currencySymbol}${job.budget_max}${period}`
+      return `${tCommon('upTo')} ${currencySymbol}${job.budget_max}${period}`
     }
-    return 'Negotiable'
+    return t('negotiable')
   }
 
   const getJobType = () => {
-    // Return the 'type' field (band, musician, dj, producer)
     if (job.type) {
-      return job.type.charAt(0).toUpperCase() + job.type.slice(1)
+      return tOptions(`roles.${job.type}`)
     }
-    // Fallback to post_type
-    return job.post_type === 'job_offer' ? 'Job' : job.post_type === 'gig' ? 'Gig' : 'Availability'
+    return job.post_type === 'job_offer'
+      ? tOptions('postTypes.job_offer')
+      : job.post_type === 'gig'
+        ? tOptions('postTypes.gig')
+        : tOptions('postTypes.availability')
   }
 
   const getLocation = () => {
+    const locType = job.location_type ? tOptions(`locationTypes.${job.location_type}`) : null
+
     if (job.location) {
-      return job.location_type ? `${job.location} (${job.location_type})` : job.location
+      return locType ? `${job.location} (${locType})` : job.location
     }
-    return job.location_type || 'Remote'
+    return locType || t('remote')
   }
 
   const handleSave = () => {
@@ -117,7 +138,7 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
                 <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
                   {job.title}
                 </h3>
-                <button 
+                <button
                   onClick={handleCreatorClick}
                   className="text-left hover:underline"
                 >
@@ -209,11 +230,11 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
 
       <CardFooter className="pt-4 gap-2">
         <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => onApply?.(job.id)}>
-          Apply Now
+          {t('applyNow')}
         </Button>
         <Button variant="outline" className="shrink-0" onClick={() => onViewDetails?.(job.id)}>
           <ExternalLink className="w-4 h-4 mr-2" />
-          View Details
+          {t('viewApplication')}
         </Button>
       </CardFooter>
     </Card>

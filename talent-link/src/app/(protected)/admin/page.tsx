@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, Briefcase, ArrowRight, Sparkles } from 'lucide-react'
+import { Users, Briefcase, ArrowRight } from 'lucide-react'
 import { adminService } from '@/services/adminService'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 
 export default function AdminDashboardPage() {
+  const t = useTranslations('Admin')
+  const tCommon = useTranslations('Common')
   const [stats, setStats] = useState({
     totalFeaturedUsers: 0,
     totalFeaturedJobs: 0,
@@ -22,7 +25,7 @@ export default function AdminDashboardPage() {
           adminService.listFeaturedUsers({ limit: 1, offset: 0 }),
           adminService.listFeaturedJobs({ limit: 1, offset: 0 }),
         ])
-        
+
         setStats({
           totalFeaturedUsers: usersRes.data.total,
           totalFeaturedJobs: jobsRes.data.total,
@@ -63,11 +66,11 @@ export default function AdminDashboardPage() {
       >
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Dashboard Overview
+            {t('dashboard.title')}
           </h1>
         </div>
         <p className="text-muted-foreground text-md">
-          Manage featured content displayed on the landing page
+          {t('dashboard.subtitle')}
         </p>
       </motion.div>
 
@@ -89,12 +92,12 @@ export default function AdminDashboardPage() {
                   <div className="text-3xl font-bold text-primary">
                     {loading ? '...' : stats.totalFeaturedUsers}
                   </div>
-                  <div className="text-xs text-muted-foreground">Total</div>
+                  <div className="text-xs text-muted-foreground">{tCommon('total') || 'Total'}</div>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Featured Users</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('dashboard.featuredUsers')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Artists and producers displayed on the landing page
+                {t('dashboard.featuredUsersDesc')}
               </p>
               <Button
                 asChild
@@ -106,7 +109,7 @@ export default function AdminDashboardPage() {
                   href="/admin/featured-users"
                   className="flex items-center justify-center gap-2"
                 >
-                  Manage Users
+                  {t('dashboard.manageUsers')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -125,12 +128,12 @@ export default function AdminDashboardPage() {
                   <div className="text-3xl font-bold text-primary">
                     {loading ? '...' : stats.totalFeaturedJobs}
                   </div>
-                  <div className="text-xs text-muted-foreground">Total</div>
+                  <div className="text-xs text-muted-foreground">{tCommon('total') || 'Total'}</div>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Featured Jobs</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('dashboard.featuredJobs')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Job opportunities highlighted on the landing page
+                {t('dashboard.featuredJobsDesc')}
               </p>
               <Button
                 asChild
@@ -142,7 +145,7 @@ export default function AdminDashboardPage() {
                   href="/admin/featured-jobs"
                   className="flex items-center justify-center gap-2"
                 >
-                  Manage Jobs
+                  {t('dashboard.manageJobs')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -159,7 +162,7 @@ export default function AdminDashboardPage() {
       >
         <Card className="border-border/50 bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">Quick Guide</h3>
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">{t('guide.title')}</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>

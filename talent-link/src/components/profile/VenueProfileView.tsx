@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,15 +22,6 @@ interface VenueProfileViewProps {
 }
 
 
-const businessTypes: Array<{ label: string; value: string }> = [
-  { label: 'Tea Room (Phòng trà)', value: 'tea_room' },
-  { label: 'Cafe (Quán cà phê)', value: 'cafe' },
-  { label: 'Bar / Club', value: 'bar_club' },
-  { label: 'Restaurant (Nhà hàng)', value: 'restaurant' },
-  { label: 'Outdoor Stage (Sân khấu ngoài trời)', value: 'outdoor_stage' },
-  { label: 'Theater (Nhà hát)', value: 'theater' },
-  { label: 'Event Center (Trung tâm sự kiện)', value: 'event_center' },
-]
 
 export function VenueProfileView({
   profile,
@@ -40,12 +32,14 @@ export function VenueProfileView({
   loadingProfile = false,
   loadingGallery = false,
 }: VenueProfileViewProps) {
+  const t = useTranslations('Profile')
+  const tOptions = useTranslations('options')
   const venueName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ')
   const phone = profile.phone_number || ''
   const email = profile.email || ''
   const website = profile.website_url || ''
-  const description = profile.open_hour || profile.detail_bio || 'No description available yet.'
+  const description = profile.open_hour || profile.detail_bio || t('venue.noDescription')
   const capacity = profile.capacity || ''
   const amenities = profile.convenient_facilities || []
 
@@ -57,7 +51,7 @@ export function VenueProfileView({
       : []
 
   const businessTypeLabels = businessTypeValues
-    .map((value: string) => businessTypes.find((bt) => bt.value === value)?.label)
+    .map((value: string) => tOptions(`businessTypes.${value}`))
     .filter(Boolean) as string[]
 
   const formatWebsiteUrl = (url: string): string => {
@@ -72,11 +66,10 @@ export function VenueProfileView({
         <div
           className="absolute inset-0 opacity-90"
           style={{
-            backgroundImage: `url(${
-              coverUrl
-                ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
-                : '/images/profile/background-default.jpg'
-            })`,
+            backgroundImage: `url(${coverUrl
+              ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
+              : '/images/profile/background-default.jpg'
+              })`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -145,18 +138,18 @@ export function VenueProfileView({
                             ))}
                           </div>
                         ) : (
-                          <p className="text-muted-foreground text-lg">Performance Venue</p>
+                          <p className="text-muted-foreground text-lg">{t('venue.performanceVenue')}</p>
                         )}
                       </div>
 
                       {isOwner ? (
                         <Button onClick={onEdit} size="lg">
-                          Update Information
+                          {t('venue.updateInfo')}
                         </Button>
                       ) : (
                         <div className="flex flex-col gap-2">
                           <Button size="lg" variant="default" asChild>
-                            <Link href="/booking">Contact Venue</Link>
+                            <Link href="/booking">{t('venue.contactVenue')}</Link>
                           </Button>
                           <Button size="lg" variant="outline" asChild>
                             <Link
@@ -164,7 +157,7 @@ export function VenueProfileView({
                               className="flex items-center justify-center gap-2"
                             >
                               <MessageCircle className="h-5 w-5" />
-                              Message
+                              {t('artist.message')}
                             </Link>
                           </Button>
                         </div>
@@ -215,7 +208,7 @@ export function VenueProfileView({
                       {capacity ? (
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Users className="w-5 h-5" />
-                          <span>Capacity: {capacity}</span>
+                          <span>{t('venue.capacity', { count: capacity })}</span>
                         </div>
                       ) : null}
                     </div>
@@ -223,7 +216,7 @@ export function VenueProfileView({
                     <div>
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
                         <Building2 className="w-5 h-5" />
-                        Amenities & Services
+                        {t('venue.amenities')}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {amenities.length ? (
@@ -233,7 +226,7 @@ export function VenueProfileView({
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-muted-foreground">Amenities not updated</span>
+                          <span className="text-muted-foreground">{t('venue.amenitiesNotUpdated')}</span>
                         )}
                       </div>
                     </div>

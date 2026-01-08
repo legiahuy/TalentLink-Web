@@ -8,6 +8,7 @@ import { LayoutDashboard, Users, Briefcase } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Frown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -15,6 +16,7 @@ import { resolveMediaUrl } from '@/lib/utils'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const t = useTranslations('Admin')
   const pathname = usePathname()
   const { user } = useAuthStore()
 
@@ -45,9 +47,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="min-h-screen flex items-center justify-center items-center">
           <div className="p-8 flex flex-col items-center text-center gap-4">
             <Frown className="z-10 size-10" />
-            <h1 className="text-2xl font-bold z-10">Access Denied</h1>
+            <h1 className="text-2xl font-bold z-10">{t('accessDenied.title')}</h1>
             <p className="text-muted-foreground z-10">
-              You need admin privileges to access this page.
+              {t('accessDenied.description')}
             </p>
             <Button
               onClick={() => router.replace('/')}
@@ -55,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               size="lg"
               className="z-10 text-md"
             >
-              Go Back
+              {t('accessDenied.goBack')}
             </Button>
           </div>
         </div>
@@ -66,18 +68,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     {
       href: '/admin',
-      label: 'Overview',
+      label: t('sidebar.overview'),
       icon: LayoutDashboard,
       exact: true,
     },
     {
       href: '/admin/featured-users',
-      label: 'Featured Users',
+      label: t('sidebar.featuredUsers'),
       icon: Users,
     },
     {
       href: '/admin/featured-jobs',
-      label: 'Featured Jobs',
+      label: t('sidebar.featuredJobs'),
       icon: Briefcase,
     },
   ]

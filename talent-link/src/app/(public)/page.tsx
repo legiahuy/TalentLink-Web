@@ -20,6 +20,8 @@ import { resolveMediaUrl } from '@/lib/utils'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
+  const tCommon = useTranslations('Common')
+  const tOptions = useTranslations('options')
   const router = useRouter()
 
   // -- Search State --
@@ -97,11 +99,11 @@ const LandingPage = () => {
         // Transform FeaturedUser to ArtistCard format
         const transformedUsers = users.map((user: FeaturedUser) => ({
           id: user.id,
-          name: user.display_name || 'Unknown Artist',
+          name: user.display_name || tCommon('unknown'),
           username: user.username || user.id,
           image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
           genres: user.genres?.map((g) => g.name) || [],
-          location: [user.city, user.country].filter(Boolean).join(', ') || 'Location not specified',
+          location: [user.city, user.country].filter(Boolean).join(', ') || tCommon('unknown'),
           description: user.brief_bio || '',
         }))
 
@@ -112,7 +114,7 @@ const LandingPage = () => {
           date: job.deadline || new Date().toISOString(),
           time: '20:00',
           status: 'upcoming' as const,
-          artists: [job.creator_name || job.creator_username || 'Unknown'],
+          artists: [job.creator_name || job.creator_username || tCommon('unknown')],
           image: '/images/auth/auth-photo-1.jpg',
         }))
 
@@ -215,7 +217,9 @@ const LandingPage = () => {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate text-start">{u.displayName || u.username}</div>
-                          <div className="text-xs text-muted-foreground truncate text-start">{u.role}</div>
+                          <div className="text-xs text-muted-foreground truncate text-start">
+                            {tOptions(`roles.${u.role}`)}
+                          </div>
                         </div>
                       </Link>
                     )
@@ -239,7 +243,7 @@ const LandingPage = () => {
                     </Link>
                   ))}
                   {loadingSuggest && (
-                    <div className="px-3 py-2 text-xs text-muted-foreground">Thinking...</div>
+                    <div className="px-3 py-2 text-xs text-muted-foreground">{tCommon('loading')}</div>
                   )}
                 </div>
               )}
@@ -288,7 +292,7 @@ const LandingPage = () => {
                 ))
               ) : !featuredArtists ? (
                 <div className="col-span-full text-center py-12">
-                  <p className="text-muted-foreground">No featured artists available</p>
+                  <p className="text-muted-foreground">{t('featuredArtists.noResults')}</p>
                 </div>
               ) : (
                 featuredArtists.map((artist) => (
@@ -333,7 +337,7 @@ const LandingPage = () => {
                 ))
               ) : featuredEvents.length === 0 ? (
                 <div className="col-span-full text-center py-12">
-                  <p className="text-muted-foreground">No featured events available</p>
+                  <p className="text-muted-foreground">{t('featuredEvents.noResults')}</p>
                 </div>
               ) : (
                 featuredEvents.map((event, index) => (

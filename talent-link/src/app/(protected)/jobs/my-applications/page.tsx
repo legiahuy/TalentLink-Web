@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
 import type { MySubmissionsResponse, MySubmissionItem, SubmissionDetailResponse } from '@/types/job'
 import {
@@ -97,6 +98,9 @@ const getStatusBadge = (status: string) => {
 
 const MyApplicationsPage = () => {
   const router = useRouter()
+  const t = useTranslations('MyApplications')
+  const tDetail = useTranslations('JobDetail')
+  const tCommon = useTranslations('Common')
   const [submissions, setSubmissions] = useState<MySubmissionItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -160,11 +164,25 @@ const MyApplicationsPage = () => {
       setViewingSubmission(detail)
     } catch (err) {
       console.error('Failed to load submission detail', err)
-      toast.error('Unable to load your submission details.')
+      toast.error(tCommon('error'))
       setViewDialogOpen(false)
     } finally {
       setViewLoading(false)
     }
+  }
+
+  const getStatusBadgeLocal = (status: string) => {
+    const config = statusBadgeConfig[status] || {
+      variant: 'outline' as const,
+      label: status,
+      icon: <FileText className="w-3 h-3" />,
+    }
+    return (
+      <Badge variant={config.variant} className="gap-1.5">
+        {config.icon}
+        {t('tabs.' + status)}
+      </Badge>
+    )
   }
 
   return (
@@ -180,9 +198,9 @@ const MyApplicationsPage = () => {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3 text-foreground">
               <p className="text-sm uppercase tracking-wider text-muted-foreground">
-                My applications
+                {t('title')}
               </p>
-              <h1 className="text-3xl md:text-4xl font-semibold">Your job applications</h1>
+              <h1 className="text-3xl md:text-4xl font-semibold">{t('title')}</h1>
               <p className="text-muted-foreground max-w-2xl">
                 Track the status of your applications and see which jobs you&apos;ve applied to.
               </p>
@@ -209,12 +227,12 @@ const MyApplicationsPage = () => {
               className="justify-start gap-2"
             >
               <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing' : 'Refresh'}
+              {refreshing ? tCommon('loading') : tCommon('tryAgain')}
             </Button>
           </div>
 
           {/* Stats Summary */}
-          {/* {!loading && stats.total > 0 && (
+          {!loading && stats.total > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
@@ -241,7 +259,7 @@ const MyApplicationsPage = () => {
                 </CardContent>
               </Card>
             </div>
-          )} */}
+          )}
 
           <Card className="border-border/60 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardContent className="p-0">
@@ -251,11 +269,11 @@ const MyApplicationsPage = () => {
               >
                 <div className="flex flex-col gap-4 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
                   <TabsList className="grid w-full max-w-md grid-cols-4">
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="pending_review">Pending</TabsTrigger>
+                    <TabsTrigger value="all">{t('tabs.all')}</TabsTrigger>
+                    <TabsTrigger value="pending_review">{t('tabs.pending_review')}</TabsTrigger>
                     {/* <TabsTrigger value="under_review">Reviewing</TabsTrigger> */}
-                    <TabsTrigger value="accepted">Accepted</TabsTrigger>
-                    <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                    <TabsTrigger value="accepted">{t('tabs.accepted')}</TabsTrigger>
+                    <TabsTrigger value="rejected">{t('tabs.rejected')}</TabsTrigger>
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
                     {filteredSubmissions.length}{' '}
@@ -281,15 +299,15 @@ const MyApplicationsPage = () => {
                     <div className="p-10 text-center space-y-4">
                       <Briefcase className="w-12 h-12 mx-auto text-muted-foreground" />
                       <div>
-                        <h3 className="text-lg font-semibold">No applications yet</h3>
+                        <h3 className="text-lg font-semibold">{t('noApplications.title')}</h3>
                         <p className="text-muted-foreground">
                           {statusFilter === 'all'
-                            ? "You haven't applied to any jobs yet. Start browsing jobs to find opportunities."
+                            ? t('noApplications.description')
                             : `No ${statusFilter.replace('_', ' ')} applications found.`}
                         </p>
                       </div>
                       <Button asChild>
-                        <Link href="/jobs">Browse Jobs</Link>
+                        <Link href="/jobs">{t('noApplications.exploreButton')}</Link>
                       </Button>
                     </div>
                   ) : (
@@ -310,15 +328,17 @@ const MyApplicationsPage = () => {
                                 </h3>
                               )}
                               <div className="flex items-center gap-3 mt-2">
-                                {getStatusBadge(submission.status)}
-                                <span className="text-xs text-muted-foreground">
-                                  Applied {formatDate(submission.created_at)}
-                                </span>
-                                {submission.reviewed_at && (
+                                <div className="flex items-center gap-3 mt-2">
+                                  {getStatusBadgeLocal(submission.status)}
                                   <span className="text-xs text-muted-foreground">
-                                    • Reviewed {formatDate(submission.reviewed_at)}
+                                    {tDetail('postedOn', { date: formatDate(submission.created_at) })}
                                   </span>
-                                )}
+                                  {submission.reviewed_at && (
+                                    <span className="text-xs text-muted-foreground">
+                                      • {tDetail('updatedOn', { timeAgo: formatDate(submission.reviewed_at) })}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -386,7 +406,7 @@ const MyApplicationsPage = () => {
 
           {viewLoading ? (
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>Loading your submission...</p>
+              <p>{tCommon('loading')}</p>
             </div>
           ) : viewingSubmission ? (
             <div className="space-y-4">
@@ -401,7 +421,7 @@ const MyApplicationsPage = () => {
                     <span>Applied {formatDate(viewingSubmission.created_at)}</span>
                   </div>
                 </div>
-                {getStatusBadge(viewingSubmission.status)}
+                {getStatusBadgeLocal(viewingSubmission.status)}
               </div>
 
               {viewingSubmission.review_notes && (

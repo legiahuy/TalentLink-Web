@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
 import type { JobPost, JobSearchRequest } from '@/types/job'
@@ -30,6 +31,10 @@ const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
 
 const JobPool = () => {
   const router = useRouter()
+  const t = useTranslations('JobPool')
+  const tCommon = useTranslations('Common')
+  const tDetail = useTranslations('JobDetail')
+  const tOptions = useTranslations('options')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('all')
@@ -335,19 +340,18 @@ const JobPool = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight relative">
-                <span className="relative z-10">Find Your Next Gig</span>
+                <span className="relative z-10">{t('title')}</span>
                 <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
               </h1>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
-                Venues looking for talent. Artists looking for stages. Your next performance is
-                here.
+                {t('subtitle')}
               </p>
             </div>
             <div className="shrink-0 relative z-10">
               <Button size="lg" className="w-full md:w-auto" asChild>
                 <Link href="/jobs/post">
                   <Plus className="w-4 h-4 mr-2" />
-                  Post a Job
+                  {t('postJob')}
                 </Link>
               </Button>
             </div>
@@ -374,7 +378,7 @@ const JobPool = () => {
               <Card className="p-4 lg:sticky lg:top-24 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-sm uppercase tracking-wide">Filters</h2>
+                    <h2 className="font-semibold text-sm uppercase tracking-wide">{t('filters.title')}</h2>
                     {hasActiveFilters && (
                       <Button
                         variant="ghost"
@@ -383,7 +387,7 @@ const JobPool = () => {
                         className="h-7 text-xs"
                       >
                         <X className="w-3 h-3 mr-1" />
-                        Clear
+                        {t('filters.clear')}
                       </Button>
                     )}
                   </div>
@@ -393,12 +397,12 @@ const JobPool = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Search
+                        {t('searchPlaceholder')}
                       </label>
                       <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                         <Input
-                          placeholder="Search jobs..."
+                          placeholder={t('searchPlaceholder')}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="pl-8 h-9 text-sm"
@@ -408,14 +412,14 @@ const JobPool = () => {
 
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Genre
+                        {t('filters.genre')}
                       </label>
                       <Select value={selectedGenre} onValueChange={setSelectedGenre}>
                         <SelectTrigger className="h-9 text-sm">
-                          <SelectValue placeholder="All genres" />
+                          <SelectValue placeholder={t('filters.genreAll')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All genres</SelectItem>
+                          <SelectItem value="all">{t('filters.genreAll')}</SelectItem>
                           {availableGenres.map((genre) => (
                             <SelectItem key={genre} value={genre}>
                               {genre}
@@ -446,7 +450,7 @@ const JobPool = () => {
 
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Location Type
+                        {tDetail('locationType')}
                       </label>
                       <Select
                         value={selectedLocationType}
@@ -455,41 +459,41 @@ const JobPool = () => {
                         }
                       >
                         <SelectTrigger className="h-9 text-sm">
-                          <SelectValue placeholder="All location types" />
+                          <SelectValue placeholder={t('filters.locationAll')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All locations</SelectItem>
-                          <SelectItem value="remote">Remote</SelectItem>
-                          <SelectItem value="onsite">Onsite</SelectItem>
-                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                          <SelectItem value="all">{t('filters.locationAll')}</SelectItem>
+                          <SelectItem value="remote">{t('filters.remote')}</SelectItem>
+                          <SelectItem value="onsite">{t('filters.onsite')}</SelectItem>
+                          <SelectItem value="hybrid">{t('filters.hybrid')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Experience Level
+                        {tDetail('experienceLevel')}
                       </label>
                       <Select
                         value={selectedExperience}
                         onValueChange={(v) => setSelectedExperience(v as typeof selectedExperience)}
                       >
                         <SelectTrigger className="h-9 text-sm">
-                          <SelectValue placeholder="All experience levels" />
+                          <SelectValue placeholder={t('filters.experienceAll')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All levels</SelectItem>
-                          <SelectItem value="any">Any</SelectItem>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="expert">Expert</SelectItem>
+                          <SelectItem value="all">{t('filters.experienceAll')}</SelectItem>
+                          <SelectItem value="any">{tOptions('experience.any')}</SelectItem>
+                          <SelectItem value="beginner">{tOptions('experience.beginner')}</SelectItem>
+                          <SelectItem value="intermediate">{tOptions('experience.intermediate')}</SelectItem>
+                          <SelectItem value="expert">{tOptions('experience.expert')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Recruitment Type
+                        {tDetail('employmentType')}
                       </label>
                       <Select
                         value={selectedRecruitment}
@@ -498,14 +502,14 @@ const JobPool = () => {
                         }
                       >
                         <SelectTrigger className="h-9 text-sm">
-                          <SelectValue placeholder="All recruitment types" />
+                          <SelectValue placeholder={t('filters.employmentAll')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All types</SelectItem>
-                          <SelectItem value="full_time">Full-time</SelectItem>
-                          <SelectItem value="part_time">Part-time</SelectItem>
-                          <SelectItem value="contract">Contract</SelectItem>
-                          <SelectItem value="one_time">One-time</SelectItem>
+                          <SelectItem value="all">{t('filters.employmentAll')}</SelectItem>
+                          <SelectItem value="full_time">{tOptions('employment.full_time')}</SelectItem>
+                          <SelectItem value="part_time">{tOptions('employment.part_time')}</SelectItem>
+                          <SelectItem value="contract">{tOptions('employment.contract')}</SelectItem>
+                          <SelectItem value="one_time">{tOptions('employment.one_time')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -513,17 +517,17 @@ const JobPool = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Budget Range
+                          {t('filters.budgetRange')}
                         </label>
                         <span className="text-xs text-muted-foreground">
-                          ${budgetRange[0].toLocaleString()} - ${budgetRange[1].toLocaleString()}
+                          {budgetRange[0].toLocaleString()} - {budgetRange[1].toLocaleString()}
                         </span>
                       </div>
                       <Slider
                         value={budgetRange}
                         min={BUDGET_RANGE_DEFAULT[0]}
                         max={BUDGET_RANGE_DEFAULT[1]}
-                        step={500}
+                        step={500000}
                         onValueChange={(vals) => setBudgetRange([vals[0], vals[1]])}
                       />
                     </div>
@@ -539,25 +543,25 @@ const JobPool = () => {
                   <TabsList className="grid w-full max-w-xl grid-cols-4 bg-muted/50">
                     <TabsTrigger value="all" className="gap-1.5 text-xs">
                       <Sparkles className="w-3.5 h-3.5" />
-                      All
+                      {t('tabs.all')}
                     </TabsTrigger>
                     <TabsTrigger value="producer" className="gap-1.5 text-xs">
                       <Disc className="w-3.5 h-3.5" />
-                      For Producers
+                      {t('tabs.forProducers')}
                     </TabsTrigger>
                     <TabsTrigger value="singer" className="gap-1.5 text-xs">
                       <Mic className="w-3.5 h-3.5" />
-                      For Singers
+                      {t('tabs.forSingers')}
                     </TabsTrigger>
                     <TabsTrigger value="saved" className="gap-1.5 text-xs">
                       <Briefcase className="w-3.5 h-3.5" />
-                      Saved
+                      {t('tabs.saved')}
                     </TabsTrigger>
                   </TabsList>
                   <div className="text-sm text-muted-foreground hidden sm:block font-medium">
                     {loading
-                      ? '...'
-                      : `${filteredJobs.length} ${filteredJobs.length === 1 ? 'job' : 'jobs'}`}
+                      ? tCommon('loading')
+                      : t('jobCount', { count: filteredJobs.length })}
                   </div>
                 </div>
 
@@ -581,13 +585,13 @@ const JobPool = () => {
                   ) : (
                     <Card className="p-12 text-center">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No jobs found</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('emptyState.title')}</h3>
                       <p className="text-muted-foreground mb-4">
-                        Try adjusting your search or filters to find more opportunities.
+                        {t('emptyState.description')}
                       </p>
                       {hasActiveFilters && (
                         <Button variant="outline" onClick={clearFilters}>
-                          Clear all filters
+                          {t('emptyState.clearFilters')}
                         </Button>
                       )}
                     </Card>
@@ -614,9 +618,9 @@ const JobPool = () => {
                   ) : (
                     <Card className="p-12 text-center">
                       <Disc className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No jobs for producers found</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('emptyProducers.title')}</h3>
                       <p className="text-muted-foreground">
-                        No jobs looking for producers match your current filters.
+                        {t('emptyProducers.description')}
                       </p>
                     </Card>
                   )}
@@ -642,9 +646,9 @@ const JobPool = () => {
                   ) : (
                     <Card className="p-12 text-center">
                       <Mic className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No jobs for singers found</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('emptySingers.title')}</h3>
                       <p className="text-muted-foreground">
-                        No jobs looking for singers match your current filters.
+                        {t('emptySingers.description')}
                       </p>
                     </Card>
                   )}
@@ -666,9 +670,9 @@ const JobPool = () => {
                   ) : (
                     <Card className="p-12 text-center">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No saved jobs</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('emptySaved.title')}</h3>
                       <p className="text-muted-foreground">
-                        Save jobs you&apos;re interested in to view them here later.
+                        {t('emptySaved.description')}
                       </p>
                     </Card>
                   )}

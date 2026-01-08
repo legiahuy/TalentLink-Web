@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ArrowLeft, Loader2, Plus, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
@@ -33,47 +34,50 @@ type ExperienceLevelValue = NonNullable<CreateJobPostRequest['experience_level']
 type PaymentTypeValue = NonNullable<CreateJobPostRequest['payment_type']>
 type StatusValue = NonNullable<CreateJobPostRequest['status']>
 
-const ROLE_OPTIONS: { label: string; value: RoleTypeValue }[] = [
-  { label: 'Producer', value: 'producer' },
-  { label: 'Singer', value: 'singer' },
-  { label: 'Venue', value: 'venue' },
+const ROLE_OPTIONS: { label: string; value: RoleTypeValue; key: string }[] = [
+  { label: 'Producer', value: 'producer', key: 'roles.producer' },
+  { label: 'Singer', value: 'singer', key: 'roles.singer' },
+  { label: 'Venue', value: 'venue', key: 'roles.venue' },
 ]
 
-const POST_TYPES: { label: string; value: PostTypeValue }[] = [
-  { label: 'Job Offer', value: 'job_offer' },
-  { label: 'Gig / One-off', value: 'gig' },
-  { label: 'Talent Availability', value: 'availability' },
+const POST_TYPES: { label: string; value: PostTypeValue; key: string }[] = [
+  { label: 'Job Offer', value: 'job_offer', key: 'postTypes.job_offer' },
+  { label: 'Gig / One-off', value: 'gig', key: 'postTypes.gig' },
+  { label: 'Talent Availability', value: 'availability', key: 'postTypes.availability' },
 ]
 
-const EMPLOYMENT_TYPES: { label: string; value: RecruitmentTypeValue }[] = [
-  { label: 'Full Time', value: 'full_time' },
-  { label: 'Part Time', value: 'part_time' },
-  { label: 'Contract', value: 'contract' },
-  { label: 'One Time', value: 'one_time' },
+const EMPLOYMENT_TYPES: { label: string; value: RecruitmentTypeValue; key: string }[] = [
+  { label: 'Full Time', value: 'full_time', key: 'employment.full_time' },
+  { label: 'Part Time', value: 'part_time', key: 'employment.part_time' },
+  { label: 'Contract', value: 'contract', key: 'employment.contract' },
+  { label: 'One Time', value: 'one_time', key: 'employment.one_time' },
 ]
 
-const EXPERIENCE_LEVELS: { label: string; value: ExperienceLevelValue }[] = [
-  { label: 'Beginner', value: 'beginner' },
-  { label: 'Intermediate', value: 'intermediate' },
-  { label: 'Expert', value: 'expert' },
-  { label: 'Any experience', value: 'any' },
+const EXPERIENCE_LEVELS: { label: string; value: ExperienceLevelValue; key: string }[] = [
+  { label: 'Beginner', value: 'beginner', key: 'experience.beginner' },
+  { label: 'Intermediate', value: 'intermediate', key: 'experience.intermediate' },
+  { label: 'Expert', value: 'expert', key: 'experience.expert' },
+  { label: 'Any experience', value: 'any', key: 'experience.any' },
 ]
 
-const PAYMENT_TYPES: { label: string; value: PaymentTypeValue }[] = [
-  { label: 'Per Show', value: 'bySession' },
-  { label: 'Per Hour', value: 'byHour' },
-  { label: 'Per Project', value: 'byProject' },
-  { label: 'Per Month', value: 'byMonth' },
+const PAYMENT_TYPES: { label: string; value: PaymentTypeValue; key: string }[] = [
+  { label: 'Per Show', value: 'bySession', key: 'payment.bySession' },
+  { label: 'Per Hour', value: 'byHour', key: 'payment.byHour' },
+  { label: 'Per Project', value: 'byProject', key: 'payment.byProject' },
+  { label: 'Per Month', value: 'byMonth', key: 'payment.byMonth' },
 ]
 
-const STATUS_OPTIONS: { label: string; value: StatusValue }[] = [
-  { label: 'Publish immediately', value: 'published' },
-  { label: 'Save as draft', value: 'draft' },
+const STATUS_OPTIONS: { label: string; value: StatusValue; key: string }[] = [
+  { label: 'Publish immediately', value: 'published', key: 'status.published' },
+  { label: 'Save as draft', value: 'draft', key: 'status.draft' },
 ]
 
 const defaultCurrency: NonNullable<CreateJobPostRequest['budget_currency']> = 'VND'
 
 const JobPostFormPage = () => {
+  const t = useTranslations('PostJob')
+  const tOptions = useTranslations('options')
+  const tCommon = useTranslations('Common')
   const router = useRouter()
 
   const [title, setTitle] = useState('')
@@ -248,17 +252,16 @@ const JobPostFormPage = () => {
             <div className="space-y-4 text-foreground">
               <div className="space-y-3">
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                  Post a New Opportunity
+                  {t('title')}
                 </h1>
                 <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
-                  Share detailed information about your gig or job opening so artists can quickly
-                  understand expectations, compensation, and how to reach you.
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <Button asChild size="lg">
-                <Link href="/jobs/my-posts">View my posted jobs</Link>
+                <Link href="/jobs/my-posts">{t('viewMyPosts')}</Link>
               </Button>
             </div>
           </div>
@@ -273,13 +276,13 @@ const JobPostFormPage = () => {
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-12 relative z-10">
           <Button variant="ghost" onClick={() => router.back()} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {tCommon('back')}
           </Button>
           <Card className="shadow-lg border-border/50 bg-card/70 backdrop-blur-sm">
             <CardHeader className="border-b border-border/60">
-              <CardTitle className="text-2xl font-semibold">Job Details</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('form.title')}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Complete the form below. Fields marked with * are required.
+                {t('form.description')}
               </p>
             </CardHeader>
             <CardContent className="pt-6">
@@ -288,20 +291,20 @@ const JobPostFormPage = () => {
                   <div className="space-y-6">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Job title *</Label>
+                        <Label htmlFor="title">{t('form.jobTitle')} *</Label>
                         <Input
                           id="title"
-                          placeholder="e.g. Acoustic singer for Friday night residency"
+                          placeholder={t('form.placeholders.jobTitle')}
                           value={title}
                           onChange={(event) => setTitle(event.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="summary">Short summary</Label>
+                        <Label htmlFor="summary">{t('form.summary')}</Label>
                         <Input
                           id="summary"
-                          placeholder="One sentence overview that appears in listings"
+                          placeholder={t('form.placeholders.summary')}
                           value={summary}
                           onChange={(event) => setSummary(event.target.value)}
                         />
@@ -309,10 +312,10 @@ const JobPostFormPage = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description">Job description *</Label>
+                      <Label htmlFor="description">{t('form.descriptionLabel')} *</Label>
                       <Textarea
                         id="description"
-                        placeholder="Share responsibilities, expectations, stage setup, and how artists will collaborate with your venue."
+                        placeholder={t('form.placeholders.description')}
                         value={description}
                         onChange={(event) => setDescription(event.target.value)}
                         rows={8}
@@ -321,29 +324,31 @@ const JobPostFormPage = () => {
                       />
                       {description.trim().length > 0 && description.trim().length < 20 && (
                         <p className="text-xs text-destructive">
-                          Description must be at least 20 characters ({description.trim().length}
-                          /20)
+                          {t('form.descriptionMinLength', {
+                            current: description.trim().length,
+                            min: 20,
+                          })}
                         </p>
                       )}
                       {description.trim().length >= 20 && (
                         <p className="text-xs text-muted-foreground">
-                          {description.trim().length} characters
+                          {t('form.charactersCount', { count: description.trim().length })}
                         </p>
                       )}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="schedule">Schedule / time commitment</Label>
+                        <Label htmlFor="schedule">{t('form.schedule')}</Label>
                         <Input
                           id="schedule"
-                          placeholder="Every Friday, 8 PM - 10 PM"
+                          placeholder={t('form.placeholders.schedule')}
                           value={schedule}
                           onChange={(event) => setSchedule(event.target.value)}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="deadline">Application deadline</Label>
+                        <Label htmlFor="deadline">{t('form.deadline')}</Label>
                         <Input
                           id="deadline"
                           type="date"
@@ -354,10 +359,10 @@ const JobPostFormPage = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <Label>Key requirements</Label>
+                      <Label>{t('form.keyRequirements')}</Label>
                       <div className="flex flex-col gap-2 md:flex-row">
                         <Input
-                          placeholder="e.g. Minimum 2 years of live performance experience"
+                          placeholder={t('form.placeholders.keyRequirements')}
                           value={currentRequirement}
                           onChange={(event) => setCurrentRequirement(event.target.value)}
                           onKeyDown={(event) => {
@@ -368,7 +373,7 @@ const JobPostFormPage = () => {
                           }}
                         />
                         <Button type="button" variant="outline" onClick={addRequirement}>
-                          Add
+                          {tCommon('add')}
                         </Button>
                       </div>
                       {requirements.length > 0 && (
@@ -397,10 +402,10 @@ const JobPostFormPage = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <Label>Benefits</Label>
+                      <Label>{t('form.benefits')}</Label>
                       <div className="flex flex-col gap-2 md:flex-row">
                         <Input
-                          placeholder="e.g. Professional sound engineer provided"
+                          placeholder={t('form.placeholders.benefits')}
                           value={currentBenefit}
                           onChange={(event) => setCurrentBenefit(event.target.value)}
                           onKeyDown={(event) => {
@@ -411,7 +416,7 @@ const JobPostFormPage = () => {
                           }}
                         />
                         <Button type="button" variant="outline" onClick={addBenefit}>
-                          Add
+                          {tCommon('add')}
                         </Button>
                       </div>
                       {benefits.length > 0 && (
@@ -443,7 +448,7 @@ const JobPostFormPage = () => {
                   <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="postType">Opportunity type *</Label>
+                        <Label htmlFor="postType">{t('form.postType')} *</Label>
                         <Select
                           value={postType}
                           onValueChange={(value) => setPostType(value as typeof postType)}
@@ -454,14 +459,14 @@ const JobPostFormPage = () => {
                           <SelectContent>
                             {POST_TYPES.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {tOptions(option.key)}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="roleType">Talent profile *</Label>
+                        <Label htmlFor="roleType">{t('form.roleType')} *</Label>
                         <Select
                           value={roleType}
                           onValueChange={(value) => setRoleType(value as typeof roleType)}
@@ -472,7 +477,7 @@ const JobPostFormPage = () => {
                           <SelectContent>
                             {ROLE_OPTIONS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {tOptions(option.key)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -482,17 +487,17 @@ const JobPostFormPage = () => {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="location">Location *</Label>
+                        <Label htmlFor="location">{t('form.locationLabel')} *</Label>
                         <Input
                           id="location"
-                          placeholder="District 1, Ho Chi Minh City"
+                          placeholder={t('form.placeholders.location')}
                           value={location}
                           onChange={(event) => setLocation(event.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="employmentType">Engagement type *</Label>
+                        <Label htmlFor="employmentType">{t('form.employmentType')} *</Label>
                         <Select
                           value={employmentType}
                           onValueChange={(value) =>
@@ -505,7 +510,7 @@ const JobPostFormPage = () => {
                           <SelectContent>
                             {EMPLOYMENT_TYPES.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {tOptions(option.key)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -515,7 +520,7 @@ const JobPostFormPage = () => {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="experienceLevel">Experience level *</Label>
+                        <Label htmlFor="experienceLevel">{t('form.experienceLevel')} *</Label>
                         <Select
                           value={experienceLevel}
                           onValueChange={(value) =>
@@ -528,14 +533,14 @@ const JobPostFormPage = () => {
                           <SelectContent>
                             {EXPERIENCE_LEVELS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {tOptions(option.key)}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="status">Visibility *</Label>
+                        <Label htmlFor="status">{t('form.visibility')} *</Label>
                         <Select
                           value={status}
                           onValueChange={(value) => setStatus(value as typeof status)}
@@ -546,7 +551,7 @@ const JobPostFormPage = () => {
                           <SelectContent>
                             {STATUS_OPTIONS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                                {tOptions(option.key)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -556,14 +561,14 @@ const JobPostFormPage = () => {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Compensation *</Label>
+                        <Label>{t('form.compensation')} *</Label>
                         <p className="text-sm text-muted-foreground">
-                          Provide a range so artists can self-select quickly.
+                          {t('form.compensationDescription')}
                         </p>
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="salaryMin">Minimum budget *</Label>
+                          <Label htmlFor="salaryMin">{t('form.salaryMin')} *</Label>
                           <Input
                             id="salaryMin"
                             type="number"
@@ -575,7 +580,7 @@ const JobPostFormPage = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="salaryMax">Maximum budget</Label>
+                          <Label htmlFor="salaryMax">{t('form.salaryMax')}</Label>
                           <Input
                             id="salaryMax"
                             type="number"
@@ -588,7 +593,7 @@ const JobPostFormPage = () => {
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="currency">Currency</Label>
+                          <Label htmlFor="currency">{t('form.currency')}</Label>
                           <Select
                             value={salaryCurrency}
                             onValueChange={(value) =>
@@ -605,7 +610,7 @@ const JobPostFormPage = () => {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="paymentType">Payment cadence *</Label>
+                          <Label htmlFor="paymentType">{t('form.paymentType')} *</Label>
                           <Select
                             value={salaryPeriod}
                             onValueChange={(value) => setSalaryPeriod(value as typeof salaryPeriod)}
@@ -616,7 +621,7 @@ const JobPostFormPage = () => {
                             <SelectContent>
                               {PAYMENT_TYPES.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
+                                  {tOptions(option.key)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -631,12 +636,12 @@ const JobPostFormPage = () => {
                           onChange={(event) => setSalaryNegotiable(event.target.checked)}
                           className="h-4 w-4 rounded border border-border"
                         />
-                        <span className="cursor-pointer">Budget is negotiable</span>
+                        <span className="cursor-pointer">{t('form.isNegotiable')}</span>
                       </label>
                     </div>
 
                     <div className="space-y-4">
-                      <Label>Genres *</Label>
+                      <Label>{t('form.genres')} *</Label>
                       {loadingGenres ? (
                         <div className="flex flex-wrap gap-2">
                           {Array.from({ length: 6 }).map((_, index) => (
@@ -671,9 +676,9 @@ const JobPostFormPage = () => {
                         className="mt-1 h-4 w-4 rounded border border-border"
                       />
                       <div className="space-y-0.5">
-                        <span className="text-sm font-medium">Notify me about new submissions</span>
+                        <span className="text-sm font-medium">{t('form.autoNotify')}</span>
                         <p className="text-xs text-muted-foreground">
-                          You&apos;ll receive notifications whenever a performer applies.
+                          {t('form.autoNotifyDescription')}
                         </p>
                       </div>
                     </label>
@@ -682,7 +687,7 @@ const JobPostFormPage = () => {
 
                 <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                   <Button type="button" variant="outline" className="w-full sm:flex-1" asChild>
-                    <Link href="/jobs">Cancel</Link>
+                    <Link href="/jobs">{tCommon('cancel')}</Link>
                   </Button>
                   <Button
                     type="submit"
@@ -692,12 +697,12 @@ const JobPostFormPage = () => {
                     {submitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Publishing...
+                        {t('form.submitting')}
                       </>
                     ) : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
-                        Post Job
+                        {t('form.submitButton')}
                       </>
                     )}
                   </Button>

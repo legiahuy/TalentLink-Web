@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { useAuthStore } from '@/stores/authStore'
 import { userService } from '@/services/userService'
 import { UserRole } from '@/types/user'
@@ -10,6 +11,7 @@ import ArtistProfileEditor from '@/components/profile/edit/ArtistProfileEditor'
 import VenueProfileEditor from '@/components/profile/edit/VenueProfileEditor'
 
 export default function MyProfileSettingsPage() {
+  const t = useTranslations('Settings')
   const { user, isInitialized } = useAuthStore()
   const [role, setRole] = useState<UserRole | null>((user?.role as UserRole) || null)
   const [loading, setLoading] = useState(!user)
@@ -28,7 +30,7 @@ export default function MyProfileSettingsPage() {
         setRole(me.role as UserRole)
       } catch (error) {
         console.error(error)
-        toast.error('Không lấy được thông tin người dùng')
+        toast.error(t('profile.fetchError'))
       } finally {
         setLoading(false)
       }
@@ -47,8 +49,8 @@ export default function MyProfileSettingsPage() {
   if (!role) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2 text-center">
-        <p className="text-lg font-medium">Không thể xác định vai trò của bạn</p>
-        <p className="text-muted-foreground">Vui lòng đăng nhập lại hoặc liên hệ hỗ trợ.</p>
+        <p className="text-lg font-medium">{t('profile.roleUndetermined')}</p>
+        <p className="text-muted-foreground">{t('profile.reloginPrompt')}</p>
       </div>
     )
   }

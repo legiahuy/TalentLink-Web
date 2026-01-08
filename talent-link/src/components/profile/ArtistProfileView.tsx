@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -65,6 +66,8 @@ export function ArtistProfileView({
   loadingExperiences = false,
   loadingGallery = false,
 }: ArtistProfileViewProps) {
+  const t = useTranslations('Profile')
+  const tCommon = useTranslations('Common')
   const [galleryModalOpen, setGalleryModalOpen] = useState(false)
   const displayName = profile.display_name || profile.username
   const location = [profile.city, profile.country].filter(Boolean).join(', ') || '—'
@@ -96,11 +99,10 @@ export function ArtistProfileView({
         <div
           className="absolute inset-0 opacity-90"
           style={{
-            backgroundImage: `url(${
-              coverUrl
-                ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
-                : '/images/profile/background-default.jpg'
-            })`,
+            backgroundImage: `url(${coverUrl
+              ? `${resolveMediaUrl(coverUrl)}?v=${profile.updated_at ?? ''}`
+              : '/images/profile/background-default.jpg'
+              })`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -145,7 +147,7 @@ export function ArtistProfileView({
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-accent" />
                     <span className="font-semibold">—</span>
-                    <span>(0 reviews)</span>
+                    <span>{t('artist.reviewsCount', { count: 0 })}</span>
                   </div>
                 </div>
 
@@ -160,47 +162,47 @@ export function ArtistProfileView({
                 ) : isOwner ? (
                   <div className="mb-4">
                     <p className="text-sm text-muted-foreground italic">
-                      Add genres to help organizers find you
+                      {t('artist.genresInfo')}
                     </p>
                   </div>
                 ) : null}
 
                 <p className="text-muted-foreground leading-relaxed max-w-full">
-                  {briefBio || 'No headline available yet.'}
+                  {briefBio || t('artist.noHeadline')}
                 </p>
               </div>
 
               <div className="w-full md:w-auto md:ml-auto md:order-3 flex flex-col gap-2">
-              {isOwner ? (
-                <Button
-                  size="lg"
-                  onClick={onEdit}
-                  className="w-full md:w-auto flex items-center justify-center gap-2"
-                >
-                  Edit Profile
-                </Button>
-              ) : (
-                <>
-                  <Button size="lg" variant="default" asChild className="w-full md:w-auto">
-                    <Link
-                      href="/booking"
-                      className="flex items-center justify-center gap-2 text-white hover:text-primary transition-colors"
-                    >
-                      Contact for Collaboration
-                    </Link>
+                {isOwner ? (
+                  <Button
+                    size="lg"
+                    onClick={onEdit}
+                    className="w-full md:w-auto flex items-center justify-center gap-2"
+                  >
+                    {t('artist.editProfile')}
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="w-full md:w-auto">
-                    <Link
-                      href={`/messages?userId=${profile.id}`}
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      Message
-                    </Link>
-                  </Button>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <Button size="lg" variant="default" asChild className="w-full md:w-auto">
+                      <Link
+                        href="/booking"
+                        className="flex items-center justify-center gap-2 text-white hover:text-primary transition-colors"
+                      >
+                        {t('artist.contactCollaboration')}
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="w-full md:w-auto">
+                      <Link
+                        href={`/messages?userId=${profile.id}`}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        {t('artist.message')}
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -208,7 +210,7 @@ export function ArtistProfileView({
             <div className="lg:col-span-2 space-y-8">
               <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-semibold">Portfolio (Video)</h2>
+                  <h2 className="text-2xl font-semibold">{t('artist.portfolio')}</h2>
                 </div>
 
                 {loadingVideos ? (
@@ -224,7 +226,7 @@ export function ArtistProfileView({
                     ))}
                   </div>
                 ) : videos.length === 0 ? (
-                  <p className="text-muted-foreground">No videos yet.</p>
+                  <p className="text-muted-foreground">{t('artist.noVideos')}</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {videos.map((video) => (
@@ -243,7 +245,7 @@ export function ArtistProfileView({
                           />
                         </div>
                         <CardContent className="p-4">
-                          <h3 className="font-semibold">{video.title || 'No title'}</h3>
+                          <h3 className="font-semibold">{video.title || t('artist.noTitle')}</h3>
                           <p className="text-xs text-muted-foreground">
                             {new Date(video.created_at).toLocaleDateString()}
                           </p>
@@ -255,14 +257,14 @@ export function ArtistProfileView({
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">About</h2>
+                <h2 className="text-2xl font-semibold mb-4">{t('artist.about')}</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6">
                     <div className="space-y-4 text-muted-foreground">
                       {detailBio?.trim() ? (
                         <p className="whitespace-pre-line">{detailBio.trim()}</p>
                       ) : (
-                        <p className="text-muted-foreground/70">No detailed bio available yet.</p>
+                        <p className="text-muted-foreground/70">{t('artist.noAbout')}</p>
                       )}
                     </div>
                   </CardContent>
@@ -270,7 +272,7 @@ export function ArtistProfileView({
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Experience</h2>
+                <h2 className="text-2xl font-semibold mb-4">{t('artist.experience')}</h2>
                 {loadingExperiences ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
@@ -287,7 +289,7 @@ export function ArtistProfileView({
                   <Card className="bg-card border-border/40">
                     <CardContent className="p-6">
                       <p className="text-muted-foreground">
-                        No experience information available yet.
+                        {t('artist.noExperience')}
                       </p>
                     </CardContent>
                   </Card>
@@ -301,23 +303,23 @@ export function ArtistProfileView({
                         <CardContent className="p-6">
                           <div className="space-y-2">
                             <h3 className="font-semibold text-lg">
-                              {experience.title || 'No title set'}
+                              {experience.title || t('artist.noTitle')}
                             </h3>
                             {(experience.start_date || experience.end_date) && (
                               <p className="text-sm text-muted-foreground">
                                 {experience.start_date
-                                  ? new Date(experience.start_date).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                    })
-                                  : 'Start date not set'}{' '}
+                                  ? new Date(experience.start_date).toLocaleDateString(tCommon('locale'), {
+                                    year: 'numeric',
+                                    month: 'short',
+                                  })
+                                  : t('artist.startDateNotSet')}{' '}
                                 -{' '}
                                 {experience.end_date
-                                  ? new Date(experience.end_date).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                    })
-                                  : 'Present'}
+                                  ? new Date(experience.end_date).toLocaleDateString(tCommon('locale'), {
+                                    year: 'numeric',
+                                    month: 'short',
+                                  })
+                                  : t('artist.present')}
                               </p>
                             )}
                             {experience.description && (
@@ -346,7 +348,7 @@ export function ArtistProfileView({
 
             <div className="space-y-6 min-w-0">
               <section className="min-w-0">
-                <h2 className="text-2xl font-semibold mb-4">Social Links</h2>
+                <h2 className="text-2xl font-semibold mb-4">{t('artist.socialLinks')}</h2>
                 <Card className="bg-card border-border/40">
                   <CardContent className="p-6 space-y-3 min-w-0">
                     {instagram ? (
@@ -383,7 +385,7 @@ export function ArtistProfileView({
                       </a>
                     ) : null}
                     {!youtube && !instagram && !facebook ? (
-                      <p className="text-muted-foreground">No social media links yet.</p>
+                      <p className="text-muted-foreground">{t('artist.noSocials')}</p>
                     ) : null}
                   </CardContent>
                 </Card>
@@ -414,7 +416,7 @@ export function ArtistProfileView({
 
               <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-semibold">Photos</h2>
+                  <h2 className="text-2xl font-semibold">{t('artist.photos')}</h2>
                   {!loadingGallery && gallery.length > 6 && (
                     <Button
                       variant="outline"
@@ -423,7 +425,7 @@ export function ArtistProfileView({
                       className="gap-2"
                     >
                       <Grid3x3 className="h-4 w-4" />
-                      View All ({gallery.length})
+                      {t('artist.viewAllPhotos', { count: gallery.length })}
                     </Button>
                   )}
                 </div>
@@ -436,7 +438,7 @@ export function ArtistProfileView({
                         ))}
                       </div>
                     ) : gallery.length === 0 ? (
-                      <p className="text-muted-foreground">No portfolio photos yet.</p>
+                      <p className="text-muted-foreground">{t('artist.noPhotos')}</p>
                     ) : (
                       <>
                         <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-2">
@@ -465,7 +467,7 @@ export function ArtistProfileView({
                               onClick={() => setGalleryModalOpen(true)}
                               className="text-muted-foreground"
                             >
-                              +{gallery.length - 6} more photos
+                              {t('artist.morePhotos', { count: gallery.length - 6 })}
                             </Button>
                           </div>
                         )}
@@ -483,8 +485,8 @@ export function ArtistProfileView({
       <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
         <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-y-auto p-6">
           <DialogHeader>
-            <DialogTitle>All Photos ({gallery.length})</DialogTitle>
-            <DialogDescription>Browse through all portfolio photos.</DialogDescription>
+            <DialogTitle>{t('artist.allPhotos', { count: gallery.length })}</DialogTitle>
+            <DialogDescription>{t('artist.browsePhotos')}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
             {gallery.map((media) => (

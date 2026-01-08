@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AdminUserCard } from '@/components/admin/AdminUserCard'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
@@ -33,7 +33,7 @@ export default function FeaturedUsersPage() {
     userName: '',
   })
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
       const response = await adminService.listFeaturedUsers({
@@ -51,11 +51,11 @@ export default function FeaturedUsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.limit, pagination.offset])
 
   useEffect(() => {
     fetchUsers()
-  }, [pagination.offset])
+  }, [fetchUsers])
 
   const handleFeatureToggle = (userId: string, isFeatured: boolean) => {
     const user = users.find((u) => u.id === userId)

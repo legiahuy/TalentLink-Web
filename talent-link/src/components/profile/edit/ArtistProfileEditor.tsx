@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Camera, Save, UploadCloud, X, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,11 +33,11 @@ import { videoService } from '@/services/videoService'
 import type { VideoItem } from '@/types/video'
 import VideoModal from '@/components/portfolio/VideoModal'
 
-const tabs = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'media', label: 'Photos & Videos' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'contact', label: 'Contact & Social Media' },
+const artistTabs = (t: (key: string) => string) => [
+  { id: 'overview', label: t('profile.tabs.overview') },
+  { id: 'media', label: t('profile.tabs.media') },
+  { id: 'experience', label: t('profile.tabs.experience') },
+  { id: 'contact', label: t('profile.tabs.contact') },
 ]
 
 interface SectionCardProps {
@@ -74,6 +75,9 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 }
 
 export default function ArtistProfileEditor() {
+  const t = useTranslations('Settings')
+  const tCommon = useTranslations('Common')
+  const tProfile = useTranslations('Profile')
   const [loading, setLoading] = useState(true)
 
   const [me, setMe] = useState<User | null>(null)
@@ -225,13 +229,13 @@ export default function ArtistProfileEditor() {
         setCacheBust(Date.now())
       } catch (error) {
         console.error(error)
-        toast.error('Unable to load profile data')
+        toast.error(t('profile.loadError'))
       } finally {
         setLoading(false)
       }
     }
     loadInitial()
-  }, [])
+  }, [t])
 
   const validateImageFile = (file: File, maxSizeMB: number, type: 'avatar' | 'cover'): boolean => {
     const maxSizeBytes = maxSizeMB * 1024 * 1024
@@ -316,7 +320,7 @@ export default function ArtistProfileEditor() {
       formBasic.city.trim() !== (initialFormBasic.city ?? '').trim() ||
       formBasic.country.trim() !== (initialFormBasic.country ?? '').trim() ||
       JSON.stringify([...formBasic.genres].sort()) !==
-        JSON.stringify([...initialFormBasic.genres].sort())
+      JSON.stringify([...initialFormBasic.genres].sort())
     )
   }, [formBasic, initialFormBasic])
 
@@ -730,14 +734,14 @@ export default function ArtistProfileEditor() {
           <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground relative z-10">
-                Settings
+                {t('profile.settings')}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight relative">
-                <span className="relative z-10">Manage Your Profile</span>
+                <span className="relative z-10">{t('profile.title')}</span>
                 <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
               </h1>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
-                Update information to keep your profile attractive to clients.
+                {t('profile.subtitle')}
               </p>
             </div>
           </div>
@@ -760,7 +764,7 @@ export default function ArtistProfileEditor() {
             {/* Tabs - Static Content Always Visible */}
             <Tabs defaultValue="overview" className="space-y-8">
               <TabsList className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
+                {artistTabs(t).map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="px-4 py-2 capitalize">
                     {tab.label}
                   </TabsTrigger>
@@ -858,14 +862,14 @@ export default function ArtistProfileEditor() {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground relative z-10">
-              Settings
+              {t('profile.settings')}
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight relative">
-              <span className="relative z-10">Manage Your Profile</span>
+              <span className="relative z-10">{tProfile('editor.manageArtistTitle')}</span>
               <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
-              Update information to keep your profile attractive to clients.
+              {tProfile('editor.manageArtistSubtitle')}
             </p>
           </div>
         </div>
@@ -888,7 +892,7 @@ export default function ArtistProfileEditor() {
           <div className="space-y-8">
             <Tabs defaultValue="overview" className="space-y-8">
               <TabsList className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
+                {artistTabs(t).map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="px-4 py-2 capitalize">
                     {tab.label}
                   </TabsTrigger>
@@ -917,7 +921,7 @@ export default function ArtistProfileEditor() {
                         <div className="flex flex-wrap gap-3">
                           <label className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium shadow">
                             <UploadCloud className="h-4 w-4" />
-                            <span>Change Cover Photo</span>
+                            <span>{tProfile('editor.changeCover')}</span>
                             <input
                               type="file"
                               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -928,7 +932,7 @@ export default function ArtistProfileEditor() {
                           {(avatarFile || coverFile) && (
                             <Button size="sm" onClick={handleSaveImages} disabled={savingImages}>
                               <Save className="mr-2 h-4 w-4" />
-                              {savingImages ? 'Saving...' : 'Save Photos'}
+                              {savingImages ? tProfile('editor.saving') : tProfile('editor.savePhotos')}
                             </Button>
                           )}
                         </div>
@@ -965,14 +969,14 @@ export default function ArtistProfileEditor() {
                         <div className="space-y-2">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                              Artist Profile
+                              {t('profile.artistProfile')}
                             </p>
                             <h2 className="text-2xl font-semibold">{heroName}</h2>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {formBasic.city || formBasic.country
                               ? `${formBasic.city}, ${formBasic.country}`
-                              : 'Location not updated'}
+                              : t('profile.locationNotUpdated')}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {genresToRender.map((genre) => (
@@ -988,19 +992,19 @@ export default function ArtistProfileEditor() {
                 </Card>
 
                 <SectionCard
-                  title="Main Information"
-                  description="Share what stands out about you to attract organizers."
+                  title={tProfile('artist.mainInformation')}
+                  description={tProfile('artist.mainInformationDesc')}
                   action={
                     <Button onClick={handleSaveBasic} disabled={savingBasic || !hasBasicChanges}>
                       {savingBasic ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
+                          {tProfile('editor.saving')}
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Changes
+                          {tProfile('editor.saveChanges')}
                         </>
                       )}
                     </Button>
@@ -1008,7 +1012,7 @@ export default function ArtistProfileEditor() {
                 >
                   <form className="space-y-4" onSubmit={handleSaveBasic}>
                     <div>
-                      <Label htmlFor="display_name">Stage Name *</Label>
+                      <Label htmlFor="display_name">{tProfile('editor.stageName')} *</Label>
                       <Input
                         id="display_name"
                         name="display_name"
@@ -1019,7 +1023,7 @@ export default function ArtistProfileEditor() {
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label htmlFor="city">City *</Label>
+                        <Label htmlFor="city">{t('city')} *</Label>
                         <Input
                           id="city"
                           name="city"
@@ -1029,7 +1033,7 @@ export default function ArtistProfileEditor() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="country">Country *</Label>
+                        <Label htmlFor="country">{t('country')} *</Label>
                         <Input
                           id="country"
                           name="country"
@@ -1040,38 +1044,38 @@ export default function ArtistProfileEditor() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="brief_bio">Brief Introduction *</Label>
+                      <Label htmlFor="brief_bio">{tProfile('editor.briefIntroduction')} *</Label>
                       <textarea
                         id="brief_bio"
                         name="brief_bio"
                         rows={3}
                         value={formBasic.brief_bio}
                         onChange={onBasicChange}
-                        placeholder="Quick summary of your style and strengths"
+                        placeholder={tProfile('artist.briefIntroductionPlaceholder')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="detail_bio">Detailed Introduction</Label>
+                      <Label htmlFor="detail_bio">{tProfile('editor.detailedIntroduction')}</Label>
                       <textarea
                         id="detail_bio"
                         name="detail_bio"
                         rows={5}
                         value={formBasic.detail_bio}
                         onChange={onBasicChange}
-                        placeholder="Tell more about your projects, achievements, or personal brand story."
+                        placeholder={tProfile('artist.detailedIntroductionPlaceholder')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="genres">Genres</Label>
+                      <Label htmlFor="genres">{tProfile('editor.genres')}</Label>
                       <MultiSelect
                         options={availableGenres}
                         selected={formBasic.genres}
                         onChange={(selected) =>
                           setFormBasic((prev) => ({ ...prev, genres: selected }))
                         }
-                        placeholder="Select genres..."
+                        placeholder={tProfile('editor.genresPlaceholder')}
                         className="w-full"
                       />
                     </div>
@@ -1081,8 +1085,8 @@ export default function ArtistProfileEditor() {
 
               <TabsContent value="media" className="space-y-8">
                 <SectionCard
-                  title="Profile Photos"
-                  description="Profile picture and cover photo will appear on your public profile page."
+                  title={tProfile('editor.profilePhotos')}
+                  description={tProfile('editor.profilePhotosDesc')}
                   action={
                     <Button
                       onClick={handleSaveImages}
@@ -1091,12 +1095,12 @@ export default function ArtistProfileEditor() {
                       {savingImages ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
+                          {tProfile('editor.saving')}
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Photos
+                          {tProfile('editor.savePhotos')}
                         </>
                       )}
                     </Button>
@@ -1104,7 +1108,7 @@ export default function ArtistProfileEditor() {
                 >
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-3">
-                      <Label>Profile Picture</Label>
+                      <Label>{tProfile('editor.profilePicture')}</Label>
                       <div className="flex items-center gap-4 rounded-lg border p-4">
                         <div className="h-20 w-20 overflow-hidden rounded-full border bg-muted">
                           {avatarPreviewUrl || avatarUrl ? (
@@ -1121,7 +1125,7 @@ export default function ArtistProfileEditor() {
                           )}
                         </div>
                         <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                          Avatar image file (max 5MB, JPEG/PNG/GIF/WebP)
+                          {tProfile('editor.avatarFileDesc')}
                           <input
                             type="file"
                             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -1132,7 +1136,7 @@ export default function ArtistProfileEditor() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <Label>Cover Photo</Label>
+                      <Label>{tProfile('editor.coverPhoto')}</Label>
                       <div className="flex items-center gap-4 rounded-lg border p-4">
                         <div className="h-20 w-32 overflow-hidden rounded-lg border bg-muted">
                           {coverPreviewUrl || coverUrl ? (
@@ -1149,7 +1153,7 @@ export default function ArtistProfileEditor() {
                           )}
                         </div>
                         <label className="flex flex-1 cursor-pointer flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                          Cover image file (max 10MB, JPEG/PNG/GIF/WebP)
+                          {tProfile('editor.coverFileDesc')}
                           <input
                             type="file"
                             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -1163,8 +1167,8 @@ export default function ArtistProfileEditor() {
                 </SectionCard>
 
                 <SectionCard
-                  title="Photo Gallery"
-                  description="Select your best moments to showcase your performance style."
+                  title={tProfile('editor.photoGallery')}
+                  description={tProfile('editor.photoGalleryArtistDesc')}
                   action={
                     <>
                       <input
@@ -1185,12 +1189,12 @@ export default function ArtistProfileEditor() {
                         {uploadingGallery ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading...
+                            {tProfile('editor.uploading')}
                           </>
                         ) : (
                           <>
                             <UploadCloud className="mr-2 h-4 w-4" />
-                            Add Photos
+                            {tProfile('editor.addPhotos')}
                           </>
                         )}
                       </Button>
@@ -1198,7 +1202,7 @@ export default function ArtistProfileEditor() {
                   }
                 >
                   {gallery.length === 0 ? (
-                    <p className="text-muted-foreground">No portfolio photos yet.</p>
+                    <p className="text-muted-foreground">{tProfile('editor.noPhotos')}</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                       {gallery.map((m) => (
@@ -1229,12 +1233,12 @@ export default function ArtistProfileEditor() {
                 </SectionCard>
 
                 <SectionCard
-                  title="Video Portfolio"
-                  description="Add performance videos for organizers to quickly assess your style."
-                  action={<Button onClick={() => setOpenAddVideo(true)}>Add Video</Button>}
+                  title={tProfile('artist.videoPortfolio')}
+                  description={tProfile('artist.videoPortfolioDesc')}
+                  action={<Button onClick={() => setOpenAddVideo(true)}>{tProfile('artist.addVideo')}</Button>}
                 >
                   {videos.length === 0 ? (
-                    <p className="text-muted-foreground">No videos yet.</p>
+                    <p className="text-muted-foreground">{tProfile('artist.noVideos')}</p>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                       {videos.map((video) => (
@@ -1249,9 +1253,9 @@ export default function ArtistProfileEditor() {
                           </div>
                           <CardContent className="flex items-center justify-between p-4">
                             <div>
-                              <p className="font-medium">{video.title || 'No title'}</p>
+                              <p className="font-medium">{video.title || tProfile('editor.noTitle')}</p>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(video.created_at).toLocaleDateString()}
+                                {new Date(video.created_at).toLocaleDateString(tCommon('locale'))}
                               </p>
                             </div>
                             <div className="flex gap-2">
@@ -1283,8 +1287,8 @@ export default function ArtistProfileEditor() {
 
               <TabsContent value="experience" className="space-y-8">
                 <SectionCard
-                  title="Experience & Services"
-                  description="Update your standout projects, skills, and services."
+                  title={tProfile('editor.experienceServices')}
+                  description={tProfile('editor.experienceServicesDesc')}
                   action={
                     <div className="flex gap-2">
                       {expForm.id && (
@@ -1294,7 +1298,7 @@ export default function ArtistProfileEditor() {
                           disabled={savingExp}
                         >
                           <X className="mr-2 h-4 w-4" />
-                          Cancel
+                          {tProfile('editor.cancel')}
                         </Button>
                       )}
                       <Button
@@ -1304,12 +1308,12 @@ export default function ArtistProfileEditor() {
                         {savingExp ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {expForm.id ? 'Updating...' : 'Saving...'}
+                            {expForm.id ? tProfile('editor.updating') : tProfile('editor.saving')}
                           </>
                         ) : (
                           <>
                             <Save className="mr-2 h-4 w-4" />
-                            {expForm.id ? 'Update' : 'Save New Item'}
+                            {expForm.id ? tProfile('editor.update') : tProfile('editor.saveNewItem')}
                           </>
                         )}
                       </Button>
@@ -1318,17 +1322,17 @@ export default function ArtistProfileEditor() {
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="exp_title">Title *</Label>
+                      <Label htmlFor="exp_title">{tProfile('artist.expTitle')} *</Label>
                       <Input
                         id="exp_title"
                         name="title"
                         value={expForm.title}
                         onChange={(e) => setExpForm((prev) => ({ ...prev, title: e.target.value }))}
-                        placeholder="Ex: Live Performance, Studio Recording..."
+                        placeholder={tProfile('artist.expTitlePlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="exp_description">Description</Label>
+                      <Label htmlFor="exp_description">{tProfile('artist.expDescription')}</Label>
                       <textarea
                         id="exp_description"
                         name="description"
@@ -1337,13 +1341,13 @@ export default function ArtistProfileEditor() {
                         onChange={(e) =>
                           setExpForm((prev) => ({ ...prev, description: e.target.value }))
                         }
-                        placeholder="Describe project, role, achievements..."
+                        placeholder={tProfile('artist.expDescriptionPlaceholder')}
                         className="w-full rounded-md border bg-background p-3"
                       />
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label htmlFor="exp_start_date">Start Date</Label>
+                        <Label htmlFor="exp_start_date">{tProfile('artist.startDate')}</Label>
                         <Input
                           id="exp_start_date"
                           name="start_date"
@@ -1355,7 +1359,7 @@ export default function ArtistProfileEditor() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="exp_end_date">End Date</Label>
+                        <Label htmlFor="exp_end_date">{tProfile('artist.endDate')}</Label>
                         <Input
                           id="exp_end_date"
                           name="end_date"
@@ -1368,7 +1372,7 @@ export default function ArtistProfileEditor() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="exp_portfolio_url">Portfolio Link</Label>
+                      <Label htmlFor="exp_portfolio_url">{tProfile('artist.portfolioLink')}</Label>
                       <Input
                         id="exp_portfolio_url"
                         name="portfolio_url"
@@ -1377,7 +1381,7 @@ export default function ArtistProfileEditor() {
                         onChange={(e) =>
                           setExpForm((prev) => ({ ...prev, portfolio_url: e.target.value }))
                         }
-                        placeholder="https://spotify.com/..., https://youtube.com/..."
+                        placeholder={tProfile('artist.portfolioLinkPlaceholder')}
                       />
                     </div>
                   </div>
@@ -1385,14 +1389,14 @@ export default function ArtistProfileEditor() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Experience List</CardTitle>
+                    <CardTitle>{tProfile('artist.experienceList')}</CardTitle>
                     <CardDescription>
-                      These items will appear on your public profile.
+                      {tProfile('artist.experienceListDesc')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {experiences.length === 0 ? (
-                      <p className="text-muted-foreground">No items yet.</p>
+                      <p className="text-muted-foreground">{tProfile('artist.noItems')}</p>
                     ) : (
                       experiences.map((experience, index) => (
                         <div
@@ -1400,22 +1404,22 @@ export default function ArtistProfileEditor() {
                           className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
                         >
                           <div className="pr-3 space-y-1">
-                            <p className="font-medium">{experience.title || 'No title set'}</p>
+                            <p className="font-medium">{experience.title || tProfile('editor.noTitle')}</p>
                             {(experience.start_date || experience.end_date) && (
                               <p className="text-xs text-muted-foreground">
                                 {experience.start_date
-                                  ? new Date(experience.start_date).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                    })
-                                  : 'Start date not set'}{' '}
+                                  ? new Date(experience.start_date).toLocaleDateString(tCommon('locale'), {
+                                    year: 'numeric',
+                                    month: 'short',
+                                  })
+                                  : tProfile('artist.startDateNotSet')}{' '}
                                 -{' '}
                                 {experience.end_date
-                                  ? new Date(experience.end_date).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                    })
-                                  : 'Present'}
+                                  ? new Date(experience.end_date).toLocaleDateString(tCommon('locale'), {
+                                    year: 'numeric',
+                                    month: 'short',
+                                  })
+                                  : tProfile('artist.present')}
                               </p>
                             )}
                             {experience.description ? (
@@ -1460,8 +1464,8 @@ export default function ArtistProfileEditor() {
 
               <TabsContent value="contact" className="space-y-8">
                 <SectionCard
-                  title="Contact"
-                  description="This information helps organizers easily connect with you."
+                  title={tProfile('editor.contact')}
+                  description={tProfile('editor.contactDesc')}
                   action={
                     <Button
                       onClick={handleSaveContact}
@@ -1475,7 +1479,7 @@ export default function ArtistProfileEditor() {
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Contact
+                          {tProfile('editor.saveContact')}
                         </>
                       )}
                     </Button>
@@ -1483,7 +1487,7 @@ export default function ArtistProfileEditor() {
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email">{tCommon('email')} *</Label>
                       <Input
                         id="email"
                         name="email"
@@ -1494,7 +1498,7 @@ export default function ArtistProfileEditor() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone_number">Phone Number *</Label>
+                      <Label htmlFor="phone_number">{tCommon('phoneNumber')} *</Label>
                       <Input
                         id="phone_number"
                         name="phone_number"
@@ -1507,19 +1511,19 @@ export default function ArtistProfileEditor() {
                 </SectionCard>
 
                 <SectionCard
-                  title="Social Media"
-                  description="Link your main channels for fans and partners to follow you."
+                  title={tProfile('editor.socialMedia')}
+                  description={tProfile('editor.socialMediaDesc')}
                   action={
                     <Button onClick={handleSaveSocial} disabled={savingSocial || !hasSocialChanges}>
                       {savingSocial ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
+                          {tProfile('editor.saving')}
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Links
+                          {tProfile('editor.saveLinks')}
                         </>
                       )}
                     </Button>
@@ -1572,15 +1576,14 @@ export default function ArtistProfileEditor() {
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                  <AlertDialogTitle>{tProfile('editor.deleteImageTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this image from your library? This action cannot
-                    be undone.
+                    {tProfile('editor.deleteImageDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmDeleteMedia}>Delete</AlertDialogAction>
+                  <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteMedia}>{tCommon('delete')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -1588,15 +1591,14 @@ export default function ArtistProfileEditor() {
             <AlertDialog open={deleteExpDialogOpen} onOpenChange={setDeleteExpDialogOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Experience</AlertDialogTitle>
+                  <AlertDialogTitle>{tProfile('editor.deleteExpTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this experience item? This action cannot be
-                    undone.
+                    {tProfile('editor.deleteExpDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmDeleteExperience}>Delete</AlertDialogAction>
+                  <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmDeleteExperience}>{tCommon('delete')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

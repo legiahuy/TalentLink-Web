@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AdminJobCard } from '@/components/admin/AdminJobCard'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
@@ -33,7 +33,7 @@ export default function FeaturedJobsPage() {
     jobTitle: '',
   })
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true)
     try {
       const response = await adminService.listFeaturedJobs({
@@ -51,11 +51,11 @@ export default function FeaturedJobsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.limit, pagination.offset])
 
   useEffect(() => {
     fetchJobs()
-  }, [pagination.offset])
+  }, [fetchJobs])
 
   const handleFeatureToggle = (jobId: string, isFeatured: boolean) => {
     const job = jobs.find((j) => j.id === jobId)

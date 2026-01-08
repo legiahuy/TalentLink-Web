@@ -19,8 +19,10 @@ import { useAuthStore } from '@/stores/authStore'
 import { useSocket } from '@/hooks/useSocket'
 import type { Conversation, Message } from '@/types/message'
 import { resolveMediaUrl } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 const MessagesPage = () => {
+  const t = useTranslations('MessagesPage')
   const { user } = useAuthStore()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -48,7 +50,7 @@ const MessagesPage = () => {
         messageConvId: message.conversationId,
         selectedConvId: selectedConversation,
       })
-      
+
       // Add new message if it's for the current conversation
       if (isActiveConversation) {
         setMessages((prev) => {
@@ -66,10 +68,10 @@ const MessagesPage = () => {
         prev.map((conv) =>
           conv.id === message.conversationId
             ? {
-                ...conv,
-                lastMessage: message,
-                unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
-              }
+              ...conv,
+              lastMessage: message,
+              unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
+            }
             : conv,
         ),
       )
@@ -226,7 +228,7 @@ const MessagesPage = () => {
     const createOrOpenConversation = async () => {
       try {
         setCreatingConversation(true)
-        
+
         // Kiểm tra xem đã có conversation với user này chưa
         const existingConv = conversations.find(
           (conv) =>
@@ -251,7 +253,7 @@ const MessagesPage = () => {
         // Thêm vào danh sách và chọn
         setConversations((prev) => [newConversation, ...prev])
         setSelectedConversation(newConversation.id)
-        
+
         // Xóa userId khỏi URL
         router.replace('/messages', { scroll: false })
       } catch (error) {
@@ -265,6 +267,16 @@ const MessagesPage = () => {
 
     createOrOpenConversation()
   }, [searchParams, user, conversations, loadingConversations, creatingConversation, router])
+
+  // Xử lý jobId và jobTitle để pre-fill nội dung tin nhắn
+  useEffect(() => {
+    const jobId = searchParams.get('jobId')
+    const jobTitle = searchParams.get('jobTitle')
+
+    if (jobId && jobTitle) {
+      setMessageInput(t('prefillMessage', { title: jobTitle, id: jobId }))
+    }
+  }, [searchParams, t])
 
   // Join/leave socket rooms when conversation changes
   useEffect(() => {
@@ -397,7 +409,7 @@ const MessagesPage = () => {
   // Delete conversation
   const handleDeleteConversation = useCallback(
     async (conversationId: string) => {
-      if (!confirm('Are you sure you want to delete this conversation?')) return
+      if (!confirm(t('confirmDelete'))) return
 
       try {
         if (USE_MOCK_DATA) {
@@ -464,16 +476,16 @@ const MessagesPage = () => {
         conversationId: selectedConversation,
         content: messageInput.trim(),
       })
-      
+
       const newMessage = await messageService.sendMessage({
         conversationId: selectedConversation,
         content: messageInput.trim(),
         attachmentUrl,
         attachmentType,
       })
-      
+
       console.log('✅ Tin nhắn đã gửi thành công:', newMessage)
-      
+
       // Add message to local state (socket sẽ broadcast cho người khác)
       setMessages((prev) => sortMessages([...prev, newMessage]))
       setMessageInput('')
@@ -533,7 +545,7 @@ const MessagesPage = () => {
 
     const lastMsg = conv.lastMessage
     const isOwn = lastMsg.senderId === user?.id
-    
+
     // Tìm tên người gửi
     let senderName = 'User'
     if (isOwn) {
@@ -547,7 +559,7 @@ const MessagesPage = () => {
     if (lastMsg.attachmentUrl || lastMsg.attachmentType) {
       // Xác định loại attachment
       const attachmentType = lastMsg.attachmentType
-      
+
       if (attachmentType === 'image') {
         return `${senderName}: 📷 Photo`
       } else if (attachmentType === 'video') {
@@ -624,7 +636,7 @@ const MessagesPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
       <Header />
-      
+
 
       <main className="flex-1 pt-20">
         <div className="max-w-[1600px] mx-auto px-4 py-6">
@@ -637,12 +649,12 @@ const MessagesPage = () => {
               <div className="w-full md:w-1/3 border-r border-border/50 flex flex-col bg-gradient-to-b from-muted/20 to-transparent">
                 <div className="p-5 border-b border-border/50 backdrop-blur-sm bg-background/50">
                   <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                    Messages
+                    {t('title')}
                   </h2>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                     <Input
-                      placeholder="Search conversations..."
+                      placeholder={t('searchPlaceholder')}
                       className="pl-10 bg-background/80 border-border/50 focus:border-primary/50 transition-all"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -656,7 +668,7 @@ const MessagesPage = () => {
                     </div>
                   ) : filteredConversations.length === 0 ? (
                     <div className="flex items-center justify-center h-32 text-muted-foreground">
-                      No conversations
+                      {t('noConversations')}
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
@@ -670,13 +682,12 @@ const MessagesPage = () => {
                           <div
                             key={conv.id}
                             onClick={() => setSelectedConversation(conv.id)}
-                            className={`p-4 cursor-pointer transition-all duration-200 border-l-4 hover:scale-[1.01] ${
-                              isActive
+                            className={`p-4 cursor-pointer transition-all duration-200 border-l-4 hover:scale-[1.01] ${isActive
                                 ? 'bg-primary/10 border-primary shadow-sm'
                                 : isUnread
                                   ? 'bg-muted/50 border-primary/60 hover:bg-muted/70 hover:border-primary'
                                   : 'border-transparent hover:bg-accent/50 hover:shadow-sm'
-                            }`}
+                              }`}
                           >
                             <div className="flex gap-3">
                               <div className="relative">
@@ -697,17 +708,15 @@ const MessagesPage = () => {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-1">
                                   <h3
-                                    className={`truncate ${
-                                      isUnread ? 'font-semibold text-foreground' : 'font-medium'
-                                    }`}
+                                    className={`truncate ${isUnread ? 'font-semibold text-foreground' : 'font-medium'
+                                      }`}
                                   >
                                     {name}
                                   </h3>
                                   {conv.lastMessage && (
                                     <span
-                                      className={`text-xs whitespace-nowrap ml-2 ${
-                                        isUnread ? 'text-foreground' : 'text-muted-foreground'
-                                      }`}
+                                      className={`text-xs whitespace-nowrap ml-2 ${isUnread ? 'text-foreground' : 'text-muted-foreground'
+                                        }`}
                                     >
                                       {formatTime(conv.lastMessage.createdAt)}
                                     </span>
@@ -715,9 +724,8 @@ const MessagesPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center gap-2">
                                   <p
-                                    className={`text-sm truncate ${
-                                      isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
-                                    }`}
+                                    className={`text-sm truncate ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
+                                      }`}
                                   >
                                     {previewText}
                                   </p>
@@ -759,7 +767,7 @@ const MessagesPage = () => {
                         </Avatar>
                         <div>
                           <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
-                          <p className="text-xs text-muted-foreground">Active now</p>
+                          <p className="text-xs text-muted-foreground">{t('activeNow')}</p>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -774,7 +782,7 @@ const MessagesPage = () => {
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete conversation</span>
+                            <span>{t('deleteConversation')}</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -786,7 +794,7 @@ const MessagesPage = () => {
                         <div className="flex items-center justify-center h-full">
                           <div className="flex flex-col items-center gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                            <p className="text-sm text-muted-foreground">Loading messages...</p>
+                            <p className="text-sm text-muted-foreground">{t('loadingMessages')}</p>
                           </div>
                         </div>
                       ) : (
@@ -885,8 +893,8 @@ const MessagesPage = () => {
                           className="flex-1 h-11 rounded-xl border-border/50 bg-background/50 focus:bg-background focus:border-primary/50 transition-all"
                           disabled={sendingMessage}
                         />
-                        <Button 
-                          onClick={handleSendMessage} 
+                        <Button
+                          onClick={handleSendMessage}
                           disabled={sendingMessage || uploadingFile}
                           className="h-11 px-5 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
                         >

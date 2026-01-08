@@ -10,9 +10,32 @@
     "login": "Đăng nhập",
     "userMenu": {
       "myProfile": "Hồ sơ của tôi",
+      "myJobPosts": "Việc làm đã đăng",
+      "myApplications": "Ứng tuyển",
+      "adminDashboard": "Admin Dashboard",
       "settings": "Cài đặt",
       "logout": "Đăng xuất"
     }
+  },
+  "Settings": {
+    "profile": {
+      "settings": "Cài đặt",
+      "title": "Quản lý hồ sơ của bạn",
+      "subtitle": "Cập nhật thông tin để hồ sơ của bạn thêm thu hút đối với khách hàng.",
+      "loadError": "Không thể tải dữ liệu hồ sơ",
+      "artistProfile": "Hồ sơ nghệ sĩ",
+      "venueProfile": "Hồ sơ địa điểm",
+      "locationNotUpdated": "Địa điểm chưa cập nhật",
+      "tabs": {
+        "overview": "Tổng quan",
+        "media": "Hình ảnh & Video",
+        "experience": "Kinh nghiệm",
+        "contact": "Liên hệ & Mạng xã hội",
+        "details": "Chi tiết địa điểm"
+      }
+    },
+    "city": "Thành phố",
+    "country": "Quốc gia"
   },
   "Footer": {
     "description": "Kết nối nghệ sĩ âm nhạc độc lập với khách hàng một cách chuyên nghiệp.",
@@ -141,7 +164,6 @@
       "emailMissing": "Thiếu email. Vui lòng đăng ký và thử lại."
     }
   },
-
   "LandingPage": {
     "hero": {
       "title": "Tìm Kiếm Tài Năng Âm Nhạc",
@@ -152,12 +174,14 @@
     "featuredArtists": {
       "title": "Nghệ Sĩ Nổi Bật",
       "subtitle": "Khám phá những tài năng xuất sắc được lựa chọn đặc biệt",
-      "viewAll": "Xem tất cả nghệ sĩ"
+      "viewAll": "Xem tất cả nghệ sĩ",
+      "noResults": "Không có nghệ sĩ tiêu biểu nào"
     },
     "featuredEvents": {
       "title": "Sự Kiện Sắp Diễn Ra",
       "subtitle": "Những đêm nhạc hấp dẫn đang chờ đón bạn",
-      "viewAll": "Xem tất cả sự kiện"
+      "viewAll": "Xem tất cả sự kiện",
+      "noResults": "Không có sự kiện tiêu biểu nào"
     },
     "features": {
       "title": "Tại Sao Chọn TalentLink?",
@@ -182,12 +206,462 @@
     }
   },
   "Common": {
-    "loading": "Đang tải..."
+    "loading": "Đang tải...",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "actions": "Thao tác",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "submit": "Gửi",
+    "view": "Xem",
+    "tryAgain": "Thử lại",
+    "unknown": "Không xác định",
+    "upTo": "Lên đến",
+    "locale": "vi-VN",
+    "email": "Email",
+    "phoneNumber": "Số điện thoại"
+  },
+  "options": {
+    "postTypes": {
+      "job_offer": "Đề nghị việc làm",
+      "gig": "Gig / Show lẻ",
+      "availability": "Thông báo lịch trống"
+    },
+    "roles": {
+      "producer": "Nhà sản xuất",
+      "singer": "Ca sĩ",
+      "venue": "Địa điểm",
+      "admin": "Quản trị viên",
+      "artist": "Nghệ sĩ",
+      "organizer": "Nhà tổ chức"
+    },
+    "businessTypes": {
+      "tea_room": "Phòng trà",
+      "cafe": "Quán cà phê",
+      "bar_club": "Bar / Club",
+      "restaurant": "Nhà hàng",
+      "outdoor_stage": "Sân khấu ngoài trời",
+      "theater": "Nhà hát",
+      "event_center": "Trung tâm sự kiện"
+    },
+    "employment": {
+      "full_time": "Toàn thời gian",
+      "part_time": "Bán thời gian",
+      "contract": "Hợp đồng",
+      "one_time": "Một lần"
+    },
+    "experience": {
+      "beginner": "Mới bắt đầu",
+      "intermediate": "Trung cấp",
+      "expert": "Chuyên gia",
+      "any": "Bất kỳ kinh nghiệm nào"
+    },
+    "payment": {
+      "bySession": "Mỗi buổi",
+      "byHour": "Mỗi giờ",
+      "byProject": "Mỗi dự án",
+      "byMonth": "Mỗi tháng"
+    },
+    "status": {
+      "published": "Đăng ngay lập tức",
+      "draft": "Lưu bản nháp"
+    },
+    "locationTypes": {
+      "remote": "Từ xa",
+      "onsite": "Tại chỗ",
+      "hybrid": "Kết hợp"
+    }
+  },
+  "JobPool": {
+    "title": "Tìm kiếm Show tiếp theo",
+    "subtitle": "Địa điểm tìm kiếm tài năng. Nghệ sĩ tìm kiếm sân khấu. Màn trình diễn tiếp theo của bạn ở đây.",
+    "postJob": "Đăng tin tuyển dụng",
+    "searchPlaceholder": "Tìm kiếm việc làm, vai trò, địa điểm...",
+    "filters": {
+      "title": "Bộ lọc",
+      "clear": "Xóa",
+      "genre": "Thể loại",
+      "genreAll": "Tất cả thể loại",
+      "locationAll": "Tất cả địa điểm",
+      "experienceAll": "Tất cả mức kinh nghiệm",
+      "employmentAll": "Tất cả hình thức",
+      "budgetAll": "Tất cả ngân sách",
+      "budgetRange": "Khoảng ngân sách",
+      "remote": "Từ xa",
+      "onsite": "Tại chỗ",
+      "hybrid": "Kết hợp"
+    },
+    "clearAll": "Xóa tất cả",
+    "genre": "Thể loại",
+    "genreAll": "Tất cả thể loại",
+    "locationType": "Hình thức",
+    "locationAll": "Tất cả hình thức",
+    "experienceLevel": "Kinh nghiệm",
+    "experienceAll": "Tất cả kinh nghiệm",
+    "budgetRange": "Ngân sách",
+    "budgetAll": "Tất cả mức lương",
+    "tabs": {
+      "all": "Tất cả Show",
+      "forProducers": "Cho Nhà sản xuất",
+      "forSingers": "Cho Ca sĩ",
+      "saved": "Đã lưu"
+    },
+    "emptyState": {
+      "title": "Không tìm thấy công việc",
+      "description": "Hãy thử điều chỉnh bộ lọc để tìm thấy những gì bạn đang tìm kiếm.",
+      "clearFilters": "Xóa tất cả bộ lọc"
+    },
+    "emptyProducers": {
+      "title": "Không tìm thấy công việc cho nhà sản xuất",
+      "description": "Không có công việc tìm kiếm nhà sản xuất nào khớp với bộ lọc hiện tại của bạn."
+    },
+    "emptySingers": {
+      "title": "Không tìm thấy công việc cho ca sĩ",
+      "description": "Không có công việc tìm kiếm ca sĩ nào khớp với bộ lọc hiện tại của bạn."
+    },
+    "emptySaved": {
+      "title": "Chưa có công việc đã lưu",
+      "description": "Lưu các công việc bạn quan tâm để xem lại sau."
+    },
+    "jobCount": "{count} công việc"
+  },
+  "MyApplications": {
+    "title": "Ứng tuyển của tôi",
+    "tabs": {
+      "all": "Tất cả",
+      "pending_review": "Chờ duyệt",
+      "under_review": "Đang xem xét",
+      "accepted": "Đã chấp nhận",
+      "rejected": "Đã từ chối",
+      "skipped": "Đã bỏ qua",
+      "withdrawn": "Đã rút"
+    },
+    "table": {
+      "job": "Công việc",
+      "appliedDate": "Ngày ứng tuyển",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "noApplications": {
+      "title": "Chưa có ứng tuyển nào",
+      "description": "Bạn chưa ứng tuyển vào công việc nào. Hãy bắt đầu khám phá kho việc làm!",
+      "exploreButton": "Khám phá việc làm"
+    }
+  },
+  "MyPosts": {
+    "title": "Việc làm đã đăng",
+    "tabs": {
+      "all": "Tất cả",
+      "published": "Đã đăng",
+      "drafts": "Bản nháp",
+      "closed": "Đã đóng"
+    },
+    "createJob": "Tạo việc làm",
+    "noPosts": {
+      "title": "Không có việc làm {status}",
+      "description": "Bạn không có việc làm nào trong danh mục này.",
+      "createFirst": "Tạo bài đăng đầu tiên"
+    },
+    "actions": {
+      "viewDetails": "Xem chi tiết",
+      "editJob": "Chỉnh sửa",
+      "closeJob": "Đóng bài đăng"
+    }
+  },
+  "Admin": {
+    "dashboard": {
+      "title": "Tổng quan Dashboard",
+      "subtitle": "Quản lý nội dung nổi bật được hiển thị trên trang chủ"
+    },
+    "stats": {
+      "featuredUsers": "Người dùng nổi bật",
+      "featuredJobs": "Việc làm nổi bật",
+      "total": "Tổng số",
+      "usersDescription": "Nghệ sĩ và nhà sản xuất được hiển thị trên trang chủ",
+      "jobsDescription": "Cơ hội việc làm được làm nổi bật trên trang chủ"
+    },
+    "manageUsers": "Quản lý người dùng",
+    "manageJobs": "Quản lý việc làm",
+    "quickGuide": {
+      "title": "Hướng dẫn nhanh",
+      "featuredUsersGuide": "Sử dụng Người dùng nổi bật để quản lý các nghệ sĩ/nhà sản xuất xuất hiện trên trang chủ",
+      "featuredJobsGuide": "Sử dụng Việc làm nổi bật để làm nổi bật các cơ hội việc làm và gig quan trọng",
+      "recommendedMax": "Số lượng khuyến nghị: 50 người dùng và 50 việc làm nổi bật (10 mục hiển thị trên trang chủ)"
+    },
+    "accessDenied": {
+      "title": "Truy cập bị từ chối",
+      "description": "Bạn cần quyền admin để truy cập trang này.",
+      "goBack": "Quay lại"
+    }
+  },
+  "Profile": {
+    "editor": {
+      "manageTitle": "Quản lý Hồ sơ Địa điểm",
+      "manageSubtitle": "Cập nhật thông tin để địa điểm của bạn trông chuyên nghiệp hơn.",
+      "manageArtistTitle": "Quản lý Hồ sơ của Bạn",
+      "manageArtistSubtitle": "Cập nhật thông tin để hồ sơ của bạn thu hút khách hàng hơn.",
+      "changeCover": "Thay đổi ảnh bìa",
+      "saving": "Đang lưu...",
+      "savePhotos": "Lưu ảnh",
+      "saveChanges": "Lưu thay đổi",
+      "profilePhotos": "Ảnh hồ sơ",
+      "profilePhotosDesc": "Ảnh đại diện và ảnh bìa sẽ xuất hiện trên trang hồ sơ công khai của bạn.",
+      "portfolioMedia": "Hình ảnh & Video Portfolio",
+      "portfolioMediaDesc": "Tải lên hình ảnh chất lượng cao và liên kết video để giới thiệu tài năng của bạn.",
+      "profilePicture": "Ảnh đại diện",
+      "coverPhoto": "Ảnh bìa",
+      "avatarFileDesc": "Tệp hình ảnh chân dung (tối đa 5MB, JPEG/PNG/GIF/WebP)",
+      "coverFileDesc": "Tệp hình ảnh bìa (tối đa 5MB, JPEG/PNG/GIF/WebP)",
+      "photoGallery": "Bộ sưu tập ảnh",
+      "photoGalleryDesc": "Trưng bày địa điểm của bạn với những bức ảnh chất lượng cao.",
+      "photoGalleryArtistDesc": "Chọn những khoảnh khắc đẹp nhất để giới thiệu phong cách biểu diễn của bạn.",
+      "uploading": "Đang tải lên...",
+      "addPhotos": "Thêm ảnh",
+      "noPhotos": "Chưa có ảnh hồ sơ năng lực nào.",
+      "noTitle": "Chưa có tiêu đề",
+      "deleteImageTitle": "Xóa hình ảnh",
+      "deleteImageDesc": "Bạn có chắc chắn muốn xóa hình ảnh này không? Hành động này không thể hoàn tác.",
+      "stageName": "Nghệ danh",
+      "briefIntroduction": "Giới thiệu ngắn",
+      "detailedIntroduction": "Giới thiệu chi tiết",
+      "genres": "Thể loại",
+      "genresPlaceholder": "Chọn thể loại...",
+      "experienceServices": "Kinh nghiệm & Dịch vụ",
+      "experienceServicesDesc": "Cập nhật các dự án, kỹ năng và dịch vụ nổi bật của bạn.",
+      "contact": "Liên hệ",
+      "contactDesc": "Thông tin này giúp các nhà tổ chức dễ dàng kết nối với bạn.",
+      "socialMedia": "Mạng xã hội",
+      "socialMediaDesc": "Liên kết các kênh chính của bạn để người hâm mộ và đối tác theo dõi bạn.",
+      "deleteExpTitle": "Xóa kinh nghiệm",
+      "deleteExpDesc": "Bạn có chắc chắn muốn xóa mục kinh nghiệm này không? Hành động này không thể hoàn tác.",
+      "saveContact": "Lưu liên hệ",
+      "saveLinks": "Lưu liên kết",
+      "saveNewItem": "Lưu mục mới",
+      "updating": "Đang cập nhật...",
+      "update": "Cập nhật",
+      "cancel": "Hủy"
+    },
+    "artist": {
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "contactCollaboration": "Liên hệ hợp tác",
+      "message": "Nhắn tin",
+      "genresInfo": "Thêm thể loại để các nhà tổ chức dễ dàng tìm thấy bạn",
+      "noHeadline": "Chưa có giới thiệu ngắn.",
+      "reviewsCount": "({count} đánh giá)",
+      "noTitle": "Chưa có tiêu đề",
+      "portfolio": "Portfolio (Video)",
+      "about": "Giới thiệu",
+      "experience": "Kinh nghiệm",
+      "socialLinks": "Liên kết mạng xã hội",
+      "photos": "Hình ảnh",
+      "noVideos": "Chưa có video nào.",
+      "noAbout": "Chưa có giới thiệu chi tiết.",
+      "noExperience": "Chưa có thông tin kinh nghiệm.",
+      "noSocials": "Chưa có liên kết mạng xã hội.",
+      "noPhotos": "Chưa có hình ảnh portfolio.",
+      "viewAllPhotos": "Xem tất cả ({count})",
+      "morePhotos": "+{count} ảnh khác",
+      "allPhotos": "Tất cả hình ảnh ({count})",
+      "browsePhotos": "Xem qua tất cả hình ảnh portfolio.",
+      "stageName": "Nghệ danh",
+      "genrePlaceholder": "Chọn thể loại...",
+      "briefIntroduction": "Giới thiệu ngắn",
+      "briefIntroductionPlaceholder": "Tóm tắt nhanh về phong cách và thế mạnh của bạn",
+      "detailedIntroduction": "Giới thiệu chi tiết",
+      "detailedIntroductionPlaceholder": "Chia sẻ thêm về các dự án, thành tựu hoặc câu chuyện thương hiệu cá nhân của bạn.",
+      "mainInformation": "Thông tin chính",
+      "mainInformationDesc": "Chia sẻ những điều nổi bật về bạn để thu hút các nhà tổ chức.",
+      "videoPortfolio": "Video Portfolio",
+      "videoPortfolioDesc": "Thêm video biểu diễn để các nhà tổ chức nhanh chóng đánh giá phong cách của bạn.",
+      "addVideo": "Thêm Video",
+      "experienceList": "Danh sách kinh nghiệm",
+      "experienceListDesc": "Các mục này sẽ hiển thị trên hồ sơ công khai của bạn.",
+      "noItems": "Chưa có mục nào.",
+      "update": "Cập nhật",
+      "saveNewItem": "Lưu mục mới",
+      "expTitle": "Tiêu đề",
+      "expTitlePlaceholder": "VD: Biểu diễn trực tiếp, Thu âm Studio...",
+      "expDescription": "Mô tả",
+      "expDescriptionPlaceholder": "Mô tả dự án, vai trò, thành tựu...",
+      "startDate": "Ngày bắt đầu",
+      "endDate": "Ngày kết thúc",
+      "portfolioLink": "Liên kết Portfolio",
+      "portfolioLinkPlaceholder": "https://spotify.com/..., https://youtube.com/...",
+      "startDateNotSet": "Chưa đặt ngày bắt đầu",
+      "present": "Hiện tại"
+    },
+    "venue": {
+      "updateInfo": "Cập nhật thông tin",
+      "contactVenue": "Liên hệ & Địa chỉ",
+      "contactVenueDesc": "Giúp các nghệ sĩ và nhà tổ chức dễ dàng liên hệ với bạn.",
+      "performanceVenue": "Địa điểm biểu diễn",
+      "noDescription": "Chưa có mô tả.",
+      "reviewsCount": "({count} đánh giá)",
+      "noTitle": "Chưa có tiêu đề",
+      "capacity": "Sức chứa: {count}",
+      "amenities": "Tiện nghi",
+      "amenitiesNotUpdated": "Tiện ích chưa được cập nhật",
+      "venueName": "Tên địa điểm",
+      "venueType": "Loại hình kinh doanh",
+      "venueTypePlaceholder": "Chọn loại hình kinh doanh...",
+      "capacityPlaceholder": "VD: 200 người",
+      "basicInformation": "Thông tin cơ bản",
+      "basicInformationDesc": "Thiết lập tên, loại hình và sức chứa của địa điểm.",
+      "city": "Thành phố",
+      "country": "Quốc gia",
+      "detailedAddress": "Địa chỉ chi tiết",
+      "detailedAddressPlaceholder": "Số nhà, tên đường, tòa nhà, tầng",
+      "email": "Email",
+      "phoneNumber": "Số điện thoại",
+      "website": "Website",
+      "websitePlaceholder": "https://yourwebsite.com",
+      "venueDetails": "Chi tiết địa điểm",
+      "venueDetailsDesc": "Cung cấp thông tin về tiện nghi, giờ mở cửa và giá cả.",
+      "amenitiesPlaceholder": "VD: Hệ thống âm thanh, Ánh sáng sân khấu, Bãi đỗ xe",
+      "amenitiesSeparatorDesc": "Phân tách các tiện nghi bằng dấu phẩy",
+      "openingHours": "Giờ mở cửa",
+      "openingHoursPlaceholder": "VD: T2-T6: 18h-2h, T7-CN: 17h-3h",
+      "rentalPrice": "Giá thuê",
+      "rentalPricePlaceholder": "VD: 1.000.000 VNĐ/giờ hoặc Liên hệ báo giá",
+      "businessTypes": {
+        "tea_room": "Phòng trà",
+        "cafe": "Quán cà phê",
+        "bar_club": "Bar / Club",
+        "restaurant": "Nhà hàng",
+        "outdoor_stage": "Sân khấu ngoài trời",
+        "theater": "Nhà hát",
+        "event_center": "Trung tâm sự kiện"
+      }
+    }
   },
   "NotFound": {
     "title": "Không tìm thấy trang",
+    "profileNotFound": "Không tìm thấy hồ sơ",
     "description": "Xin lỗi, trang bạn đang tìm kiếm hiện không tồn tại.",
     "back": "Quay lại",
     "logoAlt": "Logo TalentLink"
+  },
+  "SearchPage": {
+    "title": "Kết quả tìm kiếm",
+    "searchPlaceholder": "Tìm nghệ sĩ, job, dịch vụ...",
+    "searchButton": "Tìm kiếm",
+    "showingResults": "Đang hiển thị kết quả cho \"{query}\"",
+    "loading": "Đang tải kết quả...",
+    "error": "Không thể tải kết quả tìm kiếm.",
+    "jobs": {
+      "title": "Job",
+      "noResults": "Không có job phù hợp."
+    },
+    "users": {
+      "title": "Người dùng",
+      "noResults": "Không tìm thấy hồ sơ người dùng."
+    }
+  },
+  "PostJob": {
+    "title": "Đăng tin Tuyển dụng / Gig",
+    "subtitle": "Tiếp cận các nghệ sĩ và nhà sản xuất tài năng",
+    "form": {
+      "jobTitle": "Tiêu đề công việc *",
+      "jobTitlePlaceholder": "VD: Ca sĩ Acoustic cho phòng trà tối thứ 6",
+      "summary": "Mô tả ngắn",
+      "summaryPlaceholder": "Mô tả ngắn gọn về vai trò (tối đa 150 ký tự)",
+      "postType": "Loại bài đăng",
+      "roleLookingFor": "Vai trò bạn đang tìm kiếm",
+      "location": "Địa điểm *",
+      "locationPlaceholder": "VD: Quận 1, TP. Hồ Chí Minh",
+      "employmentType": "Hình thức làm việc",
+      "experienceLevel": "Mức kinh nghiệm",
+      "salaryMin": "Lương/Ngân sách tối thiểu *",
+      "salaryMax": "Lương/Ngân sách tối đa (không bắt buộc)",
+      "currency": "Đơn vị tiền tệ",
+      "paymentPeriod": "Hình thức thanh toán",
+      "negotiable": "Có thể thương lượng",
+      "description": "Mô tả chi tiết *",
+      "descriptionPlaceholder": "Mô tả chi tiết công việc, lịch trình, mong đợi...",
+      "requirements": "Yêu cầu",
+      "requirementPlaceholder": "VD: Có thiết bị biểu diễn riêng",
+      "add": "Thêm",
+      "benefits": "Quyền lợi",
+      "benefitPlaceholder": "VD: Hỗ trợ ăn uống tại chỗ",
+      "schedule": "Lịch trình (không bắt buộc)",
+      "schedulePlaceholder": "VD: 20:00 - 22:00, mỗi thứ Sáu",
+      "deadline": "Hạn ứng tuyển",
+      "genres": "Thể loại (Chọn ít nhất một)",
+      "notifyMatches": "Tự động thông báo cho người dùng phù hợp",
+      "status": "Trạng thái đăng bài",
+      "submit": "Đăng tin",
+      "updating": "Đang cập nhật...",
+      "submitting": "Đang đăng tin...",
+      "success": "Đăng tin thành công!",
+      "updateSuccess": "Cập nhật thành công!",
+      "error": "Lỗi khi lưu tin. Vui lòng thử lại."
+    }
+  },
+  "JobDetail": {
+    "message": "Nhắn tin",
+    "descriptionTitle": "Mô tả công việc",
+    "schedule": "Lịch làm việc",
+    "requiredSkills": "Kỹ năng yêu cầu",
+    "benefits": "Quyền lợi",
+    "additionalInfo": "Thông tin thêm",
+    "applyNow": "Ứng tuyển ngay",
+    "apply": "Ứng tuyển",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "share": "Chia sẻ",
+    "viewApplications": "Xem ứng tuyển của tôi",
+    "viewApplication": "Xem ứng tuyển",
+    "applicationStatus": "Trạng thái ứng tuyển",
+    "postedOn": "Đăng ngày {date}",
+    "updatedOn": "Cập nhật {timeAgo}",
+    "employmentType": "Hình thức làm việc",
+    "locationType": "Hình thức địa điểm",
+    "experienceLevel": "Mức kinh nghiệm",
+    "projectDeadline": "Hạn dự án",
+    "applicationDeadline": "Hạn ứng tuyển",
+    "totalApplications": "Tổng số lượt ứng tuyển",
+    "jobNotFound": "Không tìm thấy công việc",
+    "jobNotFoundDesc": "Công việc bạn đang tìm kiếm không tồn tại.",
+    "backToJobs": "Quay lại danh sách",
+    "back": "Quay lại",
+    "invalidJobId": "ID công việc không hợp lệ",
+    "remote": "Từ xa",
+    "negotiable": "Thương lượng",
+    "statusBadge": "Trạng thái",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "timeAgo": {
+      "minute": "{count} phút trước",
+      "minutes": "{count} phút trước",
+      "hour": "{count} giờ trước",
+      "hours": "{count} giờ trước",
+      "days": "{count} ngày trước",
+      "week": "{count} tuần trước",
+      "weeks": "{count} tuần trước",
+      "month": "{count} tháng trước",
+      "months": "{count} tháng trước"
+    },
+    "status": {
+      "pending_review": "Chờ duyệt",
+      "under_review": "Đang xem xét",
+      "accepted": "Đã chấp nhận",
+      "rejected": "Đã từ chối",
+      "published": "Đã đăng",
+      "closed": "Đã đóng"
+    }
+  },
+  "MessagesPage": {
+    "title": "Tin nhắn",
+    "searchPlaceholder": "Tìm kiếm hội thoại...",
+    "prefillMessage": "Xin chào! Tôi rất quan tâm đến vị trí \"{title}\" (ID: {id}). Chúng ta có thể trao đổi thêm được không?",
+    "loadingMessages": "Đang tải tin nhắn...",
+    "deleteConversation": "Xóa hội thoại",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa hội thoại này không?",
+    "activeNow": "Đang hoạt động",
+    "noConversations": "Không có hội thoại",
+    "unreadMessages": "{count} tin nhắn mới"
   }
 }

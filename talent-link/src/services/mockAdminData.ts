@@ -244,7 +244,7 @@ export const mockAdminData = {
     const start = offset
     const end = offset + limit
     const users = mockFeaturedUsers.slice(start, end)
-    
+
     return {
       data: {
         users,
@@ -261,7 +261,7 @@ export const mockAdminData = {
     const start = offset
     const end = offset + limit
     const posts = mockFeaturedJobs.slice(start, end)
-    
+
     return {
       data: {
         posts,

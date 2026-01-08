@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import {ShieldUser} from 'lucide-react'
+import { ShieldUser } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -64,9 +64,8 @@ const Header = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`${
-                    isActive ? 'text-foreground' : 'text-muted-foreground'
-                  } text-sm font-medium transition-colors hover:text-foreground`}
+                  className={`${isActive ? 'text-foreground' : 'text-muted-foreground'
+                    } text-sm font-medium transition-colors hover:text-foreground`}
                 >
                   {item.label}
                 </Link>
@@ -126,7 +125,7 @@ const Header = () => {
                     <DropdownMenuItem asChild>
                       <Link href={'/jobs/my-posts'} className="flex items-center cursor-pointer">
                         <Briefcase className="mr-2 h-4 w-4" />
-                        <span>My job posts</span>
+                        <span>{t('userMenu.myJobPosts')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -135,7 +134,7 @@ const Header = () => {
                         className="flex items-center cursor-pointer"
                       >
                         <Inbox className="mr-2 h-4 w-4" />
-                        <span>My applications</span>
+                        <span>{t('userMenu.myApplications')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -147,13 +146,13 @@ const Header = () => {
                         <span>{t('userMenu.settings')}</span>
                       </Link>
                     </DropdownMenuItem>
-                    {user?.role === 'admin' &&  <DropdownMenuItem asChild>
+                    {user?.role === 'admin' && <DropdownMenuItem asChild>
                       <Link href={'/admin'} className="flex items-center cursor-pointer">
                         <ShieldUser className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
+                        <span>{t('userMenu.adminDashboard')}</span>
                       </Link>
                     </DropdownMenuItem>}
-                    
+
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}

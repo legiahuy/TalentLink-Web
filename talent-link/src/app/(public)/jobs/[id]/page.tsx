@@ -23,6 +23,7 @@ import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 import { jobService } from '@/services/jobService'
 import { resolveMediaUrl } from '@/lib/utils'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface JobWithCreator extends JobPost {
   creator_display_name?: string
@@ -33,6 +34,9 @@ interface JobWithCreator extends JobPost {
 const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
 
 const JobDetailPage = () => {
+  const t = useTranslations('JobDetail')
+  const tCommon = useTranslations('Common')
+  const tOptions = useTranslations('options')
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const jobId = params?.id ?? ''
@@ -77,7 +81,7 @@ const JobDetailPage = () => {
     let active = true
 
     if (!jobId) {
-      setError('Invalid job ID')
+      setError(t('invalidJobId'))
       setLoading(false)
       return
     }
@@ -92,7 +96,7 @@ const JobDetailPage = () => {
         if (!active) return
 
         if (!jobData) {
-          setError('Job not found')
+          setError(t('jobNotFound'))
           return
         }
 
@@ -114,7 +118,7 @@ const JobDetailPage = () => {
       } catch (e) {
         console.error('Error loading job', e)
         if (!active) return
-        const message = e instanceof Error ? e.message : 'Unable to load job details'
+        const message = e instanceof Error ? e.message : t('jobNotFoundDesc')
         setError(message)
       } finally {
         if (active) setLoading(false)
@@ -138,16 +142,23 @@ const JobDetailPage = () => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`
+    if (diffInMinutes < 60) {
+      return diffInMinutes === 1 ? t('timeAgo.minute', { count: 1 }) : t('timeAgo.minutes', { count: diffInMinutes })
+    }
     const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`
+    if (diffInHours < 24) {
+      return diffInHours === 1 ? t('timeAgo.hour', { count: 1 }) : t('timeAgo.hours', { count: diffInHours })
+    }
     const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays === 0) return 'Today'
-    if (diffInDays === 1) return 'Yesterday'
-    if (diffInDays < 7) return `${diffInDays} days ago`
-    if (diffInDays < 30)
-      return `${Math.floor(diffInDays / 7)} week${Math.floor(diffInDays / 7) !== 1 ? 's' : ''} ago`
-    return `${Math.floor(diffInDays / 30)} month${Math.floor(diffInDays / 30) !== 1 ? 's' : ''} ago`
+    if (diffInDays === 0) return t('today')
+    if (diffInDays === 1) return t('yesterday')
+    if (diffInDays < 7) return t('timeAgo.days', { count: diffInDays })
+    if (diffInDays < 30) {
+      const weeks = Math.floor(diffInDays / 7)
+      return weeks === 1 ? t('timeAgo.week', { count: 1 }) : t('timeAgo.weeks', { count: weeks })
+    }
+    const months = Math.floor(diffInDays / 30)
+    return months === 1 ? t('timeAgo.month', { count: 1 }) : t('timeAgo.months', { count: months })
   }
 
   const formatSalary = (job: JobWithCreator) => {
@@ -168,18 +179,18 @@ const JobDetailPage = () => {
       }
 
       type PaymentType = NonNullable<JobWithCreator['payment_type']>
-      const periodMap: Record<PaymentType, '/show' | '/hour' | '/project' | '/month'> = {
-        bySession: '/show',
-        byHour: '/hour',
-        byProject: '/project',
-        byMonth: '/month',
+      const periodMap: Record<PaymentType, string> = {
+        bySession: tOptions('payment.bySession'),
+        byHour: tOptions('payment.byHour'),
+        byProject: tOptions('payment.byProject'),
+        byMonth: tOptions('payment.byMonth'),
       }
 
       const paymentType = job.payment_type
       if (!paymentType) return ''
 
       const range = `${formatNumber(job.budget_min)} - ${formatNumber(job.budget_max)}`
-      return `${range}${periodMap[paymentType]}${job.is_negotiable ? ' (Negotiable)' : ''}`
+      return `${range} / ${periodMap[paymentType]}${job.is_negotiable ? ` (${t('negotiable')})` : ''}`
     }
     return ''
   }
@@ -197,13 +208,13 @@ const JobDetailPage = () => {
       <div className="min-h-[70vh] w-full relative flex items-center justify-center">
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6">
           <div className="p-8 flex flex-col items-center text-center gap-4">
-            <h2 className="text-2xl font-bold">Job Not Found</h2>
+            <h2 className="text-2xl font-bold">{t('jobNotFound')}</h2>
             <p className="text-muted-foreground">
-              {error || 'The job you are looking for does not exist.'}
+              {error || t('jobNotFoundDesc')}
             </p>
             <Button onClick={() => router.push('/jobs')} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Jobs
+              {t('backToJobs')}
             </Button>
           </div>
         </div>
@@ -225,7 +236,7 @@ const JobDetailPage = () => {
           {/* Back Button */}
           <Button variant="ghost" onClick={() => router.back()} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t('back')}
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -247,7 +258,7 @@ const JobDetailPage = () => {
                           alt={job.creator_display_name || 'Unknown'}
                         />
                         <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                          {(job.creator_display_name || 'Unknown')
+                          {(job.creator_display_name || tCommon('unknown'))
                             .split(' ')
                             .map((word) => word[0])
                             .join('')
@@ -264,7 +275,7 @@ const JobDetailPage = () => {
                         }
                         className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
                       >
-                        {job.creator_display_name || 'Unknown'}
+                        {job.creator_display_name || tCommon('unknown')}
                       </button>
                     </div>
                   </div>
@@ -274,13 +285,13 @@ const JobDetailPage = () => {
                     {job.type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        <span>{job.type.charAt(0).toUpperCase() + job.type.slice(1)}</span>
+                        <span>{t(`options.employment.${job.type}`)}</span>
                       </div>
                     )}
                     {job.recruitment_type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        <span className="capitalize">{job.recruitment_type.replace('_', ' ')}</span>
+                        <span className="capitalize">{t(`options.postTypes.${job.recruitment_type}`)}</span>
                       </div>
                     )}
                     {(job.location || job.location_type) && (
@@ -291,7 +302,7 @@ const JobDetailPage = () => {
                             ? job.location_type
                               ? `${job.location} (${job.location_type})`
                               : job.location
-                            : job.location_type || 'Remote'}
+                            : job.location_type || t('remote')}
                         </span>
                       </div>
                     )}
@@ -320,7 +331,7 @@ const JobDetailPage = () => {
 
                   {/* Description */}
                   <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-3">Job Description</h2>
+                    <h2 className="text-xl font-semibold mb-3">{t('descriptionTitle')}</h2>
                     <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">
                       {job.description}
                     </p>
@@ -329,7 +340,7 @@ const JobDetailPage = () => {
                   {/* Work Time / Schedule */}
                   {job.work_time && (
                     <div className="mb-6">
-                      <h2 className="text-xl font-semibold mb-3">Schedule</h2>
+                      <h2 className="text-xl font-semibold mb-3">{t('schedule')}</h2>
                       <p className="text-foreground/80">{job.work_time}</p>
                     </div>
                   )}
@@ -337,7 +348,7 @@ const JobDetailPage = () => {
                   {/* Required Skills */}
                   {job.required_skills && job.required_skills.length > 0 && (
                     <div className="mb-6">
-                      <h2 className="text-xl font-semibold mb-3">Required Skills</h2>
+                      <h2 className="text-xl font-semibold mb-3">{t('requiredSkills')}</h2>
                       <ul className="space-y-2">
                         {job.required_skills.map((skill, index) => (
                           <li key={index} className="flex items-start gap-2">
@@ -352,7 +363,7 @@ const JobDetailPage = () => {
                   {/* Benefits */}
                   {job.benefits && job.benefits.length > 0 && (
                     <div className="mb-6">
-                      <h2 className="text-xl font-semibold mb-3">Benefits</h2>
+                      <h2 className="text-xl font-semibold mb-3">{t('benefits')}</h2>
                       <ul className="space-y-2">
                         {job.benefits.map((benefit, index) => (
                           <li key={index} className="flex items-start gap-2">
@@ -369,42 +380,42 @@ const JobDetailPage = () => {
                     job.recruitment_type ||
                     job.deadline ||
                     job.submission_deadline) && (
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold mb-3">Additional Information</h2>
-                      <div className="space-y-2 text-sm">
-                        {job.experience_level && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Experience Level:</span>
-                            <span className="font-medium capitalize">{job.experience_level}</span>
-                          </div>
-                        )}
-                        {job.recruitment_type && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Employment Type:</span>
-                            <span className="font-medium capitalize">
-                              {job.recruitment_type.replace('_', ' ')}
-                            </span>
-                          </div>
-                        )}
-                        {job.deadline && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Project Deadline:</span>
-                            <span className="font-medium">
-                              {new Date(job.deadline).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                        {job.submission_deadline && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Application Deadline:</span>
-                            <span className="font-medium">
-                              {new Date(job.submission_deadline).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
+                      <div className="mb-6">
+                        <h2 className="text-xl font-semibold mb-3">{t('additionalInfo')}</h2>
+                        <div className="space-y-2 text-sm">
+                          {job.experience_level && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{t('experienceLevel')}:</span>
+                              <span className="font-medium capitalize">{t(`options.experience.${job.experience_level}`)}</span>
+                            </div>
+                          )}
+                          {job.recruitment_type && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{t('employmentType')}:</span>
+                              <span className="font-medium capitalize">
+                                {t(`options.postTypes.${job.recruitment_type}`)}
+                              </span>
+                            </div>
+                          )}
+                          {job.deadline && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{t('projectDeadline')}:</span>
+                              <span className="font-medium">
+                                {new Date(job.deadline).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                          {job.submission_deadline && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{t('applicationDeadline')}:</span>
+                              <span className="font-medium">
+                                {new Date(job.submission_deadline).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </CardContent>
               </Card>
             </div>
@@ -415,8 +426,8 @@ const JobDetailPage = () => {
                 <CardContent className="p-6 space-y-4">
                   {hasApplied ? (
                     <div className="space-y-2">
-                      <div className="w-full  py-4 text-center flex items-center justify-between">
-                        <p className="text-sm font-medium">Application Status</p>
+                      <div className="flex justify-between">
+                        <p className="text-sm font-medium">{t('applicationStatus')}</p>
                         <Badge
                           variant={
                             applicationStatus === 'accepted'
@@ -429,18 +440,12 @@ const JobDetailPage = () => {
                         >
                           {(() => {
                             const status = applicationStatus || 'applied'
-                            if (status === 'pending_review') return 'Pending Review'
-                            if (status === 'under_review') return 'Under Review'
-                            if (status === 'accepted') return 'Accepted'
-                            if (status === 'rejected') return 'Rejected'
-                            return (
-                              status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')
-                            )
+                            return t(`status.${status}`)
                           })()}
                         </Badge>
                       </div>
                       <Button variant="outline" className="w-full hidden sm:flex" size="lg" asChild>
-                        <Link href="/jobs/my-applications">View My Applications</Link>
+                        <Link href="/jobs/my-applications">{t('viewApplications')}</Link>
                       </Button>
                     </div>
                   ) : (
@@ -450,7 +455,7 @@ const JobDetailPage = () => {
                       onClick={() => setIsApplicationOpen(true)}
                       disabled={job?.status !== 'published' || job?.is_deadline_passed}
                     >
-                      Apply Now
+                      {t('applyNow')}
                     </Button>
                   )}
 
@@ -461,7 +466,7 @@ const JobDetailPage = () => {
                       ) : (
                         <Bookmark className="w-4 h-4 mr-2" />
                       )}
-                      {isSaved ? 'Saved' : 'Save'}
+                      {isSaved ? t('saved') : t('save')}
                     </Button>
                     <Button
                       variant="outline"
@@ -480,17 +485,30 @@ const JobDetailPage = () => {
                       }}
                     >
                       <Share2 className="w-4 h-4 mr-2" />
-                      Share
+                      {t('share')}
                     </Button>
                   </div>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={() => {
+                      router.push(
+                        `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
+                      )
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {t('message')}
+                  </Button>
 
                   {job.status && (
                     <>
                       <Separator />
                       <div className="space-y-2">
-                        <h3 className="font-semibold text-sm">Status</h3>
+                        <h3 className="font-semibold text-sm">{t('statusBadge')}</h3>
                         <Badge variant={job.status === 'published' ? 'default' : 'secondary'}>
-                          {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                          {t(`status.${job.status}`)}
                         </Badge>
                       </div>
                     </>
@@ -498,31 +516,34 @@ const JobDetailPage = () => {
 
                   {(job.total_submissions !== undefined ||
                     job.applications_count !== undefined) && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <h3 className="font-semibold text-sm">Applications</h3>
-                        <p className="text-2xl font-bold">
-                          {job.total_submissions || job.applications_count || 0}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Total applications received</p>
-                      </div>
-                    </>
-                  )}
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-sm">{t('jobs.title')}</h3>
+                          <p className="text-2xl font-bold">
+                            {job.total_submissions || job.applications_count || 0}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{t('totalApplications')}</p>
+                        </div>
+                      </>
+                    )}
 
                   <Separator />
 
                   <div className="text-sm text-muted-foreground">
                     <p>
-                      Posted{' '}
-                      {new Date(job.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
+                      {t('postedOn', {
+                        date: new Date(job.created_at).toLocaleDateString(tCommon('locale'), {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        }),
                       })}
                     </p>
                     {job.updated_at && job.updated_at !== job.created_at && (
-                      <p className="mt-1">Updated {getTimeAgo(job.updated_at)}</p>
+                      <p className="mt-1">
+                        {t('updatedOn', { timeAgo: getTimeAgo(job.updated_at) })}
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -539,7 +560,7 @@ const JobDetailPage = () => {
             <Button variant="outline" className="flex-1 h-12" asChild>
               <Link href="/jobs/my-applications">
                 <FileText className="w-4 h-4 mr-2" />
-                View Application
+                {t('viewApplication')}
               </Link>
             </Button>
           ) : (
@@ -549,7 +570,7 @@ const JobDetailPage = () => {
               disabled={job?.status !== 'published' || job?.is_deadline_passed}
             >
               <Send className="w-4 h-4 mr-2" />
-              Apply
+              {t('apply')}
             </Button>
           )}
           <Button
@@ -569,7 +590,19 @@ const JobDetailPage = () => {
             }}
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {t('share')}
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1 h-12"
+            onClick={() => {
+              router.push(
+                `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
+              )
+            }}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            {t('message')}
           </Button>
         </div>
       </div>
@@ -601,7 +634,7 @@ const JobDetailPage = () => {
           }}
           jobId={job.id}
           jobTitle={job.title}
-          companyName={job.creator_display_name || 'Unknown'}
+          companyName={job.creator_display_name || tCommon('unknown')}
         />
       )}
     </div>
