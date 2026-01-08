@@ -34,6 +34,18 @@ export interface JobSearchRequestDto {
   sortOrder?: string
 }
 
+// Backend response structure
+export interface BackendJobSearchResponse {
+  posts: JobPostSearchDto[]
+  pagination: {
+    current_page: number
+    page_size: number
+    total_pages: number
+    total_items: number
+  }
+}
+
+// Frontend expected structure (transformed from backend)
 export interface JobSearchResultDto {
   jobPosts: JobPostSearchDto[]
   totalCount: number
@@ -98,6 +110,10 @@ export interface UserSearchRequestDto {
   sortOrder?: string
 }
 
+// Backend response structure (just an array)
+export type BackendUserSearchResponse = UserSearchDto[]
+
+// Frontend expected structure (transformed from backend)
 export interface UserSearchResultDto {
   userProfiles: UserSearchDto[]
   totalCount: number
