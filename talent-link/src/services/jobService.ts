@@ -35,15 +35,21 @@ export const jobService = {
   },
 
   // Search and Matching Service - Advanced job search
-  // Endpoint: POST /api/v1/api/search/jobs (basePath + path from swagger)
+  // Endpoint: POST /api/v1/search/jobs
   searchJobsAdvanced: async (request: JobSearchRequest): Promise<JobSearchResult> => {
-    const res = await axiosClient.post<ApiResult<JobSearchResult>>('/search/jobs', request)
-    // Handle ApiResult wrapper
-    if (res.data?.data) {
-      return res.data.data
+    const res = await axiosClient.post<{ posts: any[]; pagination: any }>('/search/jobs', request)
+    
+    // Backend returns: { posts: [...], pagination: {...} }
+    // Transform to frontend expected format: { jobPosts: [...], totalCount, page, pageSize, totalPages }
+    const backendData = res.data
+    
+    return {
+      jobPosts: backendData.posts || [],
+      totalCount: backendData.pagination?.total_items || 0,
+      page: backendData.pagination?.current_page || 1,
+      pageSize: backendData.pagination?.page_size || 20,
+      totalPages: backendData.pagination?.total_pages || 0,
     }
-    // Fallback if response is direct
-    return res.data as unknown as JobSearchResult
   },
 
   getJobById: async (id: string, include?: string): Promise<JobPost> => {
