@@ -1,0 +1,28 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Only run on push to main OR when PR is merged to main
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+      - name: Trigger Vercel Deployment
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_y6NdqQ2uZpTYnExHMy79sM2dx2mV/7lLAkdF2kN"
+
+      - name: Deployment Triggered
+        run: |
+          echo "✅ Vercel deployment has been triggered successfully!"
+          echo "📦 Project: prj_y6NdqQ2uZpTYnExHMy79sM2dx2mV"
+          echo "🚀 Check your Vercel dashboard for deployment status"
