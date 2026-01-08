@@ -119,7 +119,7 @@ const JobPostFormPage = () => {
         }
       } catch (error) {
         console.error('Failed to load genres', error)
-        toast.error('Unable to load genres. Please try again later.')
+        toast.error(t('messages.loadGenresError'))
       } finally {
         if (active) setLoadingGenres(false)
       }
@@ -180,9 +180,9 @@ const JobPostFormPage = () => {
     event.preventDefault()
     if (!canSubmit) {
       if (description.trim().length < 20) {
-        toast.error('Description must be at least 20 characters.')
+        toast.error(t('messages.descMinLength'))
       } else {
-        toast.error('Please fill in all required fields.')
+        toast.error(t('messages.fillRequired'))
       }
       return
     }
@@ -213,14 +213,14 @@ const JobPostFormPage = () => {
       }
 
       await jobService.createJob(payload)
-      toast.success('Job posted successfully!')
+      toast.success(t('messages.success'))
       router.push('/jobs/my-posts')
     } catch (error) {
       console.error('Failed to create job', error)
       const message =
         error instanceof Error
           ? error.message
-          : 'Unable to create job posting. Please try again later.'
+          : t('messages.createError')
       toast.error(message)
     } finally {
       setSubmitting(false)
@@ -663,7 +663,7 @@ const JobPostFormPage = () => {
                         </div>
                       )}
                       {selectedGenres.length === 0 && (
-                        <p className="text-xs text-destructive">Select at least one genre.</p>
+                        <p className="text-xs text-destructive">{t('messages.selectGenre')}</p>
                       )}
                     </div>
 
