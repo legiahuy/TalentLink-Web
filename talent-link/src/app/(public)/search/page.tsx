@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
 import { searchService } from '@/services/searchService'
 import { useTranslations } from 'next-intl'
+import { analytics } from '@/lib/analytics'
 import type {
   JobPostSearchDto,
   JobSearchResultDto,
@@ -42,9 +43,19 @@ export default function SearchPage() {
         const result = await searchService.searchAll(q)
         setJobs(result.jobs)
         setUsers(result.users)
+
+        // Track search event
+        analytics.logSearch(q, 'all').catch(console.error)
+        analytics
+          .logViewSearchResults(q, result.jobs.totalCount + result.users.totalCount, 'all')
+          .catch(console.error)
       } catch (err) {
         console.error(err)
         setError(t('error'))
+        // Track search error
+        analytics
+          .logError('search_error', err instanceof Error ? err.message : 'Unknown error', '/search')
+          .catch(console.error)
       } finally {
         setLoading(false)
       }

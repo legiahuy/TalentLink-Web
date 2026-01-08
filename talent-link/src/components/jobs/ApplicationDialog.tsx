@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { jobService } from '@/services/jobService'
+import { analytics } from '@/lib/analytics'
 
 interface ApplicationDialogProps {
   open: boolean
@@ -122,6 +123,9 @@ const ApplicationDialog = ({
         cover_letter: message,
         portfolio_links: validPortfolioLinks.length > 0 ? validPortfolioLinks : undefined,
       })
+
+      // Track job application event
+      analytics.logApplyJob(jobId, jobTitle).catch(console.error)
 
       toast.success('Application submitted successfully!', {
         description: 'Your application has been sent to the employer.',
