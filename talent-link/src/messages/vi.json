@@ -164,6 +164,36 @@
       "emailMissing": "Thiếu email. Vui lòng đăng ký và thử lại."
     }
   },
+  "Discovery": {
+    "hero": {
+      "title": "Khám phá",
+      "subtitle": "Tìm kiếm nghệ sĩ và địa điểm phù hợp nhất cho sự kiện của bạn"
+    },
+    "filters": {
+      "title": "Bộ lọc",
+      "clear": "Xóa",
+      "search": "Tìm kiếm",
+      "genre": "Thể loại",
+      "genreAll": "Tất cả thể loại",
+      "location": "Địa điểm",
+      "locationAll": "Tất cả địa điểm"
+    },
+    "tabs": {
+      "all": "Tất cả",
+      "artists": "Nghệ sĩ",
+      "venues": "Địa điểm"
+    },
+    "results": {
+      "found": "{count} kết quả",
+      "foundArtists": "{count} nghệ sĩ",
+      "foundVenues": "{count} địa điểm"
+    },
+    "sections": {
+      "artists": "Nghệ sĩ",
+      "venues": "Địa điểm"
+    },
+    "noResults": "Không tìm thấy kết quả nào"
+  },
   "LandingPage": {
     "hero": {
       "title": "Tìm Kiếm Tài Năng Âm Nhạc",
@@ -222,7 +252,9 @@
     "upTo": "Lên đến",
     "locale": "vi-VN",
     "email": "Email",
-    "phoneNumber": "Số điện thoại"
+    "phoneNumber": "Số điện thoại",
+    "noResults": "Không tìm thấy kết quả nào",
+    "results": "kết quả"
   },
   "options": {
     "postTypes": {

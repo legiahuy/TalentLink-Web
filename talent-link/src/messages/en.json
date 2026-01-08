@@ -164,6 +164,36 @@
       "emailMissing": "Missing email. Please go back and sign up again."
     }
   },
+  "Discovery": {
+    "hero": {
+      "title": "Discovery",
+      "subtitle": "Find the best artists and venues for your events"
+    },
+    "filters": {
+      "title": "Filters",
+      "clear": "Clear",
+      "search": "Search",
+      "genre": "Genre",
+      "genreAll": "All genres",
+      "location": "Location",
+      "locationAll": "All locations"
+    },
+    "tabs": {
+      "all": "All",
+      "artists": "Artists",
+      "venues": "Venues"
+    },
+    "results": {
+      "found": "{count} results",
+      "foundArtists": "{count} artists",
+      "foundVenues": "{count} venues"
+    },
+    "sections": {
+      "artists": "Artists",
+      "venues": "Venues"
+    },
+    "noResults": "No results found"
+  },
   "LandingPage": {
     "hero": {
       "title": "Find Music Talent",
@@ -222,7 +252,9 @@
     "upTo": "Up to",
     "locale": "en-US",
     "email": "Email",
-    "phoneNumber": "Phone Number"
+    "phoneNumber": "Phone Number",
+    "noResults": "No results found",
+    "results": "results"
   },
   "options": {
     "postTypes": {

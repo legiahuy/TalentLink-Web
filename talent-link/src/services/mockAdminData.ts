@@ -92,6 +92,36 @@ const mockFeaturedUsers: FeaturedUser[] = [
     featured_at: '2024-12-16T11:30:00Z',
     created_at: '2024-07-05T14:15:00Z',
   },
+  {
+    id: 'venue-1',
+    username: 'musicstudio_hcm',
+    display_name: 'Music Studio HCM',
+    avatar_url: '/images/auth/auth-photo-1.jpg',
+    role: 'venue',
+    brief_bio: 'Premium recording studio in the heart of Saigon',
+    city: 'Ho Chi Minh City',
+    country: 'Vietnam',
+    genres: [],
+    is_verified: true,
+    is_featured: true,
+    featured_at: '2024-12-15T10:00:00Z',
+    created_at: '2024-12-15T10:00:00Z',
+  },
+  {
+    id: 'venue-2',
+    username: 'grandpalace_events',
+    display_name: 'Grand Palace Hotel',
+    avatar_url: '/images/auth/auth-photo-1.jpg',
+    role: 'venue',
+    brief_bio: 'Luxury hotel and event center',
+    city: 'Hanoi',
+    country: 'Vietnam',
+    genres: [],
+    is_verified: true,
+    is_featured: true,
+    featured_at: '2024-12-14T14:30:00Z',
+    created_at: '2024-12-14T14:30:00Z',
+  },
 ]
 
 // Mock Featured Jobs Data
@@ -348,5 +378,18 @@ export const mockAdminData = {
   getLandingFeaturedJobs: async (limit = 10) => {
     await delay(200)
     return mockFeaturedJobs.slice(0, limit)
+  },
+
+  // Get discovery data
+  getDiscoveryData: async () => {
+    await delay(300)
+    const allUsers = [...mockFeaturedUsers, ...mockNonFeaturedUsers]
+    const artists = allUsers.filter((u) => u.role !== 'venue')
+    const venues = allUsers.filter((u) => u.role === 'venue')
+
+    return {
+      artists,
+      venues,
+    }
   },
 }
