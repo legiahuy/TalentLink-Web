@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import type { User } from '@/types/user'
 import { authService } from '@/services/authService'
+import { analytics } from '@/lib/analytics'
 
 interface AuthState {
   user: User | null
@@ -91,6 +92,9 @@ export const useAuthStore = create<AuthState>()(
             const role = get().user?.role
             if (role) get().setUserRole(role)
 
+            // Track OAuth login event
+            analytics.logLogin('google').catch(console.error)
+
             toast.success('Login with Google successful!')
           } else if (registration_token) {
             set({ pendingRegistrationToken: registration_token })
@@ -121,6 +125,9 @@ export const useAuthStore = create<AuthState>()(
 
           const finalRole = get().user?.role || role
           if (finalRole) get().setUserRole(finalRole)
+
+          // Track OAuth signup event
+          analytics.logSignUp('google').catch(console.error)
 
           toast.success('Google registration completed successfully!')
         } catch (err) {
@@ -177,6 +184,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.signUp({ display_name, username, email, password, role })
 
+          // Track signup event
+          analytics.logSignUp('email').catch(console.error)
+
           toast.success('Registration successful! Please verify your email.')
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Registration failed!')
@@ -199,6 +209,9 @@ export const useAuthStore = create<AuthState>()(
           // 🟩 ADD: store role
           const role = get().user?.role
           if (role) get().setUserRole(role)
+
+          // Track login event
+          analytics.logLogin('email').catch(console.error)
 
           toast.success('Welcome back to TalentLink!')
 
@@ -274,6 +287,9 @@ export const useAuthStore = create<AuthState>()(
           const { refreshToken } = get()
           if (!refreshToken) throw new Error('Missing refresh token')
           await authService.logout(refreshToken)
+
+          // Track logout event
+          analytics.logLogout().catch(console.error)
 
           // 🟩 ADD: clear user role
           get().setUserRole(null)
