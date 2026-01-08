@@ -331,14 +331,14 @@ export const mockAdminData = {
   },
 
   // Feature a job
-  featureJob: async (jobId: string) => {
+  featureJob: async (_jobId: string) => {
     await delay(200)
     // In real implementation, would update the job in the list
     return { message: 'Job featured successfully' }
   },
 
   // Unfeature a job
-  unfeatureJob: async (jobId: string) => {
+  unfeatureJob: async (_jobId: string) => {
     await delay(200)
     // In real implementation, would update the job in the list
     return { message: 'Job unfeatured successfully' }

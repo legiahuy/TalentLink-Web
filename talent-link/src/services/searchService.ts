@@ -7,6 +7,7 @@ import type {
   UserSearchResultDto,
   BackendJobSearchResponse,
   BackendUserSearchResponse,
+  UserSearchDto,
 } from '@/types/search'
 
 export const searchService = {
@@ -42,25 +43,57 @@ export const searchService = {
   searchUsers: async (request: UserSearchRequestDto): Promise<UserSearchResultDto> => {
     const res = await axiosClient.post<BackendUserSearchResponse>('/search/users', request)
     
-    // Backend returns: [...] (just an array of all matching users - no server-side pagination)
-    // Transform to frontend expected format: { userProfiles: [...], totalCount, page, pageSize, totalPages, searchTime }
-    // Backend returns data directly (not wrapped in ApiResult)
-    // NOTE: Backend doesn't support pagination, so we do client-side pagination
-    const backendData = Array.isArray(res.data) ? res.data : []
-    const page = request.page || 1
-    const pageSize = request.pageSize || 20
-    const totalCount = backendData.length
+    // Backend might return an array (legacy) or an object with pagination (new)
+    const backendData = res.data
     
-    // Client-side pagination: slice the array to return only the requested page
-    const startIndex = (page - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    const paginatedUserProfiles = backendData.slice(startIndex, endIndex)
-    const totalPages = Math.ceil(totalCount / pageSize)
+    let users: UserSearchDto[] = []
+    let pagination = null
+
+    if (Array.isArray(backendData)) {
+      users = backendData
+    } else if (typeof backendData === 'object' && backendData !== null && 'users' in backendData) {
+      users = backendData.users
+      pagination = backendData.pagination
+    }
+
+    const totalCount = pagination?.total_items || users.length
+    const currentPage = pagination?.current_page || request.page || 1
+    const pageSize = pagination?.page_size || request.pageSize || 20
+    const totalPages = pagination?.total_pages || Math.ceil(totalCount / pageSize)
+
+    // If no server-side pagination (legacy array response), do client-side slicing
+    let finalUsers = users
+    if (!pagination && users.length > pageSize) {
+        const startIndex = (currentPage - 1) * pageSize
+        const endIndex = startIndex + pageSize
+        finalUsers = users.slice(startIndex, endIndex)
+    }
+
+    // Map backend snake_case to frontend camelCase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedUsers: UserSearchDto[] = finalUsers.map((u: any) => ({
+      id: u.id,
+      email: u.email,
+      username: u.username,
+      role: u.role,
+      avatarUrl: u.avatar_url,
+      isValidated: u.is_verified,
+      displayName: u.display_name,
+      location: u.city || u.location, // Handle potentially different field names
+      genres: u.genres,
+      phoneNumber: u.phone_number,
+      briefBio: u.brief_bio,
+      capacity: u.capacity,
+      openHour: u.open_hour,
+      rentPrice: u.rent_price,
+      businessTypes: u.business_types,
+      convenientFacilities: u.convenient_facilities,
+    }))
     
     return {
-      userProfiles: paginatedUserProfiles,
+      userProfiles: mappedUsers,
       totalCount,
-      page,
+      page: currentPage,
       pageSize,
       totalPages,
       searchTime: new Date().toISOString(), // Generate searchTime since backend doesn't provide it

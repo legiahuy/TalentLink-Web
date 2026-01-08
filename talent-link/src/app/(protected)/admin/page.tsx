@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, Briefcase, ArrowRight } from 'lucide-react'
+import { Users, Briefcase, ArrowRight, Sparkles } from 'lucide-react'
 import { adminService } from '@/services/adminService'
-import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 export default function AdminDashboardPage() {
   const t = useTranslations('Admin')
-  const tCommon = useTranslations('Common')
   const [stats, setStats] = useState({
     totalFeaturedUsers: 0,
     totalFeaturedJobs: 0,
@@ -92,12 +91,12 @@ export default function AdminDashboardPage() {
                   <div className="text-3xl font-bold text-primary">
                     {loading ? '...' : stats.totalFeaturedUsers}
                   </div>
-                  <div className="text-xs text-muted-foreground">{tCommon('total') || 'Total'}</div>
+                  <div className="text-xs text-muted-foreground">{t('stats.total')}</div>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('dashboard.featuredUsers')}</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('stats.featuredUsers')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                {t('dashboard.featuredUsersDesc')}
+                {t('stats.usersDescription')}
               </p>
               <Button
                 asChild
@@ -109,7 +108,7 @@ export default function AdminDashboardPage() {
                   href="/admin/featured-users"
                   className="flex items-center justify-center gap-2"
                 >
-                  {t('dashboard.manageUsers')}
+                  {t('manageUsers')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -128,12 +127,12 @@ export default function AdminDashboardPage() {
                   <div className="text-3xl font-bold text-primary">
                     {loading ? '...' : stats.totalFeaturedJobs}
                   </div>
-                  <div className="text-xs text-muted-foreground">{tCommon('total') || 'Total'}</div>
+                  <div className="text-xs text-muted-foreground">{t('stats.total')}</div>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('dashboard.featuredJobs')}</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('stats.featuredJobs')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                {t('dashboard.featuredJobsDesc')}
+                {t('stats.jobsDescription')}
               </p>
               <Button
                 asChild
@@ -145,7 +144,7 @@ export default function AdminDashboardPage() {
                   href="/admin/featured-jobs"
                   className="flex items-center justify-center gap-2"
                 >
-                  {t('dashboard.manageJobs')}
+                  {t('manageJobs')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -162,29 +161,24 @@ export default function AdminDashboardPage() {
       >
         <Card className="border-border/50 bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">{t('guide.title')}</h3>
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">{t('quickGuide.title')}</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Use <strong className="text-foreground">Featured Users</strong> to manage which
-                  artists and producers appear on the landing page
+                  {t('quickGuide.featuredUsersGuide')}
                 </span>
               </li>
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Use <strong className="text-foreground">Featured Jobs</strong> to highlight
-                  important job opportunities and gigs
+                  {t('quickGuide.featuredJobsGuide')}
                 </span>
               </li>
               <li className="flex items-center gap-3 p-3 rounded-lg bg-card/50 hover:bg-card/70 transition-colors">
                 <span className="text-primary text-lg">•</span>
                 <span>
-                  Recommended maximum:{' '}
-                  <strong className="text-foreground">50 featured users</strong> and{' '}
-                  <strong className="text-foreground">50 featured jobs</strong> (10 displayed on
-                  landing page)
+                  {t('quickGuide.recommendedMax')}
                 </span>
               </li>
             </ul>

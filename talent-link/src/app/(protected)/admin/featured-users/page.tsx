@@ -10,8 +10,11 @@ import { adminService } from '@/services/adminService'
 import type { FeaturedUser } from '@/types/admin'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 export default function FeaturedUsersPage() {
+  const t = useTranslations('Admin.featuredUsersPage')
+  const tCommon = useTranslations('Common')
   const [users, setUsers] = useState<FeaturedUser[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -47,11 +50,11 @@ export default function FeaturedUsersPage() {
       }))
     } catch (error) {
       console.error('Failed to fetch featured users:', error)
-      toast.error('Failed to load featured users')
+      toast.error(t('errorLoad'))
     } finally {
       setLoading(false)
     }
-  }, [pagination.limit, pagination.offset])
+  }, [pagination.limit, pagination.offset, t])
 
   useEffect(() => {
     fetchUsers()
@@ -75,15 +78,15 @@ export default function FeaturedUsersPage() {
     try {
       if (isFeatured) {
         await adminService.unfeatureUser(userId)
-        toast.success('User unfeatured successfully')
+        toast.success(t('successUnfeatured'))
       } else {
         await adminService.featureUser(userId)
-        toast.success('User featured successfully')
+        toast.success(t('successFeatured'))
       }
       await fetchUsers()
     } catch (error) {
       console.error('Failed to toggle feature status:', error)
-      toast.error('Failed to update feature status')
+      toast.error(t('errorUpdate'))
     } finally {
       setActionLoading(null)
     }
@@ -125,15 +128,15 @@ export default function FeaturedUsersPage() {
       >
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Featured Users
+            {t('title')}
           </h1>
           <Button onClick={() => setSearchDialogOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" />
-            Add Featured User
+            {t('addFeaturedUser')}
           </Button>
         </div>
         <p className="text-muted-foreground text-lg">
-          Manage which users appear on the landing page
+          {t('manageDescription')}
         </p>
       </motion.div>
 
@@ -146,16 +149,16 @@ export default function FeaturedUsersPage() {
       >
         <div className="text-sm font-medium">
           {loading ? (
-            <span className="text-muted-foreground">Loading...</span>
+            <span className="text-muted-foreground">{tCommon('loading')}</span>
           ) : (
             <span>
               <span className="text-primary font-bold text-lg">{pagination.total}</span>{' '}
-              <span className="text-muted-foreground">featured users</span>
+              <span className="text-muted-foreground">{t('featuredUsersCount')}</span>
             </span>
           )}
         </div>
         <div className="text-sm text-muted-foreground">
-          Page <span className="font-medium text-foreground">{currentPage}</span> of{' '}
+          {t('page')} <span className="font-medium text-foreground">{currentPage}</span> {t('of')}{' '}
           <span className="font-medium text-foreground">{totalPages || 1}</span>
         </div>
       </motion.div>
@@ -178,7 +181,7 @@ export default function FeaturedUsersPage() {
           transition={{ duration: 0.5 }}
         >
           <UsersIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-          <p className="text-muted-foreground text-lg">No featured users found</p>
+          <p className="text-muted-foreground text-lg">{t('noFeaturedUsers')}</p>
         </motion.div>
       ) : (
         <motion.div
@@ -215,7 +218,7 @@ export default function FeaturedUsersPage() {
             className="hover:bg-primary/10 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
+            {tCommon('previous')}
           </Button>
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -250,7 +253,7 @@ export default function FeaturedUsersPage() {
             disabled={currentPage === totalPages}
             className="hover:bg-primary/10 transition-colors"
           >
-            Next
+            {tCommon('next')}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </motion.div>
@@ -260,13 +263,13 @@ export default function FeaturedUsersPage() {
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-        title={confirmDialog.isFeatured ? 'Unfeature User' : 'Feature User'}
+        title={confirmDialog.isFeatured ? t('unfeatureUser') : t('featureUser')}
         description={
           confirmDialog.isFeatured
-            ? `Are you sure you want to remove ${confirmDialog.userName} from featured users? They will no longer appear on the landing page.`
-            : `Are you sure you want to feature ${confirmDialog.userName}? They will appear on the landing page.`
+            ? t('unfeatureConfirm', { name: confirmDialog.userName })
+            : t('featureConfirm', { name: confirmDialog.userName })
         }
-        confirmText={confirmDialog.isFeatured ? 'Unfeature' : 'Feature'}
+        confirmText={confirmDialog.isFeatured ? t('unfeatureAction') : t('featureAction')}
         onConfirm={handleConfirmToggle}
         variant={confirmDialog.isFeatured ? 'destructive' : 'default'}
       />

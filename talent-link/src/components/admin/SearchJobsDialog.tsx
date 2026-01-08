@@ -174,7 +174,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[98vw] w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
+      <DialogContent className="!max-w-[80vw] w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
         <DialogHeader className="p-6 pb-2 border-b border-border/50">
           <DialogTitle className="text-2xl">Search Jobs to Feature</DialogTitle>
         </DialogHeader>

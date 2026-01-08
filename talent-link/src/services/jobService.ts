@@ -20,6 +20,8 @@ import type {
   ApiResult,
 } from '@/types/job'
 
+import { BackendJobSearchResponse } from '@/types/search'
+
 export const jobService = {
   // JOB POSTS
   listJobs: async (filters?: JobPostFilters): Promise<JobPostListResponse> => {
@@ -37,7 +39,7 @@ export const jobService = {
   // Search and Matching Service - Advanced job search
   // Endpoint: POST /api/v1/search/jobs
   searchJobsAdvanced: async (request: JobSearchRequest): Promise<JobSearchResult> => {
-    const res = await axiosClient.post<{ posts: any[]; pagination: any }>('/search/jobs', request)
+    const res = await axiosClient.post<BackendJobSearchResponse>('/search/jobs', request)
     
     // Backend returns: { posts: [...], pagination: {...} }
     // Transform to frontend expected format: { jobPosts: [...], totalCount, page, pageSize, totalPages }

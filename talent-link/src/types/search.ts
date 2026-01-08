@@ -110,8 +110,18 @@ export interface UserSearchRequestDto {
   sortOrder?: string
 }
 
-// Backend response structure (just an array)
-export type BackendUserSearchResponse = UserSearchDto[]
+// Backend response structure
+export type BackendUserSearchResponse = 
+  | UserSearchDto[] 
+  | {
+      users: UserSearchDto[]
+      pagination: {
+        current_page: number
+        page_size: number
+        total_pages: number
+        total_items: number
+      }
+    }
 
 // Frontend expected structure (transformed from backend)
 export interface UserSearchResultDto {

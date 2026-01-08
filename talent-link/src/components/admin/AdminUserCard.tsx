@@ -45,20 +45,20 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
             {user.avatar_url ? (
               <Image
                 src={user.avatar_url}
-                alt={user.display_name}
+                alt={user.display_name || user.username}
                 fill
                 className="object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary">
-                {user.display_name.charAt(0).toUpperCase()}
+                {(user.display_name || user.username || '?').charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
           <div className="w-full">
             <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors mb-0.5">
-              {user.display_name}
+              {user.display_name || user.username}
             </h3>
             <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
           </div>

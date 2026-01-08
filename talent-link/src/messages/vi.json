@@ -207,11 +207,11 @@
       "viewAll": "Xem tất cả nghệ sĩ",
       "noResults": "Không có nghệ sĩ tiêu biểu nào"
     },
-    "featuredEvents": {
-      "title": "Sự Kiện Sắp Diễn Ra",
-      "subtitle": "Những đêm nhạc hấp dẫn đang chờ đón bạn",
-      "viewAll": "Xem tất cả sự kiện",
-      "noResults": "Không có sự kiện tiêu biểu nào"
+    "featuredJobs": {
+      "title": "Công việc nổi bật",
+      "subtitle": "Khám phá các cơ hội hấp dẫn",
+      "viewAll": "Xem tất cả công việc",
+      "noResults": "Không có công việc nổi bật"
     },
     "features": {
       "title": "Tại Sao Chọn TalentLink?",
@@ -428,6 +428,49 @@
       "title": "Truy cập bị từ chối",
       "description": "Bạn cần quyền admin để truy cập trang này.",
       "goBack": "Quay lại"
+    },
+    "sidebar": {
+      "overview": "Tổng quan",
+      "featuredUsers": "Người dùng nổi bật",
+      "featuredJobs": "Việc làm nổi bật"
+    },
+    "featuredUsersPage": {
+      "title": "Người dùng nổi bật",
+      "addFeaturedUser": "Thêm người dùng",
+      "manageDescription": "Quản lý người dùng xuất hiện trên trang chủ",
+      "featuredUsersCount": "người dùng nổi bật",
+      "page": "Trang",
+      "of": "của",
+      "noFeaturedUsers": "Không tìm thấy người dùng nổi bật nào",
+      "unfeatureUser": "Bỏ nổi bật",
+      "featureUser": "Thêm nổi bật",
+      "unfeatureConfirm": "Bạn có chắc chắn muốn bỏ {name} khỏi danh sách nổi bật? Họ sẽ không còn xuất hiện trên trang chủ.",
+      "featureConfirm": "Bạn có chắc chắn muốn thêm {name} vào danh sách nổi bật? Họ sẽ xuất hiện trên trang chủ.",
+      "unfeatureAction": "Bỏ nổi bật",
+      "featureAction": "Thêm nổi bật",
+      "successUnfeatured": "Đã bỏ nổi bật người dùng thành công",
+      "successFeatured": "Đã thêm người dùng nổi bật thành công",
+      "errorLoad": "Không thể tải danh sách người dùng nổi bật",
+      "errorUpdate": "Không thể cập nhật trạng thái nổi bật"
+    },
+    "featuredJobsPage": {
+      "title": "Việc làm nổi bật",
+      "addFeaturedJob": "Thêm việc làm",
+      "manageDescription": "Quản lý các việc làm hiển thị trên trang chủ",
+      "featuredJobsCount": "việc làm nổi bật",
+      "page": "Trang",
+      "of": "của",
+      "noFeaturedJobs": "Không tìm thấy việc làm nổi bật nào",
+      "unfeatureJob": "Bỏ nổi bật",
+      "featureJob": "Thêm nổi bật",
+      "unfeatureConfirm": "Bạn có chắc chắn muốn bỏ việc làm \"{title}\" khỏi danh sách nổi bật? Nó sẽ không còn xuất hiện trên trang chủ.",
+      "featureConfirm": "Bạn có chắc chắn muốn thêm việc làm \"{title}\" vào danh sách nổi bật? Nó sẽ xuất hiện trên trang chủ.",
+      "unfeatureAction": "Bỏ nổi bật",
+      "featureAction": "Thêm nổi bật",
+      "successUnfeatured": "Đã bỏ nổi bật việc làm thành công",
+      "successFeatured": "Đã thêm việc làm nổi bật thành công",
+      "errorLoad": "Không thể tải danh sách việc làm nổi bật",
+      "errorUpdate": "Không thể cập nhật trạng thái nổi bật"
     }
   },
   "Profile": {

@@ -323,9 +323,9 @@ const LandingPage = () => {
             variants={staggerContainer}
           >
             <motion.div className="text-center mb-12" variants={fadeInUp}>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredEvents.title')}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('featuredJobs.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                {t('featuredEvents.subtitle')}
+                {t('featuredJobs.subtitle')}
               </p>
             </motion.div>
 
@@ -337,7 +337,7 @@ const LandingPage = () => {
                 ))
               ) : featuredEvents.length === 0 ? (
                 <div className="col-span-full text-center py-12">
-                  <p className="text-muted-foreground">{t('featuredEvents.noResults')}</p>
+                  <p className="text-muted-foreground">{t('featuredJobs.noResults')}</p>
                 </div>
               ) : (
                 featuredEvents.map((event, index) => (
@@ -350,8 +350,8 @@ const LandingPage = () => {
 
             <motion.div className="text-center mt-12" variants={fadeInUp}>
               <Button variant="outline" size="lg" asChild className="border-primary/50">
-                <Link href="/discovery">
-                  {t('featuredEvents.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
+                <Link href="/jobs">
+                  {t('featuredJobs.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </motion.div>

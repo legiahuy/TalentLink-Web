@@ -10,8 +10,11 @@ import { adminService } from '@/services/adminService'
 import type { FeaturedJob } from '@/types/admin'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 export default function FeaturedJobsPage() {
+  const t = useTranslations('Admin.featuredJobsPage')
+  const tCommon = useTranslations('Common')
   const [jobs, setJobs] = useState<FeaturedJob[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -47,11 +50,11 @@ export default function FeaturedJobsPage() {
       }))
     } catch (error) {
       console.error('Failed to fetch featured jobs:', error)
-      toast.error('Failed to load featured jobs')
+      toast.error(t('errorLoad'))
     } finally {
       setLoading(false)
     }
-  }, [pagination.limit, pagination.offset])
+  }, [pagination.limit, pagination.offset, t])
 
   useEffect(() => {
     fetchJobs()
@@ -75,15 +78,15 @@ export default function FeaturedJobsPage() {
     try {
       if (isFeatured) {
         await adminService.unfeatureJob(jobId)
-        toast.success('Job unfeatured successfully')
+        toast.success(t('successUnfeatured'))
       } else {
         await adminService.featureJob(jobId)
-        toast.success('Job featured successfully')
+        toast.success(t('successFeatured'))
       }
       await fetchJobs()
     } catch (error) {
       console.error('Failed to toggle feature status:', error)
-      toast.error('Failed to update feature status')
+      toast.error(t('errorUpdate'))
     } finally {
       setActionLoading(null)
     }
@@ -125,15 +128,15 @@ export default function FeaturedJobsPage() {
       >
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Featured Jobs
+            {t('title')}
           </h1>
           <Button onClick={() => setSearchDialogOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" />
-            Add Featured Job
+            {t('addFeaturedJob')}
           </Button>
         </div>
         <p className="text-muted-foreground text-lg">
-          Manage which job posts appear on the landing page
+          {t('manageDescription')}
         </p>
       </motion.div>
 
@@ -146,16 +149,16 @@ export default function FeaturedJobsPage() {
       >
         <div className="text-sm font-medium">
           {loading ? (
-            <span className="text-muted-foreground">Loading...</span>
+            <span className="text-muted-foreground">{tCommon('loading')}</span>
           ) : (
             <span>
               <span className="text-primary font-bold text-lg">{pagination.total}</span>{' '}
-              <span className="text-muted-foreground">featured jobs</span>
+              <span className="text-muted-foreground">{t('featuredJobsCount')}</span>
             </span>
           )}
         </div>
         <div className="text-sm text-muted-foreground">
-          Page <span className="font-medium text-foreground">{currentPage}</span> of{' '}
+          {t('page')} <span className="font-medium text-foreground">{currentPage}</span> {t('of')}{' '}
           <span className="font-medium text-foreground">{totalPages || 1}</span>
         </div>
       </motion.div>
@@ -178,7 +181,7 @@ export default function FeaturedJobsPage() {
           transition={{ duration: 0.5 }}
         >
           <Briefcase className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-          <p className="text-muted-foreground text-lg">No featured jobs found</p>
+          <p className="text-muted-foreground text-lg">{t('noFeaturedJobs')}</p>
         </motion.div>
       ) : (
         <motion.div
@@ -215,7 +218,7 @@ export default function FeaturedJobsPage() {
             className="hover:bg-primary/10 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
+            {tCommon('previous')}
           </Button>
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -250,7 +253,7 @@ export default function FeaturedJobsPage() {
             disabled={currentPage === totalPages}
             className="hover:bg-primary/10 transition-colors"
           >
-            Next
+            {tCommon('next')}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </motion.div>
@@ -260,13 +263,13 @@ export default function FeaturedJobsPage() {
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-        title={confirmDialog.isFeatured ? 'Unfeature Job' : 'Feature Job'}
+        title={confirmDialog.isFeatured ? t('unfeatureJob') : t('featureJob')}
         description={
           confirmDialog.isFeatured
-            ? `Are you sure you want to remove "${confirmDialog.jobTitle}" from featured jobs? It will no longer appear on the landing page.`
-            : `Are you sure you want to feature "${confirmDialog.jobTitle}"? It will appear on the landing page.`
+            ? t('unfeatureConfirm', { title: confirmDialog.jobTitle })
+            : t('featureConfirm', { title: confirmDialog.jobTitle })
         }
-        confirmText={confirmDialog.isFeatured ? 'Unfeature' : 'Feature'}
+        confirmText={confirmDialog.isFeatured ? t('unfeatureAction') : t('featureAction')}
         onConfirm={handleConfirmToggle}
         variant={confirmDialog.isFeatured ? 'destructive' : 'default'}
       />

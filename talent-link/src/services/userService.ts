@@ -11,8 +11,68 @@ import type {
 } from '@/types/user'
 import type { Media, MediaListResponse } from '@/types/media'
 import type { Experience, ExperienceCreatePayload } from '@/types/experience'
+import type { UserSearchRequestDto, UserSearchResultDto, BackendUserSearchResponse, UserSearchDto } from '@/types/search'
 
 export const userService = {
+  // SEARCH
+  searchUsers: async (request: UserSearchRequestDto): Promise<UserSearchResultDto> => {
+    const res = await axiosClient.post<BackendUserSearchResponse>('/search/users', request)
+    const backendData = res.data
+
+    let users: UserSearchDto[] = []
+    let pagination = null
+
+    if (Array.isArray(backendData)) {
+      users = backendData
+    } else if (typeof backendData === 'object' && backendData !== null && 'users' in backendData) {
+      users = backendData.users
+      pagination = backendData.pagination
+    }
+
+    const totalCount = pagination?.total_items || users.length
+    const currentPage = pagination?.current_page || request.page || 1
+    const pageSize = pagination?.page_size || request.pageSize || 20
+    const totalPages = pagination?.total_pages || Math.ceil(totalCount / pageSize)
+
+    // If no server-side pagination (legacy array response), do client-side slicing
+    let finalUsers = users
+    if (!pagination && users.length > pageSize) {
+        const startIndex = (currentPage - 1) * pageSize
+        const endIndex = startIndex + pageSize
+        finalUsers = users.slice(startIndex, endIndex)
+    }
+
+    // Map backend snake_case to frontend camelCase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedUsers: UserSearchDto[] = finalUsers.map((u: any) => ({
+      id: u.id,
+      email: u.email,
+      username: u.username,
+      role: u.role,
+      avatarUrl: u.avatar_url,
+      isValidated: u.is_verified,
+      displayName: u.display_name,
+      location: u.city || u.location, 
+      genres: u.genres,
+      phoneNumber: u.phone_number,
+      briefBio: u.brief_bio,
+      capacity: u.capacity,
+      openHour: u.open_hour,
+      rentPrice: u.rent_price,
+      businessTypes: u.business_types,
+      convenientFacilities: u.convenient_facilities,
+    }))
+
+    return {
+      userProfiles: mappedUsers,
+      totalCount,
+      page: currentPage,
+      pageSize,
+      totalPages,
+      searchTime: '0s',
+    }
+  },
+
   // USER
   getMe: async (): Promise<User> => {
     const res = await axiosClient.get('/users/me')

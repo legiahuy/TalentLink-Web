@@ -207,11 +207,11 @@
       "viewAll": "View all artists",
       "noResults": "No featured artists available"
     },
-    "featuredEvents": {
-      "title": "Upcoming Events",
-      "subtitle": "Exciting music nights await you",
-      "viewAll": "View all events",
-      "noResults": "No featured events available"
+    "featuredJobs": {
+      "title": "Featured Jobs",
+      "subtitle": "Discover exciting opportunities",
+      "viewAll": "View all jobs",
+      "noResults": "No featured jobs available"
     },
     "features": {
       "title": "Why Choose TalentLink?",
@@ -428,6 +428,49 @@
       "title": "Access Denied",
       "description": "You need admin privileges to access this page.",
       "goBack": "Go Back"
+    },
+    "sidebar": {
+      "overview": "Overview",
+      "featuredUsers": "Featured Users",
+      "featuredJobs": "Featured Jobs"
+    },
+    "featuredUsersPage": {
+      "title": "Featured Users",
+      "addFeaturedUser": "Add Featured User",
+      "manageDescription": "Manage which users appear on the landing page",
+      "featuredUsersCount": "featured users",
+      "page": "Page",
+      "of": "of",
+      "noFeaturedUsers": "No featured users found",
+      "unfeatureUser": "Unfeature User",
+      "featureUser": "Feature User",
+      "unfeatureConfirm": "Are you sure you want to remove {name} from featured users? They will no longer appear on the landing page.",
+      "featureConfirm": "Are you sure you want to feature {name}? They will appear on the landing page.",
+      "unfeatureAction": "Unfeature",
+      "featureAction": "Feature",
+      "successUnfeatured": "User unfeatured successfully",
+      "successFeatured": "User featured successfully",
+      "errorLoad": "Failed to load featured users",
+      "errorUpdate": "Failed to update feature status"
+    },
+    "featuredJobsPage": {
+      "title": "Featured Jobs",
+      "addFeaturedJob": "Add Featured Job",
+      "manageDescription": "Manage which job posts appear on the landing page",
+      "featuredJobsCount": "featured jobs",
+      "page": "Page",
+      "of": "of",
+      "noFeaturedJobs": "No featured jobs found",
+      "unfeatureJob": "Unfeature Job",
+      "featureJob": "Feature Job",
+      "unfeatureConfirm": "Are you sure you want to remove \"{title}\" from featured jobs? It will no longer appear on the landing page.",
+      "featureConfirm": "Are you sure you want to feature \"{title}\"? It will appear on the landing page.",
+      "unfeatureAction": "Unfeature",
+      "featureAction": "Feature",
+      "successUnfeatured": "Job unfeatured successfully",
+      "successFeatured": "Job featured successfully",
+      "errorLoad": "Failed to load featured jobs",
+      "errorUpdate": "Failed to update feature status"
     }
   },
   "Profile": {
