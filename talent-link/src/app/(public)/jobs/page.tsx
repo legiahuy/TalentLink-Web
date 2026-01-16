@@ -262,7 +262,6 @@ const JobPool = () => {
       filtered = jobs.filter((j) => savedJobs.has(j.id))
     } else if (activeTab !== 'all') {
       filtered = jobs.filter((j) => {
-        console.log(j)
         return j.type === activeTab
       })
     }

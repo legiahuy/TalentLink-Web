@@ -341,7 +341,7 @@ const LandingPage = () => {
                 </div>
               ) : (
                 featuredEvents.map((event, index) => (
-                  <motion.div key={index} variants={fadeInUp}>
+                  <motion.div key={index} variants={fadeInUp} className="h-full">
                     <EventCard event={event} />
                   </motion.div>
                 ))

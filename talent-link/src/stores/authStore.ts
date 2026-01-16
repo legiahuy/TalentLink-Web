@@ -265,7 +265,6 @@ export const useAuthStore = create<AuthState>()(
         // set({ loading: true })
         try {
           const userData = await authService.fetchUser()
-          //console.log(userData)
           set({ user: userData, isAuthenticated: true })
         } catch (err) {
           console.error(err)

@@ -16,7 +16,7 @@ export const landingService = {
       const res = await axiosClient.get('/landing/featured-users', {
         params: { limit },
       })
-      return res.data?.data?.users || res.data?.users || []
+      return res.data?.data?.users.users || res.data?.users.users || []
     } catch (error) {
       console.error('Failed to fetch featured users:', error)
       return []
@@ -33,7 +33,7 @@ export const landingService = {
       const res = await axiosClient.get('/landing/featured-jobs', {
         params: { limit },
       })
-      return res.data?.data?.posts || res.data?.posts || []
+      return res.data?.data?.jobs || res.data?.jobs || []
     } catch (error) {
       console.error('Failed to fetch featured jobs:', error)
       return []

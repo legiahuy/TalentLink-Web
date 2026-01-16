@@ -17,9 +17,7 @@ export const authService = {
    * Sign up a new user
    */
   signUp: async (params: SignUpParams): Promise<void> => {
-    console.log(params)
     const res = await axiosClient.post('/auth/signup', params)
-    console.log(res)
   },
 
   /**

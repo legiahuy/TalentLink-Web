@@ -91,7 +91,6 @@ const ApplicationDialog = ({
       for (const file of attachments) {
         try {
           const response = await jobService.uploadSubmissionMedia(file)
-          console.log('res', response)
           uploadedUrls.push(response.media?.file_url)
         } catch (error) {
           console.error('Failed to upload file:', file.name, error)
@@ -105,11 +104,9 @@ const ApplicationDialog = ({
         return
       }
 
-      console.log('uploadedUrls: ', uploadedUrls)
 
       // Use the first uploaded file as demo_file (required)
       const demoFile = uploadedUrls[0]
-      console.log('demoFile: ', demoFile)
 
       // Filter out empty portfolio links
       const validPortfolioLinks = portfolioLinks.filter((link) => link.trim() !== '')

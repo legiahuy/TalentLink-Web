@@ -38,16 +38,17 @@ const EventCard = ({
   }
 
   return (
-    <Link href={`/event/${event.id}`}>
+    <Link href={`/event/${event.id}`} className="block h-full">
       <motion.div
         whileHover={{
           y: -5,
           scale: 1.02,
         }}
         transition={{ duration: 0.3 }}
+        className="h-full"
       >
         <Card
-          className={`overflow-hidden transition-all duration-300 group cursor-pointer ${glassy ? 'bg-card/80 shadow-lg backdrop-blur border-primary/40' : ''} ${animated ? 'animate-in fade-in zoom-in duration-500' : ''} group-hover:shadow-glow group-hover:border-primary/60`}
+          className={`overflow-hidden transition-all duration-300 group cursor-pointer ${glassy ? 'bg-card/80 shadow-lg backdrop-blur border-primary/40' : ''} ${animated ? 'animate-in fade-in zoom-in duration-500' : ''} group-hover:shadow-glow group-hover:border-primary/60 h-full flex flex-col`}
         >
           <div className="relative h-48 overflow-hidden">
             <Image

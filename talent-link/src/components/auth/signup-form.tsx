@@ -67,7 +67,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
   const onSubmit = async (data: SignUpFormValues) => {
     // TODO: Implement signup logic
-    console.log('Signup data:', data)
 
     const { display_name, username, email, password, role } = data
     await signUp(display_name, username, email, password, role!)
