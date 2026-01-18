@@ -232,7 +232,48 @@
     "cta": {
       "title": "Are You an Artist?",
       "subtitle": "Create a professional profile and access thousands of collaboration opportunities",
-      "button": "Create free profile"
+      "button": "Create Free Profile"
+    }
+  },
+  "AboutPage": {
+    "hero": {
+      "title": "Empowering Independent Artists",
+      "subtitle": "We are building the bridge between talent and opportunity, making it easier for artists and venues to connect, collaborate, and thrive."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "At TalentLink, we believe that every artist deserves a stage and every venue deserves great performances. Our platform eliminates the barriers between talent and opportunity by providing a seamless, transparent, and professional marketplace for the music industry."
+    },
+    "values": {
+      "title": "Our Core Values",
+      "subtitle": "The principles that guide everything we do",
+      "community": {
+        "title": "Community First",
+        "description": "We build with our users, not just for them. Every feature is designed to strengthen the music community."
+      },
+      "transparency": {
+        "title": "Transparency",
+        "description": "Clear pricing, direct communication, and verified profiles. No hidden fees or surprises."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "Leveraging technology to solve age-old problems in the gig economy."
+      },
+      "empowerment": {
+        "title": "Empowerment",
+        "description": "Giving control back to the artists and venue owners."
+      }
+    },
+    "stats": {
+      "artists": "Artists Joined",
+      "venues": "Partner Venues",
+      "gigs": "Gigs Successfully Booked",
+      "satisfaction": "User Satisfaction"
+    },
+    "cta": {
+      "title": "Join the Revolution",
+      "subtitle": "Be part of the platform that is reshaping the live music industry.",
+      "button": "Get Started Now"
     }
   },
   "Common": {
@@ -618,6 +659,8 @@
     "profileNotFound": "Profile Not Found",
     "description": "Sorry, the page you are looking for does not exist.",
     "back": "Go Back",
+    "backToHome": "Back to Home",
+    "exploreProducts": "Explore Products",
     "logoAlt": "TalentLink Logo"
   },
   "SearchPage": {

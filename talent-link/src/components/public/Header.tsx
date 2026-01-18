@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ShieldUser } from 'lucide-react'
+import { ShieldUser, Menu } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -13,16 +13,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import { useAuth } from '@/hooks/useAuth'
 import { useTranslations } from 'next-intl'
 import LangSwitch from '@/components/public/LangSwitch'
 import { User, Settings, LogOut, MessageCircle, Briefcase, Inbox } from 'lucide-react'
 import { resolveMediaUrl } from '@/lib/utils'
+import { useState } from 'react'
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const pathname = usePathname()
   const t = useTranslations('Header')
+  const [isOpen, setIsOpen] = useState(false)
 
   const navigationItems = [
     { href: '/', label: t('navigation.home') },
@@ -56,7 +67,7 @@ const Header = () => {
             />
           </Link>
 
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {navigationItems.map((item) => {
               const isActive = pathname === item.href
@@ -75,6 +86,105 @@ const Header = () => {
 
           {/* Buttons and Language Switcher */}
           <div className="flex items-center gap-3">
+             {/* Mobile Drawer Trigger */}
+             <div className="md:hidden">
+              <Drawer direction="right" open={isOpen} onOpenChange={setIsOpen}>
+                <DrawerTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="h-full rounded-none border-l">
+                  <DrawerHeader className="text-left px-6 pt-6">
+                     <DrawerTitle className="sr-only">Menu</DrawerTitle>
+                     <Link href="/" className="mb-6 block" onClick={() => setIsOpen(false)}>
+                        <Image
+                          src="/TalentLink.svg"
+                          alt="TalentLink Logo"
+                          width={120}
+                          height={32}
+                          className="h-7 w-auto"
+                        />
+                      </Link>
+                  </DrawerHeader>
+                  <div className="flex flex-col gap-6 px-6">
+                    <nav className="flex flex-col gap-4">
+                      {navigationItems.map((item) => {
+                        const isActive = pathname === item.href
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                              } text-lg transition-colors hover:text-foreground`}
+                          >
+                            {item.label}
+                          </Link>
+                        )
+                      })}
+                    </nav>
+                    <div className="h-px bg-border/50" />
+                    {isAuthenticated ? (
+                      <div className="flex flex-col gap-4">
+                         <div className="flex items-center gap-3 mb-2">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={user?.avatar_url ? resolveMediaUrl(user.avatar_url) : undefined}
+                                alt={user?.display_name || user?.username || 'User'}
+                              />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {user?.display_name?.charAt(0).toUpperCase() ||
+                                  user?.username?.charAt(0).toUpperCase() ||
+                                  'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user?.display_name || user?.username}</span>
+                              <span className="text-xs text-muted-foreground">{user?.email}</span>
+                            </div>
+                         </div>
+                         <Button variant="outline" className="justify-start gap-2" asChild>
+                            <Link href="/messages" onClick={() => setIsOpen(false)}>
+                               <MessageCircle className="h-4 w-4" />
+                               Messages
+                            </Link>
+                         </Button>
+                         <Button variant="outline" className="justify-start gap-2" asChild>
+                            <Link href={user?.username ? `/profile/${user.username}` : '/settings/my-profile'} onClick={() => setIsOpen(false)}>
+                               <User className="h-4 w-4" />
+                               {t('userMenu.myProfile')}
+                            </Link>
+                         </Button>
+                         {/* Other user links */}
+                         <Button variant="ghost" className="justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+                            <LogOut className="h-4 w-4" />
+                            {t('userMenu.logout')}
+                         </Button>
+                      </div>
+                    ) : (
+                       <div className="flex flex-col gap-3">
+                          <Button variant="outline" asChild className="w-full">
+                            <Link href="/auth/login" onClick={() => setIsOpen(false)}>{t('login')}</Link>
+                          </Button>
+                          <Button variant="default" asChild className="w-full">
+                            <Link href="/auth/signup" onClick={() => setIsOpen(false)}>{t('signup')}</Link>
+                          </Button>
+                       </div>
+                    )}
+                  </div>
+                  <DrawerFooter className="mt-auto px-6 pb-6">
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Language</span>
+                        <LangSwitch />
+                     </div>
+                  </DrawerFooter>
+                </DrawerContent>
+              </Drawer>
+             </div>
+
+            {/* Desktop Auth & Lang Switch */}
+            <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
                 <Button variant="link" size="icon" className="h-9 w-9" asChild>
@@ -176,6 +286,7 @@ const Header = () => {
               </>
             )}
             <LangSwitch />
+          </div>
           </div>
         </div>
       </div>
