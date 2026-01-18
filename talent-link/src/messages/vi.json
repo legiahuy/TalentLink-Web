@@ -232,7 +232,48 @@
     "cta": {
       "title": "Bạn Là Nghệ Sĩ?",
       "subtitle": "Tạo hồ sơ chuyên nghiệp và tiếp cận hàng nghìn cơ hội hợp tác",
-      "button": "Tạo hồ sơ miễn phí"
+      "button": "Tạo Hồ Sơ Miễn Phí"
+    }
+  },
+  "AboutPage": {
+    "hero": {
+      "title": "Trao Quyền Cho Nghệ Sĩ Độc Lập",
+      "subtitle": "Chúng tôi đang xây dựng cầu nối giữa tài năng và cơ hội, giúp các nghệ sĩ và địa điểm kết nối dễ dàng, hợp tác và phát triển."
+    },
+    "mission": {
+      "title": "Sứ Mệnh Của Chúng Tôi",
+      "description": "Tại TalentLink, chúng tôi tin rằng mọi nghệ sĩ đều xứng đáng có sân khấu và mọi địa điểm đều xứng đáng có những màn trình diễn tuyệt vời. Nền tảng của chúng tôi xóa bỏ rào cản giữa tài năng và cơ hội bằng cách cung cấp một thị trường liền mạch, minh bạch và chuyên nghiệp cho ngành công nghiệp âm nhạc."
+    },
+    "values": {
+      "title": "Giá Trị Cốt Lõi",
+      "subtitle": "Những nguyên tắc hướng dẫn mọi hành động của chúng tôi",
+      "community": {
+        "title": "Cộng Đồng Là Trên Hết",
+        "description": "Chúng tôi xây dựng cùng với người dùng. Mỗi tính năng được thiết kế để củng cố cộng đồng âm nhạc."
+      },
+      "transparency": {
+        "title": "Minh Bạch",
+        "description": "Giá cả rõ ràng, giao tiếp trực tiếp và hồ sơ được xác minh. Không có phí ẩn."
+      },
+      "innovation": {
+        "title": "Đổi Mới",
+        "description": "Tận dụng công nghệ để giải quyết các vấn đề lâu đời trong nền kinh tế biểu diễn."
+      },
+      "empowerment": {
+        "title": "Trao Quyền",
+        "description": "Trao quyền kiểm soát lại cho nghệ sĩ và chủ địa điểm."
+      }
+    },
+    "stats": {
+      "artists": "Nghệ Sĩ Đã Tham Gia",
+      "venues": "Đối Tác Địa Điểm",
+      "gigs": "Show Diễn Thành Công",
+      "satisfaction": "Mức Độ Hài Lòng"
+    },
+    "cta": {
+      "title": "Tham Gia Cuộc Cách Mạng",
+      "subtitle": "Hãy trở thành một phần của nền tảng đang định hình lại ngành công nghiệp nhạc sống.",
+      "button": "Bắt Đầu Ngay"
     }
   },
   "Common": {
@@ -618,6 +659,8 @@
     "profileNotFound": "Không tìm thấy hồ sơ",
     "description": "Xin lỗi, trang bạn đang tìm kiếm hiện không tồn tại.",
     "back": "Quay lại",
+    "backToHome": "Về trang chủ",
+    "exploreProducts": "Khám phá sản phẩm",
     "logoAlt": "Logo TalentLink"
   },
   "SearchPage": {
