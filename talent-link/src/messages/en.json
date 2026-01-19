@@ -162,6 +162,20 @@
       "resendSuccess": "A new verification code has been sent.",
       "resendError": "Could not resend code. Please try again.",
       "emailMissing": "Missing email. Please go back and sign up again."
+    },
+    "completeOAuth": {
+      "pageTitle": "Complete Account",
+      "title": "Complete your account",
+      "subtitle": "Choose your role and username to finish signing up with Google.",
+      "username": "Username",
+      "usernamePlaceholder": "yourname",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "usernameRequired": "Username is required",
+      "role": "Role",
+      "rolePlaceholder": "Select your role",
+      "roleRequired": "Role is required",
+      "submit": "Complete account",
+      "submitting": "Completing..."
     }
   },
   "Discovery": {
@@ -660,7 +674,7 @@
     "description": "Sorry, the page you are looking for does not exist.",
     "back": "Go Back",
     "backToHome": "Back to Home",
-    "exploreProducts": "Explore Products",
+    "exploreJobs": "Explore Jobs",
     "logoAlt": "TalentLink Logo"
   },
   "SearchPage": {

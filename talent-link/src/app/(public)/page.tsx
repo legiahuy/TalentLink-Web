@@ -26,9 +26,10 @@ const LandingPage = () => {
 
   // -- Search State --
   const [searchQuery, setSearchQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<
-    { jobs: JobPostSearchDto[]; users: UserSearchDto[] } | null
-  >(null)
+  const [suggestions, setSuggestions] = useState<{
+    jobs: JobPostSearchDto[]
+    users: UserSearchDto[]
+  } | null>(null)
   const [loadingSuggest, setLoadingSuggest] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -156,6 +157,7 @@ const LandingPage = () => {
           className="absolute inset-0 opacity-100 object-cover"
           src="/images/auth/hero-image-4.jpg"
           alt="Hero background"
+          loading="eager"
           fill
         />
         <div className="absolute inset-0 bg-primary/30" />
@@ -216,7 +218,9 @@ const LandingPage = () => {
                           <AvatarFallback>{fallback}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate text-start">{u.displayName || u.username}</div>
+                          <div className="text-sm font-medium truncate text-start">
+                            {u.displayName || u.username}
+                          </div>
                           <div className="text-xs text-muted-foreground truncate text-start">
                             {tOptions(`roles.${u.role}`)}
                           </div>
@@ -243,7 +247,9 @@ const LandingPage = () => {
                     </Link>
                   ))}
                   {loadingSuggest && (
-                    <div className="px-3 py-2 text-xs text-muted-foreground">{tCommon('loading')}</div>
+                    <div className="px-3 py-2 text-xs text-muted-foreground">
+                      {tCommon('loading')}
+                    </div>
                   )}
                 </div>
               )}
@@ -288,7 +294,10 @@ const LandingPage = () => {
               {loading ? (
                 // Loading skeleton
                 Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-96 rounded-xl border border-border bg-card animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-96 rounded-xl border border-border bg-card animate-pulse"
+                  />
                 ))
               ) : !featuredArtists ? (
                 <div className="col-span-full text-center py-12">
@@ -333,7 +342,10 @@ const LandingPage = () => {
               {loading ? (
                 // Loading skeleton
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-80 rounded-xl border border-border bg-card animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-80 rounded-xl border border-border bg-card animate-pulse"
+                  />
                 ))
               ) : featuredEvents.length === 0 ? (
                 <div className="col-span-full text-center py-12">

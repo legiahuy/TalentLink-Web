@@ -5,6 +5,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
+import { useTranslations } from 'next-intl'
+import { Loader2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
@@ -18,18 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { FieldGroup } from '@/components/ui/field'
 
 type Role = 'producer' | 'singer' | 'venue'
 
-const schema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  role: z.enum(['producer', 'singer', 'venue']),
-})
-
-type FormValues = z.infer<typeof schema>
-
 export default function CompleteOAuthPage() {
   const router = useRouter()
+  const t = useTranslations('Auth.completeOAuth')
   const { pendingRegistrationToken, completeOAuth, loading } = useAuthStore()
 
   useEffect(() => {
@@ -37,6 +34,15 @@ export default function CompleteOAuthPage() {
       router.replace('/auth/login')
     }
   }, [pendingRegistrationToken, router])
+
+  const schema = z.object({
+    username: z.string().min(3, t('usernameMinLength')),
+    role: z.enum(['producer', 'singer', 'venue'], {
+      message: t('roleRequired'),
+    }),
+  })
+
+  type FormValues = z.infer<typeof schema>
 
   const {
     register,
@@ -55,33 +61,31 @@ export default function CompleteOAuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Complete your account</h1>
-          <p className="text-sm text-muted-foreground">
-            Choose your role and username to finish signing up with Google.
-          </p>
-        </div>
+    <div className="flex flex-col gap-5 w-full max-w-md mx-auto py-10">
+      <div className="flex flex-col items-center gap-1 text-center">
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground text-sm text-balance">{t('subtitle')}</p>
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" placeholder="yourname" {...register('username')} />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FieldGroup>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="username">{t('username')}</Label>
+            <Input id="username" placeholder={t('usernamePlaceholder')} {...register('username')} />
             {errors.username && (
-              <p className="text-xs text-destructive">{errors.username.message}</p>
+              <p className="text-destructive text-xs">{errors.username.message}</p>
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="role">Role</Label>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="role">{t('role')}</Label>
             <Controller
               control={control}
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="role">
-                    <SelectValue placeholder="Select your role" />
+                    <SelectValue placeholder={t('rolePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -93,7 +97,7 @@ export default function CompleteOAuthPage() {
                 </Select>
               )}
             />
-            {errors.role && <p className="text-xs text-destructive">{errors.role.message}</p>}
+            {errors.role && <p className="text-destructive text-xs">{errors.role.message}</p>}
           </div>
 
           <Button
@@ -101,12 +105,17 @@ export default function CompleteOAuthPage() {
             className="w-full"
             disabled={isSubmitting || loading || !pendingRegistrationToken}
           >
-            {isSubmitting || loading ? 'Completing...' : 'Complete account'}
+            {isSubmitting || loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                {t('submitting')}
+              </>
+            ) : (
+              t('submit')
+            )}
           </Button>
-        </form>
-      </div>
+        </FieldGroup>
+      </form>
     </div>
   )
 }
-
-

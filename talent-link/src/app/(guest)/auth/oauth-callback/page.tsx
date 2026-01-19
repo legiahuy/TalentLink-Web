@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ export default function OAuthCallbackPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { oauthLogin, pendingRegistrationToken } = useAuthStore()
+  const processedRef = useRef(false)
 
   useEffect(() => {
     const code = searchParams.get('code')
@@ -30,6 +31,9 @@ export default function OAuthCallbackPage() {
       return
     }
 
+    if (processedRef.current) return
+    processedRef.current = true
+
     const codeVerifier = sessionStorage.getItem(OAUTH_CODE_VERIFIER_KEY)
     if (!codeVerifier) {
       toast.error('Missing OAuth code verifier. Please try signing in again.')
@@ -37,12 +41,12 @@ export default function OAuthCallbackPage() {
       return
     }
 
-    sessionStorage.removeItem(OAUTH_CODE_VERIFIER_KEY)
     ;(async () => {
       try {
-        await oauthLogin(code, codeVerifier)
+        const { registration_token } = await oauthLogin(code, codeVerifier)
+        sessionStorage.removeItem(OAUTH_CODE_VERIFIER_KEY)
 
-        if (pendingRegistrationToken) {
+        if (registration_token) {
           router.replace('/auth/complete-oauth')
         } else {
           router.replace('/')

@@ -44,7 +44,10 @@ interface AuthState {
   resetPassword: (email: string, newPassword: string, resetToken: string) => Promise<void>
 
   // OAuth
-  oauthLogin: (code: string, codeVerifier: string) => Promise<void>
+  oauthLogin: (
+    code: string,
+    codeVerifier: string,
+  ) => Promise<{ is_registered: boolean; registration_token?: string }>
   completeOAuth: (
     registrationToken: string,
     role: 'producer' | 'singer' | 'venue',
@@ -99,6 +102,7 @@ export const useAuthStore = create<AuthState>()(
           } else if (registration_token) {
             set({ pendingRegistrationToken: registration_token })
           }
+          return { is_registered, registration_token }
         } catch (err) {
           const message = authService.getErrorMessage(err, 'Login with Google failed!')
           set({ error: message })
@@ -400,6 +404,7 @@ export const useAuthStore = create<AuthState>()(
 
         // 🟩 ADD persist role
         userRole: state.userRole,
+        pendingRegistrationToken: state.pendingRegistrationToken,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
