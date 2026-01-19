@@ -13,8 +13,11 @@ const nextConfig: NextConfig = {
         hostname: 'talentlink.io.vn',
         pathname: '/storage/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'avatar.iran.liara.run',
+      },
     ],
-    domains: ['avatar.iran.liara.run'],
   },
 }
 

@@ -17,7 +17,7 @@ export const authService = {
    * Sign up a new user
    */
   signUp: async (params: SignUpParams): Promise<void> => {
-    const res = await axiosClient.post('/auth/signup', params)
+    await axiosClient.post('/auth/signup', params)
   },
 
   /**
@@ -33,6 +33,7 @@ export const authService = {
    */
   oauthLogin: async (code: string, code_verifier: string): Promise<OAuthResponse> => {
     const res = await axiosClient.post('/auth/oauth', { code, code_verifier })
+    console.log(res.data.data)
     return res.data.data
   },
 
@@ -46,6 +47,7 @@ export const authService = {
       role,
       username,
     })
+    console.log('res', res.data.data)
     return res.data.data
   },
 
@@ -69,7 +71,7 @@ export const authService = {
    */
   fetchUser: async (): Promise<User> => {
     const res = await axiosClient.get('/users/me')
-    return res.data
+    return res.data.data
   },
 
   /**

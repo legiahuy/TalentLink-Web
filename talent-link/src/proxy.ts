@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 const SETTINGS_PATHS = ['/settings/my-profile']
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const role = req.cookies.get('user_role')?.value
   const path = req.nextUrl.pathname
 

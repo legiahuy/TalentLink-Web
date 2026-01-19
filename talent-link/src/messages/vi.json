@@ -162,6 +162,20 @@
       "resendSuccess": "Mã xác minh mới đã được gửi.",
       "resendError": "Không thể gửi lại mã. Vui lòng thử lại.",
       "emailMissing": "Thiếu email. Vui lòng đăng ký và thử lại."
+    },
+    "completeOAuth": {
+      "pageTitle": "Hoàn tất tài khoản",
+      "title": "Hoàn tất tài khoản",
+      "subtitle": "Chọn vai trò và tên đăng nhập để hoàn tất đăng ký với Google.",
+      "username": "Tên đăng nhập",
+      "usernamePlaceholder": "username",
+      "usernameMinLength": "Tên đăng nhập phải có ít nhất 3 ký tự",
+      "usernameRequired": "Vui lòng nhập tên đăng nhập",
+      "role": "Vai trò",
+      "rolePlaceholder": "Chọn vai trò của bạn",
+      "roleRequired": "Vui lòng chọn vai trò",
+      "submit": "Hoàn tất",
+      "submitting": "Đang xử lý..."
     }
   },
   "Discovery": {
@@ -660,7 +674,7 @@
     "description": "Xin lỗi, trang bạn đang tìm kiếm hiện không tồn tại.",
     "back": "Quay lại",
     "backToHome": "Về trang chủ",
-    "exploreProducts": "Khám phá sản phẩm",
+    "exploreJobs": "Khám phá việc làm",
     "logoAlt": "Logo TalentLink"
   },
   "SearchPage": {
