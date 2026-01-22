@@ -183,21 +183,21 @@ export function ArtistProfileView({
                   </Button>
                 ) : (
                   <>
-                    <Button size="lg" variant="default" asChild className="w-full md:w-auto">
+                    {/* <Button size="lg" variant="default" asChild className="w-full md:w-auto">
                       <Link
                         href="/booking"
                         className="flex items-center justify-center gap-2 text-white hover:text-primary transition-colors"
                       >
                         {t('artist.contactCollaboration')}
                       </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild className="w-full md:w-auto">
+                    </Button> */}
+                    <Button size="lg" variant="default" asChild className="w-full md:w-auto">
                       <Link
                         href={`/messages?userId=${profile.id}`}
                         className="flex items-center justify-center gap-2"
                       >
                         <MessageCircle className="h-5 w-5" />
-                        {t('artist.message')}
+                        {t('artist.contactCollaboration')}
                       </Link>
                     </Button>
                   </>

@@ -28,6 +28,8 @@ import { userService } from '@/services/userService'
 import { UserRole } from '@/types/user'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { resolveMediaUrl } from '@/lib/utils'
+import ImageCropper from '@/components/common/ImageCropper'
+import { useAuth } from '@/hooks/useAuth'
 
 export type BusinessType = string
 
@@ -78,6 +80,7 @@ export default function VenueProfileEditor() {
   const tCommon = useTranslations('Common')
   const tProfile = useTranslations('Profile')
   const router = useRouter()
+  const { fetchUser } = useAuth()
   const [loading, setLoading] = useState(true)
 
   const businessTypes = Object.keys(tOptions.raw('businessTypes')).map(key => ({
@@ -100,6 +103,11 @@ export default function VenueProfileEditor() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [mediaToDelete, setMediaToDelete] = useState<string | null>(null)
+
+  // Cropping State
+  const [cropperOpen, setCropperOpen] = useState(false)
+  const [croppingImage, setCroppingImage] = useState<string | null>(null)
+  const [cropType, setCropType] = useState<'avatar' | 'cover' | null>(null)
 
   const [savingBasic, setSavingBasic] = useState(false)
   const [savingContact, setSavingContact] = useState(false)
@@ -298,6 +306,9 @@ export default function VenueProfileEditor() {
       })
       toast.success('Basic information saved')
       setInitialFormBasic(formBasic)
+      
+      // Sync with global auth store
+      await fetchUser()
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Save failed')
       toast.error(message)
@@ -346,12 +357,17 @@ export default function VenueProfileEditor() {
     try {
       setSavingImages(true)
       let changed = false
+      let newAvatarUrl = avatarUrl
+      let newCoverUrl = coverUrl
+
       if (avatarFile) {
-        await venueService.uploadAvatar(avatarFile)
+        const res = await venueService.uploadAvatar(avatarFile)
+        newAvatarUrl = res.file_url
         changed = true
       }
       if (coverFile) {
-        await venueService.uploadCover(coverFile)
+        const res = await venueService.uploadCover(coverFile)
+        newCoverUrl = res.file_url
         changed = true
       }
       if (changed) {
@@ -361,13 +377,14 @@ export default function VenueProfileEditor() {
         setAvatarPreviewUrl(null)
         setCoverPreviewUrl(null)
         setCacheBust(Date.now())
-        // Refresh avatar/cover URLs
-        const [avatarRes, coverRes] = await Promise.all([
-          userService.getMyAvatar().catch(() => null),
-          userService.getMyCover().catch(() => null),
-        ])
-        setAvatarUrl(avatarRes?.file_url || null)
-        setCoverUrl(coverRes?.file_url || null)
+        
+        // Update local state with returned URLs
+        setAvatarUrl(newAvatarUrl)
+        setCoverUrl(newCoverUrl)
+        
+        // Sync with global auth store
+        await fetchUser()
+
         window.dispatchEvent(
           new CustomEvent('profile:updated', { detail: { what: 'avatar:cover' } }),
         )
@@ -382,18 +399,63 @@ export default function VenueProfileEditor() {
     }
   }
 
+  const validateImageFile = (file: File, maxSizeMB: number, type: 'avatar' | 'cover'): boolean => {
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(
+        `${type === 'avatar' ? 'Avatar' : 'Cover'} image must be JPEG, PNG, GIF, or WebP format`,
+      )
+      return false
+    }
+
+    if (file.size > maxSizeBytes) {
+      toast.error(
+        `${type === 'avatar' ? 'Avatar' : 'Cover'} image must be less than ${maxSizeMB}MB`,
+      )
+      return false
+    }
+
+    return true
+  }
+
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setAvatarFile(file)
+    if (!file) return
+
+    if (validateImageFile(file, 5, 'avatar')) {
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('avatar')
+      setCropperOpen(true)
     }
+    e.target.value = ''
   }
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
+    if (!file) return
+
+    if (validateImageFile(file, 10, 'cover')) {
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('cover')
+      setCropperOpen(true)
+    }
+    e.target.value = ''
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' })
+    if (cropType === 'avatar') {
+      setAvatarFile(file)
+    } else if (cropType === 'cover') {
       setCoverFile(file)
     }
+    setCropperOpen(false)
+    setCroppingImage(null)
+    setCropType(null)
   }
 
   const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1123,6 +1185,21 @@ export default function VenueProfileEditor() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            <ImageCropper
+              open={cropperOpen}
+              onOpenChange={(open) => {
+                setCropperOpen(open)
+                if (!open) {
+                   setCroppingImage(null)
+                   setCropType(null)
+                }
+              }}
+              image={croppingImage}
+              onCropComplete={handleCropComplete}
+              aspectRatio={cropType === 'avatar' ? 1 : 16 / 5} // 16:5 ratio for cover
+              title={cropType === 'avatar' ? 'Crop Avatar' : 'Crop Cover Photo'}
+            />
           </div>
         </div>
       </div>
