@@ -32,6 +32,8 @@ import { userService } from '@/services/userService'
 import { videoService } from '@/services/videoService'
 import type { VideoItem } from '@/types/video'
 import VideoModal from '@/components/portfolio/VideoModal'
+import ImageCropper from '@/components/common/ImageCropper'
+import { useAuth } from '@/hooks/useAuth'
 
 const artistTabs = (t: (key: string) => string) => [
   { id: 'overview', label: t('profile.tabs.overview') },
@@ -78,6 +80,7 @@ export default function ArtistProfileEditor() {
   const t = useTranslations('Settings')
   const tCommon = useTranslations('Common')
   const tProfile = useTranslations('Profile')
+  const { fetchUser } = useAuth()
   const [loading, setLoading] = useState(true)
 
   const [me, setMe] = useState<User | null>(null)
@@ -99,6 +102,11 @@ export default function ArtistProfileEditor() {
   const [mediaToDelete, setMediaToDelete] = useState<string | null>(null)
   const [deleteExpDialogOpen, setDeleteExpDialogOpen] = useState(false)
   const [expToDelete, setExpToDelete] = useState<string | null>(null)
+
+  // Cropping State
+  const [cropperOpen, setCropperOpen] = useState(false)
+  const [croppingImage, setCroppingImage] = useState<string | null>(null)
+  const [cropType, setCropType] = useState<'avatar' | 'cover' | null>(null)
 
   const [openAddVideo, setOpenAddVideo] = useState(false)
   const [editVideoData, setEditVideoData] = useState<{ id: string; title: string } | null>(null)
@@ -262,30 +270,40 @@ export default function ArtistProfileEditor() {
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {
-      setAvatarFile(null)
-      return
-    }
+    if (!file) return
 
     if (validateImageFile(file, 5, 'avatar')) {
-      setAvatarFile(file)
-    } else {
-      e.target.value = ''
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('avatar')
+      setCropperOpen(true)
     }
+    e.target.value = ''
   }
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {
-      setCoverFile(null)
-      return
-    }
+    if (!file) return
 
     if (validateImageFile(file, 10, 'cover')) {
-      setCoverFile(file)
-    } else {
-      e.target.value = ''
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('cover')
+      setCropperOpen(true)
     }
+    e.target.value = ''
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' })
+    if (cropType === 'avatar') {
+      setAvatarFile(file)
+    } else if (cropType === 'cover') {
+      setCoverFile(file)
+    }
+    setCropperOpen(false)
+    setCroppingImage(null)
+    setCropType(null)
   }
 
   useEffect(() => {
@@ -378,6 +396,9 @@ export default function ArtistProfileEditor() {
 
       toast.success('Basic information saved')
       setMe((prev) => (prev ? { ...prev, ...updated } : prev))
+      
+      // Sync with global auth store
+      await fetchUser()
 
       // Update initial values after save
       setInitialFormBasic({
@@ -400,14 +421,18 @@ export default function ArtistProfileEditor() {
     try {
       setSavingImages(true)
       let changed = false
+      let newAvatarUrl = avatarUrl
+      let newCoverUrl = coverUrl
+
       if (avatarFile) {
-        await userService.uploadAvatar(avatarFile)
+        newAvatarUrl = await userService.uploadAvatar(avatarFile)
         changed = true
       }
       if (coverFile) {
-        await userService.uploadCover(coverFile)
+        newCoverUrl = await userService.uploadCover(coverFile)
         changed = true
       }
+
       if (changed) {
         toast.success('Profile images updated')
         setAvatarFile(null)
@@ -415,13 +440,14 @@ export default function ArtistProfileEditor() {
         setAvatarPreviewUrl(null)
         setCoverPreviewUrl(null)
         setCacheBust(Date.now())
-        // Refresh avatar/cover URLs
-        const [avatarRes, coverRes] = await Promise.all([
-          userService.getMyAvatar().catch(() => null),
-          userService.getMyCover().catch(() => null),
-        ])
-        setAvatarUrl(avatarRes?.file_url || null)
-        setCoverUrl(coverRes?.file_url || null)
+        
+        // Update local state with returned URLs
+        setAvatarUrl(newAvatarUrl)
+        setCoverUrl(newCoverUrl)
+        
+        // Sync with global auth store
+        await fetchUser()
+        
         window.dispatchEvent(
           new CustomEvent('profile:updated', { detail: { what: 'avatar:cover' } }),
         )
@@ -961,7 +987,11 @@ export default function ArtistProfileEditor() {
                           </label>
                           {(avatarFile || coverFile) && (
                             <Button size="sm" onClick={handleSaveImages} disabled={savingImages}>
-                              <Save className="mr-2 h-4 w-4" />
+                              {savingImages ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                              )}
                               {savingImages ? tProfile('editor.saving') : tProfile('editor.savePhotos')}
                             </Button>
                           )}
@@ -1653,6 +1683,21 @@ export default function ArtistProfileEditor() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            <ImageCropper
+              open={cropperOpen}
+              onOpenChange={(open) => {
+                setCropperOpen(open)
+                if (!open) {
+                   setCroppingImage(null)
+                   setCropType(null)
+                }
+              }}
+              image={croppingImage}
+              onCropComplete={handleCropComplete}
+              aspectRatio={cropType === 'avatar' ? 1 : 16 / 5} // 16:5 ratio for cover
+              title={cropType === 'avatar' ? 'Crop Avatar' : 'Crop Cover Photo'}
+            />
           </div>
         </div>
       </div>
