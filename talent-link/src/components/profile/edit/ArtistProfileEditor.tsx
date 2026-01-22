@@ -32,6 +32,8 @@ import { userService } from '@/services/userService'
 import { videoService } from '@/services/videoService'
 import type { VideoItem } from '@/types/video'
 import VideoModal from '@/components/portfolio/VideoModal'
+import ImageCropper from '@/components/common/ImageCropper'
+import { useAuth } from '@/hooks/useAuth'
 
 const artistTabs = (t: (key: string) => string) => [
   { id: 'overview', label: t('profile.tabs.overview') },
@@ -78,6 +80,7 @@ export default function ArtistProfileEditor() {
   const t = useTranslations('Settings')
   const tCommon = useTranslations('Common')
   const tProfile = useTranslations('Profile')
+  const { fetchUser } = useAuth()
   const [loading, setLoading] = useState(true)
 
   const [me, setMe] = useState<User | null>(null)
@@ -99,6 +102,11 @@ export default function ArtistProfileEditor() {
   const [mediaToDelete, setMediaToDelete] = useState<string | null>(null)
   const [deleteExpDialogOpen, setDeleteExpDialogOpen] = useState(false)
   const [expToDelete, setExpToDelete] = useState<string | null>(null)
+
+  // Cropping State
+  const [cropperOpen, setCropperOpen] = useState(false)
+  const [croppingImage, setCroppingImage] = useState<string | null>(null)
+  const [cropType, setCropType] = useState<'avatar' | 'cover' | null>(null)
 
   const [openAddVideo, setOpenAddVideo] = useState(false)
   const [editVideoData, setEditVideoData] = useState<{ id: string; title: string } | null>(null)
@@ -160,12 +168,14 @@ export default function ArtistProfileEditor() {
     portfolio_url: string
     start_date: string
     end_date: string
+    genres: string[]
   }>({
     title: '',
     description: '',
     portfolio_url: '',
     start_date: '',
     end_date: '',
+    genres: [],
   })
 
   const heroName = me?.display_name || me?.username || 'Artist'
@@ -260,30 +270,40 @@ export default function ArtistProfileEditor() {
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {
-      setAvatarFile(null)
-      return
-    }
+    if (!file) return
 
     if (validateImageFile(file, 5, 'avatar')) {
-      setAvatarFile(file)
-    } else {
-      e.target.value = ''
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('avatar')
+      setCropperOpen(true)
     }
+    e.target.value = ''
   }
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {
-      setCoverFile(null)
-      return
-    }
+    if (!file) return
 
     if (validateImageFile(file, 10, 'cover')) {
-      setCoverFile(file)
-    } else {
-      e.target.value = ''
+      const url = URL.createObjectURL(file)
+      setCroppingImage(url)
+      setCropType('cover')
+      setCropperOpen(true)
     }
+    e.target.value = ''
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' })
+    if (cropType === 'avatar') {
+      setAvatarFile(file)
+    } else if (cropType === 'cover') {
+      setCoverFile(file)
+    }
+    setCropperOpen(false)
+    setCroppingImage(null)
+    setCropType(null)
   }
 
   useEffect(() => {
@@ -362,7 +382,7 @@ export default function ArtistProfileEditor() {
         JSON.stringify([...initialFormBasic.genres].sort())
       ) {
         if (me?.id) {
-          await userService.updateGenres(me.username, { name: formBasic.genres })
+          await userService.updateGenres(me.username, { genre_names: formBasic.genres })
           // Refresh user data to get updated genres
           const refreshed = await userService.getMe()
           setMe(refreshed)
@@ -376,6 +396,9 @@ export default function ArtistProfileEditor() {
 
       toast.success('Basic information saved')
       setMe((prev) => (prev ? { ...prev, ...updated } : prev))
+      
+      // Sync with global auth store
+      await fetchUser()
 
       // Update initial values after save
       setInitialFormBasic({
@@ -398,14 +421,18 @@ export default function ArtistProfileEditor() {
     try {
       setSavingImages(true)
       let changed = false
+      let newAvatarUrl = avatarUrl
+      let newCoverUrl = coverUrl
+
       if (avatarFile) {
-        await userService.uploadAvatar(avatarFile)
+        newAvatarUrl = await userService.uploadAvatar(avatarFile)
         changed = true
       }
       if (coverFile) {
-        await userService.uploadCover(coverFile)
+        newCoverUrl = await userService.uploadCover(coverFile)
         changed = true
       }
+
       if (changed) {
         toast.success('Profile images updated')
         setAvatarFile(null)
@@ -413,13 +440,14 @@ export default function ArtistProfileEditor() {
         setAvatarPreviewUrl(null)
         setCoverPreviewUrl(null)
         setCacheBust(Date.now())
-        // Refresh avatar/cover URLs
-        const [avatarRes, coverRes] = await Promise.all([
-          userService.getMyAvatar().catch(() => null),
-          userService.getMyCover().catch(() => null),
-        ])
-        setAvatarUrl(avatarRes?.file_url || null)
-        setCoverUrl(coverRes?.file_url || null)
+        
+        // Update local state with returned URLs
+        setAvatarUrl(newAvatarUrl)
+        setCoverUrl(newCoverUrl)
+        
+        // Sync with global auth store
+        await fetchUser()
+        
         window.dispatchEvent(
           new CustomEvent('profile:updated', { detail: { what: 'avatar:cover' } }),
         )
@@ -579,13 +607,37 @@ export default function ArtistProfileEditor() {
         portfolio_url: expForm.portfolio_url.trim() || undefined,
         start_date: formatDateToISO(expForm.start_date),
         end_date: formatDateToISO(expForm.end_date),
+        genre_names: expForm.genres,
       }
+      let experienceId = expForm.id
+
       if (expForm.id) {
+        // Update basic experience info
         const updated = await userService.updateExperience(expForm.id, payload)
-        setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+        
+        // Update genres
+        await userService.updateExperienceGenres(expForm.id, expForm.genres)
+        
+        // We need to refetch or manually update the local state with new genres
+        // Since updateExperience doesn't return genres typically, better to just update local state specifically or refetch
+        // Let's manually construct the update for UI responsiveness
+        const updatedExperienceWithGenres = {
+           ...updated,
+           genres: expForm.genres.map(gName => ({ id: gName, name: gName })) // Mocking ID as name for display update
+        }
+
+        setExperiences((prev) => prev.map((e) => (e.id === updated.id ? updatedExperienceWithGenres : e)))
         toast.success('Experience updated')
       } else {
+        // Create new experience
         const created = await userService.createExperience(payload)
+        experienceId = created.id
+        
+        // If we created with genres, we need to map them for local display as the backend might return just IDs or assume success
+        if (created && expForm.genres.length > 0) {
+             created.genres = expForm.genres.map(g => ({ id: g, name: g }))
+        }
+
         setExperiences((prev) => [created, ...prev])
         toast.success('Experience added')
       }
@@ -596,6 +648,7 @@ export default function ArtistProfileEditor() {
         portfolio_url: '',
         start_date: '',
         end_date: '',
+        genres: [],
       })
       window.dispatchEvent(new CustomEvent('profile:updated', { detail: { what: 'experience' } }))
     } catch (error: unknown) {
@@ -624,6 +677,7 @@ export default function ArtistProfileEditor() {
       portfolio_url: exp.portfolio_url || '',
       start_date: formatDateForInput(exp.start_date),
       end_date: formatDateForInput(exp.end_date),
+      genres: exp.genres?.map(g => g.name) || [],
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -636,6 +690,7 @@ export default function ArtistProfileEditor() {
       portfolio_url: '',
       start_date: '',
       end_date: '',
+      genres: [],
     })
   }
 
@@ -662,6 +717,7 @@ export default function ArtistProfileEditor() {
           portfolio_url: '',
           start_date: '',
           end_date: '',
+          genres: [],
         })
     } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to delete experience')
@@ -931,7 +987,11 @@ export default function ArtistProfileEditor() {
                           </label>
                           {(avatarFile || coverFile) && (
                             <Button size="sm" onClick={handleSaveImages} disabled={savingImages}>
-                              <Save className="mr-2 h-4 w-4" />
+                              {savingImages ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                              )}
                               {savingImages ? tProfile('editor.saving') : tProfile('editor.savePhotos')}
                             </Button>
                           )}
@@ -1372,6 +1432,18 @@ export default function ArtistProfileEditor() {
                       </div>
                     </div>
                     <div>
+                      <Label htmlFor="genres">{tProfile('editor.genres')}</Label>
+                      <MultiSelect
+                        options={availableGenres}
+                        selected={expForm.genres}
+                        onChange={(selected) =>
+                          setExpForm((prev) => ({ ...prev, genres: selected }))
+                        }
+                        placeholder={tProfile('editor.genresPlaceholder')}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
                       <Label htmlFor="exp_portfolio_url">{tProfile('artist.portfolioLink')}</Label>
                       <Input
                         id="exp_portfolio_url"
@@ -1427,6 +1499,15 @@ export default function ArtistProfileEditor() {
                                 {experience.description}
                               </p>
                             ) : null}
+                            {experience.genres && experience.genres.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {experience.genres.map((g) => (
+                                  <Badge key={g.id || g.name} variant="secondary" className="text-[10px] px-1 py-0 h-5">
+                                    {g.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                             {experience.portfolio_url ? (
                               <a
                                 href={experience.portfolio_url}
@@ -1602,6 +1683,21 @@ export default function ArtistProfileEditor() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            <ImageCropper
+              open={cropperOpen}
+              onOpenChange={(open) => {
+                setCropperOpen(open)
+                if (!open) {
+                   setCroppingImage(null)
+                   setCropType(null)
+                }
+              }}
+              image={croppingImage}
+              onCropComplete={handleCropComplete}
+              aspectRatio={cropType === 'avatar' ? 1 : 16 / 5} // 16:5 ratio for cover
+              title={cropType === 'avatar' ? 'Crop Avatar' : 'Crop Cover Photo'}
+            />
           </div>
         </div>
       </div>

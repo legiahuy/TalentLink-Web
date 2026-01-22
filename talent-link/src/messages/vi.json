@@ -635,6 +635,8 @@
       "capacity": "Sức chứa: {count}",
       "amenities": "Tiện nghi",
       "amenitiesNotUpdated": "Tiện ích chưa được cập nhật",
+      "briefIntroduction": "Giới thiệu ngắn",
+      "capacityLabel": "Sức chứa",
       "venueName": "Tên địa điểm",
       "venueType": "Loại hình kinh doanh",
       "venueTypePlaceholder": "Chọn loại hình kinh doanh...",

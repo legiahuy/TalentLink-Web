@@ -183,21 +183,21 @@ export function ArtistProfileView({
                   </Button>
                 ) : (
                   <>
-                    <Button size="lg" variant="default" asChild className="w-full md:w-auto">
+                    {/* <Button size="lg" variant="default" asChild className="w-full md:w-auto">
                       <Link
                         href="/booking"
                         className="flex items-center justify-center gap-2 text-white hover:text-primary transition-colors"
                       >
                         {t('artist.contactCollaboration')}
                       </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild className="w-full md:w-auto">
+                    </Button> */}
+                    <Button size="lg" variant="default" asChild className="w-full md:w-auto">
                       <Link
                         href={`/messages?userId=${profile.id}`}
                         className="flex items-center justify-center gap-2"
                       >
                         <MessageCircle className="h-5 w-5" />
-                        {t('artist.message')}
+                        {t('artist.contactCollaboration')}
                       </Link>
                     </Button>
                   </>
@@ -326,6 +326,15 @@ export function ArtistProfileView({
                               <p className="text-muted-foreground whitespace-pre-line">
                                 {experience.description}
                               </p>
+                            )}
+                            {experience.genres && experience.genres.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {experience.genres.map((g) => (
+                                  <Badge key={g.id || g.name} variant="secondary" className="text-[10px] px-1 py-0 h-5">
+                                    {g.name}
+                                  </Badge>
+                                ))}
+                              </div>
                             )}
                             {experience.portfolio_url && (
                               <a

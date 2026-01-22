@@ -148,16 +148,16 @@ export function VenueProfileView({
                         </Button>
                       ) : (
                         <div className="flex flex-col gap-2">
-                          <Button size="lg" variant="default" asChild>
+                          {/* <Button size="lg" variant="default" asChild>
                             <Link href="/booking">{t('venue.contactVenue')}</Link>
-                          </Button>
-                          <Button size="lg" variant="outline" asChild>
+                          </Button> */}
+                          <Button size="lg" variant="default" asChild>
                             <Link
                               href={`/messages?userId=${profile.id}`}
                               className="flex items-center justify-center gap-2"
                             >
                               <MessageCircle className="h-5 w-5" />
-                              {t('artist.message')}
+                                {t('venue.contactVenue')}
                             </Link>
                           </Button>
                         </div>

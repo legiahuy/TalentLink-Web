@@ -229,6 +229,13 @@ export const userService = {
     return data?.experience ?? data
   },
 
+  updateExperienceGenres: async (id: string, genreNames: string[]): Promise<void> => {
+    // Calling the PUT endpoint to replace all genres
+    await axiosClient.put(`/experiences/genres/${id}`, {
+      genre_names: genreNames,
+    })
+  },
+
   // ===== SOCIAL LINKS =====
   updateSocial: async (payload: UserSocialUpdatePayload): Promise<User> => {
     const res = await axiosClient.put('/users/me/social', payload)
@@ -238,7 +245,7 @@ export const userService = {
   // ===== GENRES =====
   getGenres: async (): Promise<Genre[]> => {
     const res = await axiosClient.get('/users/genres')
-    return res.data?.genres ?? res.data ?? []
+    return res.data?.data?.genres ?? res.data?.genres ?? []
   },
 
   updateGenres: async (username: string, payload: UserGenresUpdatePayload): Promise<User> => {

@@ -635,6 +635,8 @@
       "capacity": "Capacity: {count}",
       "amenities": "Amenities",
       "amenitiesNotUpdated": "Amenities not updated",
+      "briefIntroduction": "Brief Introduction",
+      "capacityLabel": "Venue Capacity",
       "venueName": "Venue Name",
       "venueType": "Business Type",
       "venueTypePlaceholder": "Select business types...",

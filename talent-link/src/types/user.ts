@@ -69,7 +69,7 @@ export interface UserSocialUpdatePayload {
 }
 
 export interface UserGenresUpdatePayload {
-  name: string[]
+  genre_names: string[]
 }
 
 export interface AvatarResponse {

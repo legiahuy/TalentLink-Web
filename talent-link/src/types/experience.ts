@@ -22,4 +22,5 @@ export interface ExperienceCreatePayload {
   start_date?: string
   end_date?: string
   portfolio_url?: string
+  genre_names?: string[]
 }
