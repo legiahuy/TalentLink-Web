@@ -327,6 +327,15 @@ export function ArtistProfileView({
                                 {experience.description}
                               </p>
                             )}
+                            {experience.genres && experience.genres.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {experience.genres.map((g) => (
+                                  <Badge key={g.id || g.name} variant="secondary" className="text-[10px] px-1 py-0 h-5">
+                                    {g.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                             {experience.portfolio_url && (
                               <a
                                 href={experience.portfolio_url}
