@@ -68,9 +68,43 @@ const DiscoveryPage = () => {
   }
 
   useEffect(() => {
+    let hasSessionData = false
+
+    if (typeof window !== 'undefined') {
+      const stored = window.sessionStorage.getItem('discoveryData')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as {
+            artists: DiscoveryItem[]
+            venues: DiscoveryItem[]
+            availableGenres: string[]
+            searchQuery?: string
+            selectedGenre?: string
+            selectedLocation?: string
+            activeTab?: FilterType
+          }
+          if (parsed.artists && parsed.venues) {
+            hasSessionData = true
+            setArtists(parsed.artists)
+            setVenues(parsed.venues)
+            setAvailableGenres(parsed.availableGenres || [])
+            if (parsed.searchQuery !== undefined) setSearchQuery(parsed.searchQuery)
+            if (parsed.selectedGenre) setSelectedGenre(parsed.selectedGenre)
+            if (parsed.selectedLocation) setSelectedLocation(parsed.selectedLocation)
+            if (parsed.activeTab) setActiveTab(parsed.activeTab)
+            setLoading(false)
+          }
+        } catch (e) {
+          console.error('Failed to parse discoveryData from sessionStorage', e)
+        }
+      }
+    }
+
     const fetchData = async () => {
       try {
-        setLoading(true)
+        if (!hasSessionData) {
+          setLoading(true)
+        }
         const data = await landingService.getDiscoveryData()
 
         // Transform Artists
@@ -120,6 +154,22 @@ const DiscoveryPage = () => {
         // Convert to sorted array
         const uniqueGenres = Array.from(genresSet).sort()
         setAvailableGenres(uniqueGenres)
+
+        // Lưu snapshot vào sessionStorage để khi back lại không mất danh sách
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(
+            'discoveryData',
+            JSON.stringify({
+              artists: transformedArtists,
+              venues: transformedVenues,
+              availableGenres: uniqueGenres,
+              searchQuery,
+              selectedGenre,
+              selectedLocation,
+              activeTab,
+            })
+          )
+        }
       } catch (error) {
         console.error('Failed to fetch discovery data', error)
       } finally {
