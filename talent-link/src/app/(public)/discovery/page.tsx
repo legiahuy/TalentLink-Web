@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import ArtistCard from '@/components/artist/ArtistCard'
 import { landingService } from '@/services/landingService'
 import { userService } from '@/services/userService'
+import { searchService } from '@/services/searchService'
+import { resolveMediaUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -37,6 +39,7 @@ type FilterType = 'all' | 'artists' | 'venues'
 const DiscoveryPage = () => {
   const t = useTranslations('Discovery')
   const tCommon = useTranslations('Common')
+  const tOptions = useTranslations('options')
 
   // State
   const [artists, setArtists] = useState<DiscoveryItem[]>([])
@@ -45,11 +48,20 @@ const DiscoveryPage = () => {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedLocation, setSelectedLocation] = useState('all')
   const [activeTab, setActiveTab] = useState<FilterType>('all')
 
   const [availableGenres, setAvailableGenres] = useState<string[]>([])
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Animations - optimized for faster display
   const fadeInUp: Variants = {
@@ -67,109 +79,74 @@ const DiscoveryPage = () => {
     },
   }
 
+  // Fetch genres once on mount
   useEffect(() => {
-    let hasSessionData = false
-
-    if (typeof window !== 'undefined') {
-      const stored = window.sessionStorage.getItem('discoveryData')
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as {
-            artists: DiscoveryItem[]
-            venues: DiscoveryItem[]
-            availableGenres: string[]
-            searchQuery?: string
-            selectedGenre?: string
-            selectedLocation?: string
-            activeTab?: FilterType
-          }
-          if (parsed.artists && parsed.venues) {
-            hasSessionData = true
-            setArtists(parsed.artists)
-            setVenues(parsed.venues)
-            setAvailableGenres(parsed.availableGenres || [])
-            if (parsed.searchQuery !== undefined) setSearchQuery(parsed.searchQuery)
-            if (parsed.selectedGenre) setSelectedGenre(parsed.selectedGenre)
-            if (parsed.selectedLocation) setSelectedLocation(parsed.selectedLocation)
-            if (parsed.activeTab) setActiveTab(parsed.activeTab)
-            setLoading(false)
-          }
-        } catch (e) {
-          console.error('Failed to parse discoveryData from sessionStorage', e)
+    const fetchGenres = async () => {
+      try {
+        const systemGenres = await userService.getGenres()
+        if (systemGenres && systemGenres.length > 0) {
+          setAvailableGenres(systemGenres.map((g) => g.name).sort())
         }
+      } catch (error) {
+        console.error('Failed to fetch genres', error)
       }
     }
+    fetchGenres()
+  }, [])
 
+  // Fetch data when filters change
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!hasSessionData) {
-          setLoading(true)
+        setLoading(true)
+
+        // Prepare search request
+        const request: any = {
+          page: 1,
+          pageSize: 100, // Reasonable limit for discovery
         }
-        const data = await landingService.getDiscoveryData()
+
+        if (debouncedSearch) request.query = debouncedSearch
+        if (selectedGenre !== 'all') request.genres = [selectedGenre]
+        if (selectedLocation !== 'all') request.location = selectedLocation
+
+        const result = await searchService.searchUsers(request)
+        const allUsers = result.userProfiles
 
         // Transform Artists
-        const transformedArtists = data.artists.map((user: FeaturedUser) => ({
-          id: user.id,
-          name: user.display_name || tCommon('unknown'),
-          username: user.username,
-          image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
-          genres: user.genres?.map((g) => g.name) || [],
-          location: [user.city, user.country].filter(Boolean).join(', ') || tCommon('unknown'),
-          description: user.brief_bio || '',
-          role: 'artist',
-        }))
+        const transformedArtists = allUsers
+          .filter((user) => user.role !== 'venue')
+          .map((user) => ({
+            id: user.id,
+            name: user.displayName || tCommon('unknown'),
+            username: user.username,
+            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
+            genres: (user.genres || [])
+              .map((g: any) => (typeof g === 'string' ? g : g.name || ''))
+              .filter(Boolean),
+            location: user.location || tCommon('unknown'),
+            description: user.briefBio || '',
+            role: user.role,
+          }))
 
         // Transform Venues
-        const transformedVenues = data.venues.map((user: FeaturedUser) => ({
-          id: user.id,
-          name: user.display_name || tCommon('unknown'),
-          username: user.username,
-          image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
-          genres: user.genres?.map((g) => g.name) || [],
-          location: [user.city, user.country].filter(Boolean).join(', ') || tCommon('unknown'),
-          description: user.brief_bio || '',
-          role: 'venue',
-        }))
+        const transformedVenues = allUsers
+          .filter((user) => user.role === 'venue')
+          .map((user) => ({
+            id: user.id,
+            name: user.displayName || tCommon('unknown'),
+            username: user.username,
+            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
+            genres: (user.genres || [])
+              .map((g: any) => (typeof g === 'string' ? g : g.name || ''))
+              .filter(Boolean),
+            location: user.location || tCommon('unknown'),
+            description: user.briefBio || '',
+            role: user.role,
+          }))
 
         setArtists(transformedArtists)
         setVenues(transformedVenues)
-
-        // Collect all unique genres from artists and venues
-        const genresSet = new Set<string>()
-
-        // Add genres from artists
-        transformedArtists.forEach((artist) => {
-          artist.genres.forEach((genre) => {
-            if (genre) genresSet.add(genre)
-          })
-        })
-
-        // Add genres from venues
-        transformedVenues.forEach((venue) => {
-          venue.genres.forEach((genre) => {
-            if (genre) genresSet.add(genre)
-          })
-        })
-
-        // Convert to sorted array
-        const uniqueGenres = Array.from(genresSet).sort()
-        setAvailableGenres(uniqueGenres)
-
-        // Lưu snapshot vào sessionStorage để khi back lại không mất danh sách
-        if (typeof window !== 'undefined') {
-          window.sessionStorage.setItem(
-            'discoveryData',
-            JSON.stringify({
-              artists: transformedArtists,
-              venues: transformedVenues,
-              availableGenres: uniqueGenres,
-              searchQuery,
-              selectedGenre,
-              selectedLocation,
-              activeTab,
-            })
-          )
-        }
       } catch (error) {
         console.error('Failed to fetch discovery data', error)
       } finally {
@@ -178,9 +155,9 @@ const DiscoveryPage = () => {
     }
 
     fetchData()
-  }, [tCommon])
+  }, [debouncedSearch, selectedGenre, selectedLocation])
 
-  // Compute unique locations from loaded data
+  // Compute unique locations (kept for UI dropdown, though we could fetch from server if needed)
   const availableLocations = useMemo(() => {
     const allItems = [...artists, ...venues]
     const locations = new Set<string>()
@@ -192,29 +169,9 @@ const DiscoveryPage = () => {
     return Array.from(locations).sort()
   }, [artists, venues, tCommon])
 
-  // Filter Logic
-  const filterItem = (item: DiscoveryItem) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.username.toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesGenre =
-      selectedGenre === 'all' ||
-      item.genres.some((g) => g.toLowerCase() === selectedGenre.toLowerCase())
-
-    const matchesLocation = selectedLocation === 'all' || item.location === selectedLocation
-
-    return matchesSearch && matchesGenre && matchesLocation
-  }
-
-  const filteredArtists = artists.filter(filterItem)
-  const filteredVenues = venues.filter(filterItem)
-
-  // Combined or separate based on tab?
-  // We already moved to separate sections inside "All" tab.
-
-  // Combined list just for counting if needed, but not used for display in "All" tab anymore.
+  // Counts for UI
+  const filteredArtists = artists
+  const filteredVenues = venues
   const allFilteredCount = filteredArtists.length + filteredVenues.length
 
   const hasActiveFilters =
@@ -359,29 +316,31 @@ const DiscoveryPage = () => {
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FilterType)}>
-                <div className="flex items-center justify-between mb-6">
-                  <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
-                    <TabsTrigger value="all" className="gap-1.5 text-xs">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                  <TabsList className="h-11 p-1 bg-muted/50 backdrop-blur-sm border border-border/40">
+                    <TabsTrigger value="all" className="px-5 text-sm gap-2">
                       <Sparkles className="w-3.5 h-3.5" />
                       {t('tabs.all')}
                     </TabsTrigger>
-                    <TabsTrigger value="artists" className="gap-1.5 text-xs">
+                    <TabsTrigger value="artists" className="px-5 text-sm gap-2">
                       <Music className="w-3.5 h-3.5" />
                       {t('tabs.artists')}
                     </TabsTrigger>
-                    <TabsTrigger value="venues" className="gap-1.5 text-xs">
+                    <TabsTrigger value="venues" className="px-5 text-sm gap-2">
                       <MapPin className="w-3.5 h-3.5" />
                       {t('tabs.venues')}
                     </TabsTrigger>
                   </TabsList>
-                  <div className="text-sm text-muted-foreground hidden sm:block font-medium">
-                    {loading
-                      ? tCommon('loading')
-                      : activeTab === 'all'
-                        ? t('results.found', { count: allFilteredCount })
-                        : activeTab === 'artists'
-                          ? t('results.foundArtists', { count: filteredArtists.length })
-                          : t('results.foundVenues', { count: filteredVenues.length })}
+
+                  <div className="px-4 py-1.5 bg-muted/60 backdrop-blur-sm border border-border/40 rounded-full text-xs font-semibold text-muted-foreground shadow-sm">
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
+                        {tCommon('loading')}
+                      </span>
+                    ) : (
+                      `${allFilteredCount} ${tCommon('results') || 'results'}`
+                    )}
                   </div>
                 </div>
 
@@ -406,14 +365,14 @@ const DiscoveryPage = () => {
                         <>
                           {filteredArtists.length > 0 && (
                             <section>
-                              <div className="flex items-center gap-2 mb-4">
-                                <div className="bg-primary/10 p-2 rounded-lg">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="bg-primary/10 p-2.5 rounded-full ring-4 ring-primary/5">
                                   <Music className="h-5 w-5 text-primary" />
                                 </div>
-                                <h3 className="text-xl font-bold">{t('sections.artists')}</h3>
-                                <span className="text-sm text-muted-foreground ml-2">
-                                  ({filteredArtists.length})
-                                </span>
+                                <h2 className="text-2xl font-bold tracking-tight">{t('sections.artists')}</h2>
+                                <div className="bg-muted text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center border border-border/40">
+                                  {filteredArtists.length}
+                                </div>
                               </div>
                               <motion.div
                                 key={`artists-${searchQuery}-${selectedGenre}-${selectedLocation}`}
@@ -424,7 +383,10 @@ const DiscoveryPage = () => {
                               >
                                 {filteredArtists.map((item) => (
                                   <motion.div key={item.id} variants={fadeInUp} className="h-full">
-                                    <ArtistCard {...item} />
+                                    <ArtistCard
+                                      {...item}
+                                      roleLabel={tOptions(`roles.${item.role}`)}
+                                    />
                                   </motion.div>
                                 ))}
                               </motion.div>
@@ -433,14 +395,14 @@ const DiscoveryPage = () => {
 
                           {filteredVenues.length > 0 && (
                             <section>
-                              <div className="flex items-center gap-2 mb-4">
-                                <div className="bg-primary/10 p-2 rounded-lg">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="bg-primary/10 p-2.5 rounded-full ring-4 ring-primary/5">
                                   <MapPin className="h-5 w-5 text-primary" />
                                 </div>
-                                <h3 className="text-xl font-bold">{t('sections.venues')}</h3>
-                                <span className="text-sm text-muted-foreground ml-2">
-                                  ({filteredVenues.length})
-                                </span>
+                                <h2 className="text-2xl font-bold tracking-tight">{t('sections.venues')}</h2>
+                                <div className="bg-muted text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center border border-border/40">
+                                  {filteredVenues.length}
+                                </div>
                               </div>
                               <motion.div
                                 key={`venues-${searchQuery}-${selectedGenre}-${selectedLocation}`}
@@ -451,7 +413,10 @@ const DiscoveryPage = () => {
                               >
                                 {filteredVenues.map((item) => (
                                   <motion.div key={item.id} variants={fadeInUp} className="h-full">
-                                    <ArtistCard {...item} />
+                                    <ArtistCard
+                                      {...item}
+                                      roleLabel={tOptions(`roles.${item.role}`)}
+                                    />
                                   </motion.div>
                                 ))}
                               </motion.div>
@@ -472,7 +437,10 @@ const DiscoveryPage = () => {
                         >
                           {filteredArtists.map((item) => (
                             <motion.div key={item.id} variants={fadeInUp} className="h-full">
-                              <ArtistCard {...item} />
+                              <ArtistCard
+                                {...item}
+                                roleLabel={tOptions(`roles.${item.role}`)}
+                              />
                             </motion.div>
                           ))}
                         </motion.div>
@@ -494,7 +462,10 @@ const DiscoveryPage = () => {
                         >
                           {filteredVenues.map((item) => (
                             <motion.div key={item.id} variants={fadeInUp} className="h-full">
-                              <ArtistCard {...item} />
+                              <ArtistCard
+                                {...item}
+                                roleLabel={tOptions(`roles.${item.role}`)}
+                              />
                             </motion.div>
                           ))}
                         </motion.div>

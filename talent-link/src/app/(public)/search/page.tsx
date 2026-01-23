@@ -222,6 +222,7 @@ export default function SearchPage() {
               genres={user.genres?.map((g: any) => typeof g === 'string' ? g : (g.name || '')) || []}
               location={user.location || tCommon('unknown')}
               description={user.briefBio}
+              roleLabel={tOptions(`roles.${user.role}`)}
             />
           </motion.div>
         ))}
