@@ -15,12 +15,13 @@ export const searchService = {
 
   searchJobs: async (request: JobSearchRequestDto): Promise<JobSearchResultDto> => {
     const res = await axiosClient.post<BackendJobSearchResponse>('/search/jobs', request)
-    
+
     // Backend returns: { posts: [...], pagination: {...} }
     // Transform to frontend expected format: { jobPosts: [...], totalCount, page, pageSize, totalPages, searchTime }
     // Backend returns data directly (not wrapped in ApiResult)
-    const backendData = res.data
-    
+    // Backend returns data directly or wrapped in data field
+    const backendData = (res.data as any)?.data ?? res.data
+
     return {
       jobPosts: backendData.posts || [],
       totalCount: backendData.pagination?.total_items || 0,
@@ -42,10 +43,11 @@ export const searchService = {
 
   searchUsers: async (request: UserSearchRequestDto): Promise<UserSearchResultDto> => {
     const res = await axiosClient.post<BackendUserSearchResponse>('/search/users', request)
-    
+
     // Backend might return an array (legacy) or an object with pagination (new)
-    const backendData = res.data
-    
+    // Backend returns data directly or wrapped in data field
+    const backendData = (res.data as any)?.data ?? res.data
+
     let users: UserSearchDto[] = []
     let pagination = null
 
@@ -64,9 +66,9 @@ export const searchService = {
     // If no server-side pagination (legacy array response), do client-side slicing
     let finalUsers = users
     if (!pagination && users.length > pageSize) {
-        const startIndex = (currentPage - 1) * pageSize
-        const endIndex = startIndex + pageSize
-        finalUsers = users.slice(startIndex, endIndex)
+      const startIndex = (currentPage - 1) * pageSize
+      const endIndex = startIndex + pageSize
+      finalUsers = users.slice(startIndex, endIndex)
     }
 
     // Map backend snake_case to frontend camelCase
@@ -89,7 +91,7 @@ export const searchService = {
       businessTypes: u.business_types,
       convenientFacilities: u.convenient_facilities,
     }))
-    
+
     return {
       userProfiles: mappedUsers,
       totalCount,

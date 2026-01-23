@@ -75,7 +75,7 @@ const statusBadgeConfig: Record<
 
 const formatDate = (value?: string) => {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-US', {
+  return new Date(value).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -129,8 +129,8 @@ const MyApplicationsPage = () => {
       })
     } catch (err) {
       console.error('Failed to load submissions', err)
-      setError('Unable to load your applications right now.')
-      toast.error('Unable to load your applications.')
+      setError(t('error.loadFailed'))
+      toast.error(t('error.toast'))
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -202,7 +202,7 @@ const MyApplicationsPage = () => {
               </p>
               <h1 className="text-3xl md:text-4xl font-semibold">{t('title')}</h1>
               <p className="text-muted-foreground max-w-2xl">
-                Track the status of your applications and see which jobs you&apos;ve applied to.
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -218,7 +218,7 @@ const MyApplicationsPage = () => {
           <div className="flex justify-between w-full mb-6">
             <Button variant="ghost" onClick={() => router.back()} className="mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {tCommon('back')}
             </Button>
             <Button
               variant="ghost"
@@ -236,25 +236,25 @@ const MyApplicationsPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Total</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('stats.total')}</p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Pending</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('stats.pending')}</p>
                   <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Accepted</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('stats.accepted')}</p>
                   <p className="text-2xl font-bold text-green-600">{stats.accepted}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Rejected</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('stats.rejected')}</p>
                   <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
                 </CardContent>
               </Card>
@@ -276,8 +276,7 @@ const MyApplicationsPage = () => {
                     <TabsTrigger value="rejected">{t('tabs.rejected')}</TabsTrigger>
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
-                    {filteredSubmissions.length}{' '}
-                    {filteredSubmissions.length === 1 ? 'application' : 'applications'}
+                    {t('summary.count', { count: filteredSubmissions.length })}
                   </p>
                 </div>
 
@@ -292,7 +291,7 @@ const MyApplicationsPage = () => {
                     <div className="p-10 text-center">
                       <p className="text-base text-muted-foreground mb-4">{error}</p>
                       <Button onClick={handleRefresh} disabled={refreshing}>
-                        Try again
+                        {tCommon('tryAgain')}
                       </Button>
                     </div>
                   ) : filteredSubmissions.length === 0 ? (
@@ -303,7 +302,9 @@ const MyApplicationsPage = () => {
                         <p className="text-muted-foreground">
                           {statusFilter === 'all'
                             ? t('noApplications.description')
-                            : `No ${statusFilter.replace('_', ' ')} applications found.`}
+                            : t('noApplications.filtered', {
+                                status: t('tabs.' + statusFilter),
+                              })}
                         </p>
                       </div>
                       <Button asChild>
@@ -324,7 +325,7 @@ const MyApplicationsPage = () => {
                                 </>
                               ) : (
                                 <h3 className="text-xl font-semibold mb-2">
-                                  Job (Details unavailable)
+                                  {t('jobUnavailable')}
                                 </h3>
                               )}
                               <div className="flex items-center gap-3 mt-2">
@@ -346,7 +347,7 @@ const MyApplicationsPage = () => {
                           {submission.rejection_reason && (
                             <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
                               <p className="text-sm font-medium text-destructive mb-1">
-                                Rejection Reason
+                                {t('rejectionReasonTitle')}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {submission.rejection_reason}
@@ -361,7 +362,7 @@ const MyApplicationsPage = () => {
                                 onClick={() => handleViewJob(submission.job!.id)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
-                                View Job
+                                {t('actions.viewJob')}
                               </Button>
                             )}
                             <Button variant="outline" asChild>
@@ -370,7 +371,7 @@ const MyApplicationsPage = () => {
                                 className="flex items-center"
                               >
                                 <FileText className="mr-2 h-4 w-4" />
-                                View Application
+                                {t('actions.viewApplication')}
                               </span>
                             </Button>
                           </div>
@@ -398,9 +399,9 @@ const MyApplicationsPage = () => {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Your application</DialogTitle>
+            <DialogTitle>{t('dialog.title')}</DialogTitle>
             <DialogDescription>
-              Submission details
+              {t('dialog.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -418,7 +419,11 @@ const MyApplicationsPage = () => {
                     {viewingSubmission.phone_number && (
                       <span>{viewingSubmission.phone_number}</span>
                     )}
-                    <span>Applied {formatDate(viewingSubmission.created_at)}</span>
+                    <span>
+                      {t('dialog.appliedOn', {
+                        date: formatDate(viewingSubmission.created_at),
+                      })}
+                    </span>
                   </div>
                 </div>
                 {getStatusBadgeLocal(viewingSubmission.status)}
@@ -426,14 +431,18 @@ const MyApplicationsPage = () => {
 
               {viewingSubmission.review_notes && (
                 <div className="rounded-lg border border-border/60 bg-muted/40 p-3">
-                  <p className="text-xs uppercase text-muted-foreground mb-1">Review notes</p>
+                  <p className="text-xs uppercase text-muted-foreground mb-1">
+                    {t('dialog.reviewNotes')}
+                  </p>
                   <p className="text-sm text-foreground">{viewingSubmission.review_notes}</p>
                 </div>
               )}
 
               {viewingSubmission.cover_letter && (
                 <div className="space-y-2">
-                  <p className="text-xs uppercase text-muted-foreground">Cover letter</p>
+                  <p className="text-xs uppercase text-muted-foreground">
+                    {t('dialog.coverLetter')}
+                  </p>
                   <p className="text-sm leading-relaxed">{viewingSubmission.cover_letter}</p>
                 </div>
               )}
@@ -441,7 +450,9 @@ const MyApplicationsPage = () => {
               {viewingSubmission.portfolio_links &&
                 viewingSubmission.portfolio_links.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs uppercase text-muted-foreground">Portfolio</p>
+                    <p className="text-xs uppercase text-muted-foreground">
+                      {t('dialog.portfolio')}
+                    </p>
                     <div className="flex flex-col gap-1">
                       {viewingSubmission.portfolio_links.map((link) => (
                         <Link
@@ -460,7 +471,9 @@ const MyApplicationsPage = () => {
                 )}
 
               <div className="space-y-2">
-                <p className="text-xs uppercase text-muted-foreground">Demo file</p>
+                <p className="text-xs uppercase text-muted-foreground">
+                  {t('dialog.demoFile')}
+                </p>
                 <Link
                   href={viewingSubmission.demo_file}
                   target="_blank"
@@ -468,12 +481,12 @@ const MyApplicationsPage = () => {
                   className="inline-flex items-center gap-2 text-sm text-primary"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  View demo
+                  {t('dialog.viewDemo')}
                 </Link>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No submission details available.</p>
+            <p className="text-sm text-muted-foreground">{t('dialog.noDetails')}</p>
           )}
         </DialogContent>
       </Dialog>
