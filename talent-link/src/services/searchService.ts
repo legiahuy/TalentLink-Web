@@ -10,6 +10,26 @@ import type {
   UserSearchDto,
 } from '@/types/search'
 
+interface BackendUserDto {
+  id: string
+  email: string
+  username: string
+  role: string
+  avatar_url: string
+  is_verified: boolean
+  display_name: string
+  city?: string
+  location?: string
+  genres?: { id: string; name: string }[]
+  phone_number?: string
+  brief_bio?: string
+  capacity?: string
+  open_hour?: string
+  rent_price?: string
+  business_types?: string[]
+  convenient_facilities?: string[]
+}
+
 export const searchService = {
   // ===== JOBS =====
 
@@ -20,7 +40,7 @@ export const searchService = {
     // Transform to frontend expected format: { jobPosts: [...], totalCount, page, pageSize, totalPages, searchTime }
     // Backend returns data directly (not wrapped in ApiResult)
     // Backend returns data directly or wrapped in data field
-    const backendData = (res.data as any)?.data ?? res.data
+    const backendData = (res.data as unknown as ApiResult<BackendJobSearchResponse>)?.data ?? (res.data as BackendJobSearchResponse)
 
     return {
       jobPosts: backendData.posts || [],
@@ -46,16 +66,17 @@ export const searchService = {
 
     // Backend might return an array (legacy) or an object with pagination (new)
     // Backend returns data directly or wrapped in data field
-    const backendData = (res.data as any)?.data ?? res.data
+    const backendData = (res.data as unknown as ApiResult<BackendUserSearchResponse>)?.data ?? (res.data as BackendUserSearchResponse)
 
-    let users: UserSearchDto[] = []
+    let users: BackendUserDto[] = []
     let pagination = null
 
     if (Array.isArray(backendData)) {
-      users = backendData
+      users = backendData as unknown as BackendUserDto[]
     } else if (typeof backendData === 'object' && backendData !== null && 'users' in backendData) {
-      users = backendData.users
-      pagination = backendData.pagination
+      const dataAsObj = backendData as unknown as { users: BackendUserDto[]; pagination: { total_items: number; current_page: number; page_size: number; total_pages: number } }
+      users = dataAsObj.users
+      pagination = dataAsObj.pagination
     }
 
     const totalCount = pagination?.total_items || users.length
@@ -72,8 +93,7 @@ export const searchService = {
     }
 
     // Map backend snake_case to frontend camelCase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mappedUsers: UserSearchDto[] = finalUsers.map((u: any) => ({
+    const mappedUsers: UserSearchDto[] = (finalUsers as unknown as BackendUserDto[]).map((u: BackendUserDto) => ({
       id: u.id,
       email: u.email,
       username: u.username,

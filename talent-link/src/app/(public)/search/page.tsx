@@ -219,7 +219,7 @@ export default function SearchPage() {
               name={user.displayName || user.username}
               username={user.username}
               image={user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg'}
-              genres={user.genres?.map((g: any) => typeof g === 'string' ? g : (g.name || '')) || []}
+              genres={user.genres?.map((g: { name?: string } | string) => typeof g === 'string' ? g : (g.name || '')) || []}
               location={user.location || tCommon('unknown')}
               description={user.briefBio}
               roleLabel={tOptions(`roles.${user.role}`)}

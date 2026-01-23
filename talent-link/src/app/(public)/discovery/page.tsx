@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl'
 import { Search, Music, MapPin, X, Sparkles } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import ArtistCard from '@/components/artist/ArtistCard'
-import { landingService } from '@/services/landingService'
 import { userService } from '@/services/userService'
 import { searchService } from '@/services/searchService'
 import { resolveMediaUrl } from '@/lib/utils'
@@ -21,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import type { FeaturedUser } from '@/types/admin'
+import { UserSearchRequestDto } from '@/types/search'
 
 interface DiscoveryItem {
   id: string
@@ -101,7 +100,7 @@ const DiscoveryPage = () => {
         setLoading(true)
 
         // Prepare search request
-        const request: any = {
+        const request: UserSearchRequestDto = {
           page: 1,
           pageSize: 100, // Reasonable limit for discovery
         }
@@ -122,7 +121,7 @@ const DiscoveryPage = () => {
             username: user.username,
             image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
             genres: (user.genres || [])
-              .map((g: any) => (typeof g === 'string' ? g : g.name || ''))
+              .map((g: { name?: string } | string) => (typeof g === 'string' ? g : g.name || ''))
               .filter(Boolean),
             location: user.location || tCommon('unknown'),
             description: user.briefBio || '',
@@ -138,7 +137,7 @@ const DiscoveryPage = () => {
             username: user.username,
             image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
             genres: (user.genres || [])
-              .map((g: any) => (typeof g === 'string' ? g : g.name || ''))
+              .map((g: { name?: string } | string) => (typeof g === 'string' ? g : g.name || ''))
               .filter(Boolean),
             location: user.location || tCommon('unknown'),
             description: user.briefBio || '',
