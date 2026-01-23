@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
-import Image from 'next/image'
 import { motion, Variants } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { Search, Music, MapPin, X, Sparkles } from 'lucide-react'
@@ -180,28 +179,47 @@ const DiscoveryPage = () => {
   return (
     <div className="min-h-screen relative pb-20">
       {/* Hero Section */}
-      <section className="relative min-h-[300px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(240_10%_3.9%),hsl(240_8%_8%))]" />
-        <Image
-          className="absolute inset-0 opacity-100 object-cover"
-          src="/images/auth/hero-image-4.jpg"
-          alt="Hero background"
-          loading="eager"
-          fill
-        />
-        <div className="absolute inset-0 bg-primary/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/20 to-black/60 opacity-50" />
+      <section className="relative border-b pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden bg-linear-to-br from-primary/15 via-primary/8 to-primary/5">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-primary/10 to-transparent animate-pulse" />
 
-        <motion.div
-          className="relative z-10 text-center px-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{t('hero.title')}</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">{t('hero.subtitle')}</p>
-        </motion.div>
+        {/* Animated grid pattern */}
+        <div
+          className="absolute inset-0 opacity-30 animate-[gridMove_8s_linear_infinite]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, hsl(var(--primary) / 0.3) 1px, transparent 1px),
+              linear-gradient(to bottom, hsl(var(--primary) / 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+          }}
+        />
+
+        {/* Animated floating orbs */}
+        <div className="absolute top-10 left-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-20 right-20 w-52 h-52 bg-primary/25 rounded-full blur-3xl animate-float-delayed" />
+        <div className="absolute bottom-10 left-1/3 w-44 h-44 bg-primary/20 rounded-full blur-3xl animate-float-slow" />
+
+        {/* Glowing accent lines */}
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-primary/70 to-transparent animate-shimmer" />
+        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-primary/50 to-transparent" />
+
+        <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
+          <motion.div
+            className="max-w-3xl"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+          >
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight relative">
+              <span className="relative z-10">{t('hero.title')}</span>
+              <span className="absolute inset-0 bg-linear-to-r from-primary/40 via-primary/30 to-primary/20 blur-2xl animate-pulse opacity-60" />
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed relative z-10">
+              {t('hero.subtitle')}
+            </p>
+          </motion.div>
+        </div>
       </section>
 
       <div className="w-full bg-linear-to-br from-muted/50 via-muted/30 to-muted/40 relative">
