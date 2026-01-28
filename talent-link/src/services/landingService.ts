@@ -41,19 +41,13 @@ export const landingService = {
   },
   // Get discovery data
   getDiscoveryData: async () => {
-    // If explicitly using mock data, return it immediately
-    if (useMockData) {
-      return mockAdminData.getDiscoveryData()
-    }
-
     try {
-      // Use featured-users endpoint as source since /landing/discovery might not exist
-      // Fetch a larger limit to get more "discovery" content
+      // Luôn ưu tiên gọi API thật, chỉ fallback sang mock khi không có data hoặc lỗi
       const res = await axiosClient.get('/landing/featured-users', {
-        params: { limit: 50 },
+        params: { limit: 1000 },
       })
-
-      const users: FeaturedUser[] = res.data?.data?.users || res.data?.users || []
+      const users: FeaturedUser[] =
+        res.data?.data?.users?.users || res.data?.users?.users || res.data?.data?.users || res.data?.users || []
 
       const artists = users.filter(u => u.role !== 'venue')
       const venues = users.filter(u => u.role === 'venue')

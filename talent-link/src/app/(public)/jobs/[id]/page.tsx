@@ -285,13 +285,15 @@ const JobDetailPage = () => {
                     {job.type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        <span>{t(`options.employment.${job.type}`)}</span>
+                        <span>{tOptions(`roles.${job.type}`)}</span>
                       </div>
                     )}
                     {job.recruitment_type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        <span className="capitalize">{t(`options.postTypes.${job.recruitment_type}`)}</span>
+                        <span className="capitalize">
+                          {tOptions(`employment.${job.recruitment_type}`)}
+                        </span>
                       </div>
                     )}
                     {(job.location || job.location_type) && (
@@ -386,14 +388,16 @@ const JobDetailPage = () => {
                           {job.experience_level && (
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('experienceLevel')}:</span>
-                              <span className="font-medium capitalize">{t(`options.experience.${job.experience_level}`)}</span>
+                              <span className="font-medium capitalize">
+                                {tOptions(`experience.${job.experience_level}`)}
+                              </span>
                             </div>
                           )}
                           {job.recruitment_type && (
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('employmentType')}:</span>
                               <span className="font-medium capitalize">
-                                {t(`options.postTypes.${job.recruitment_type}`)}
+                                {tOptions(`employment.${job.recruitment_type}`)}
                               </span>
                             </div>
                           )}
@@ -519,7 +523,7 @@ const JobDetailPage = () => {
                       <>
                         <Separator />
                         <div className="space-y-2">
-                          <h3 className="font-semibold text-sm">{t('jobs.title')}</h3>
+                          <h3 className="font-semibold text-sm">{t('totalApplications')}</h3>
                           <p className="text-2xl font-bold">
                             {job.total_submissions || job.applications_count || 0}
                           </p>

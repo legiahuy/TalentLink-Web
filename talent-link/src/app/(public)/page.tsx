@@ -43,6 +43,7 @@ const LandingPage = () => {
     location: string
     rating?: number
     description?: string
+    role: string
   }
 
   interface EventData {
@@ -106,6 +107,7 @@ const LandingPage = () => {
           genres: user.genres?.map((g) => g.name) || [],
           location: [user.city, user.country].filter(Boolean).join(', ') || tCommon('unknown'),
           description: user.brief_bio || '',
+          role: user.role || 'artist',
         }))
 
         // Transform FeaturedJob to EventCard format
@@ -202,8 +204,8 @@ const LandingPage = () => {
                 }}
               />
               {suggestions && (suggestions.jobs.length > 0 || suggestions.users.length > 0) && (
-                <div className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border/60 bg-background shadow-lg overflow-hidden z-20">
-                  {suggestions.users.slice(0, 5).map((u) => {
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border/60 bg-background shadow-lg max-h-64 overflow-y-auto z-20 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/50">
+                  {suggestions.users.map((u) => {
                     const avatarSrc = u.avatarUrl ? resolveMediaUrl(u.avatarUrl) : undefined
                     const fallback = (u.displayName || u.username || '?').charAt(0).toUpperCase()
                     return (
@@ -222,13 +224,13 @@ const LandingPage = () => {
                             {u.displayName || u.username}
                           </div>
                           <div className="text-xs text-muted-foreground truncate text-start">
-                            {tOptions(`roles.${u.role}`)}
+                            {u.role === 'venue' ? tOptions('roles.venue') : tOptions('roles.artist')}
                           </div>
                         </div>
                       </Link>
                     )
                   })}
-                  {suggestions.jobs.slice(0, 5).map((j) => (
+                  {suggestions.jobs.map((j) => (
                     <Link
                       key={`j-${j.id}`}
                       href={`/jobs/${j.id}`}
@@ -306,7 +308,10 @@ const LandingPage = () => {
               ) : (
                 featuredArtists.map((artist) => (
                   <motion.div key={artist.id} variants={fadeInUp} className="h-full">
-                    <ArtistCard {...artist} />
+                    <ArtistCard
+                      {...artist}
+                      roleLabel={tOptions(`roles.${artist.role}`)}
+                    />
                   </motion.div>
                 ))
               )}

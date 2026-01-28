@@ -418,6 +418,7 @@
   },
   "MyApplications": {
     "title": "Ứng tuyển của tôi",
+    "subtitle": "Theo dõi trạng thái các lượt ứng tuyển và xem bạn đã ứng tuyển vào những công việc nào.",
     "tabs": {
       "all": "Tất cả",
       "pending_review": "Chờ duyệt",
@@ -433,10 +434,41 @@
       "status": "Trạng thái",
       "actions": "Thao tác"
     },
+    "stats": {
+      "total": "Tổng cộng",
+      "pending": "Chờ duyệt",
+      "accepted": "Đã chấp nhận",
+      "rejected": "Đã từ chối"
+    },
+    "summary": {
+      "count": "{count} lượt ứng tuyển"
+    },
+    "error": {
+      "loadFailed": "Hiện không thể tải danh sách ứng tuyển của bạn.",
+      "toast": "Không thể tải danh sách ứng tuyển."
+    },
     "noApplications": {
       "title": "Chưa có ứng tuyển nào",
       "description": "Bạn chưa ứng tuyển vào công việc nào. Hãy bắt đầu khám phá kho việc làm!",
-      "exploreButton": "Khám phá việc làm"
+      "exploreButton": "Khám phá việc làm",
+      "filtered": "Không tìm thấy lượt ứng tuyển với trạng thái {status}."
+    },
+    "jobUnavailable": "Công việc (không có chi tiết)",
+    "rejectionReasonTitle": "Lý do từ chối",
+    "dialog": {
+      "title": "Ứng tuyển của bạn",
+      "description": "Chi tiết ứng tuyển",
+      "appliedOn": "Ứng tuyển ngày {date}",
+      "reviewNotes": "Ghi chú đánh giá",
+      "coverLetter": "Thư ứng tuyển",
+      "portfolio": "Portfolio",
+      "demoFile": "Tệp demo",
+      "viewDemo": "Xem demo",
+      "noDetails": "Không có chi tiết ứng tuyển."
+    },
+    "actions": {
+      "viewJob": "Xem công việc",
+      "viewApplication": "Xem ứng tuyển"
     }
   },
   "MyPosts": {
@@ -686,9 +718,24 @@
     "showingResults": "Đang hiển thị kết quả cho \"{query}\"",
     "loading": "Đang tải kết quả...",
     "error": "Không thể tải kết quả tìm kiếm.",
+    "filters": {
+      "title": "Bộ lọc",
+      "clear": "Xóa",
+      "role": "Vai trò",
+      "roleAll": "Tất cả vai trò",
+      "genre": "Thể loại",
+      "genreAll": "Tất cả thể loại",
+      "location": "Địa điểm",
+      "locationAll": "Tất cả địa điểm"
+    },
+    "tabs": {
+      "all": "Tất cả",
+      "jobs": "Công việc",
+      "users": "Người dùng"
+    },
     "jobs": {
-      "title": "Job",
-      "noResults": "Không có job phù hợp."
+      "title": "Công việc",
+      "noResults": "Không có công việc phù hợp."
     },
     "users": {
       "title": "Người dùng",
