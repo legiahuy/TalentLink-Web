@@ -120,7 +120,7 @@ export function ArtistProfileView({
                   src={
                     avatarUrl
                       ? `${resolveMediaUrl(avatarUrl)}?v=${profile.updated_at ?? ''}`
-                      : '/images/profile/avatar-default.svg'
+                      : '/images/artist/default-avatar.jpeg'
                   }
                   alt={displayName}
                   width={192}

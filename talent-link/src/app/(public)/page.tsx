@@ -8,15 +8,16 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Search, ArrowRight, Music, Users, Shield, Briefcase } from 'lucide-react'
 import ArtistCard from '@/components/artist/ArtistCard'
-import EventCard from '@/components/event/EventCard'
+import JobCard from '@/components/jobs/JobCard'
 import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
 import { landingService } from '@/services/landingService'
 import { searchService } from '@/services/searchService'
 import type { FeaturedUser, FeaturedJob } from '@/types/admin'
-import type { JobPostSearchDto } from '@/types/job'
+import type { JobPostSearchDto, JobPost } from '@/types/job'
 import type { UserSearchDto } from '@/types/search'
 import { resolveMediaUrl } from '@/lib/utils'
+import { useSavedJobs } from '@/hooks/useSavedJobs'
 
 const LandingPage = () => {
   const t = useTranslations('LandingPage')
@@ -43,20 +44,11 @@ const LandingPage = () => {
     location: string
     rating?: number
     description?: string
-  }
-
-  interface EventData {
-    id: string
-    title: string
-    date: string
-    time: string
-    status: 'upcoming' | 'ongoing' | 'past'
-    artists: string[]
-    image: string | StaticImageData
+    role: string
   }
 
   const [featuredArtists, setFeaturedArtists] = useState<ArtistData[]>([])
-  const [featuredEvents, setFeaturedEvents] = useState<EventData[]>([])
+  const [featuredJobs, setFeaturedJobs] = useState<JobPost[]>([])
   const [loading, setLoading] = useState(true)
 
   // -- Autocomplete Logic --
@@ -89,7 +81,7 @@ const LandingPage = () => {
   }, [searchQuery])
 
   // -- Fetch Featured Content --
-  useEffect(() => {
+
     const fetchFeaturedContent = async () => {
       try {
         const [users, jobs] = await Promise.all([
@@ -102,25 +94,48 @@ const LandingPage = () => {
           id: user.id,
           name: user.display_name || tCommon('unknown'),
           username: user.username || user.id,
-          image: user.avatar_url || '/images/auth/auth-photo-1.jpg',
+          image: user.avatar_url || '/images/artist/default-avatar.jpeg',
           genres: user.genres?.map((g) => g.name) || [],
           location: [user.city, user.country].filter(Boolean).join(', ') || tCommon('unknown'),
           description: user.brief_bio || '',
+          role: user.role || 'artist',
         }))
 
-        // Transform FeaturedJob to EventCard format
-        const transformedJobs = jobs.map((job: FeaturedJob) => ({
+        // Transform FeaturedJob to JobPost format
+        const transformedJobs: JobPost[] = jobs.map((job: any) => ({
           id: job.id,
           title: job.title,
-          date: job.deadline || new Date().toISOString(),
-          time: '20:00',
-          status: 'upcoming' as const,
-          artists: [job.creator_name || job.creator_username || tCommon('unknown')],
-          image: '/images/auth/auth-photo-1.jpg',
+          description: job.description || '',
+          brief_description: job.brief_description,
+          post_type: job.post_type,
+          type: job.type,
+          status: job.status,
+          visibility: job.visibility,
+          creator_id: job.creator_id,
+          creator_role: job.creator_role,
+          // Robust mapping for creator info - try all possible field names
+          creator_display_name: job.creatorName ?? job.creator_name ?? job.creatorDisplayName ?? job.creator_display_name ?? tCommon('unknown'),
+          creator_username: job.creatorUsername ?? job.creator_username,
+          creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url ?? job.creatorAvatar ?? job.creator_avatar,
+          location: job.location,
+          location_type: job.location_type,
+          budget_min: job.budget_min,
+          budget_max: job.budget_max,
+          budget_currency: job.budget_currency,
+          payment_type: job.payment_type,
+          experience_level: job.experience_level,
+          required_skills: job.required_skills,
+          genres: job.genres,
+          deadline: job.deadline,
+          created_at: job.created_at,
+          updated_at: job.updated_at,
+          published_at: job.published_at,
+          applications_count: job.total_submissions,
+          views_count: job.views_count
         }))
 
         setFeaturedArtists(transformedUsers)
-        setFeaturedEvents(transformedJobs)
+        setFeaturedJobs(transformedJobs)
       } catch (error) {
         console.error('Failed to fetch featured content:', error)
         // Keep empty arrays as fallback
@@ -129,8 +144,17 @@ const LandingPage = () => {
       }
     }
 
+
+  const { toggleSave, isJobSaved } = useSavedJobs()
+
+  useEffect(() => {
     fetchFeaturedContent()
   }, [])
+
+
+  const handleToggleSave = (jobId: string) => {
+    toggleSave(jobId)
+  }
 
   // -- Animations --
   const fadeInUp: Variants = {
@@ -202,8 +226,8 @@ const LandingPage = () => {
                 }}
               />
               {suggestions && (suggestions.jobs.length > 0 || suggestions.users.length > 0) && (
-                <div className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border/60 bg-background shadow-lg overflow-hidden z-20">
-                  {suggestions.users.slice(0, 5).map((u) => {
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-lg border border-border/60 bg-background shadow-lg max-h-64 overflow-y-auto z-20 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/50">
+                  {suggestions.users.map((u) => {
                     const avatarSrc = u.avatarUrl ? resolveMediaUrl(u.avatarUrl) : undefined
                     const fallback = (u.displayName || u.username || '?').charAt(0).toUpperCase()
                     return (
@@ -222,13 +246,13 @@ const LandingPage = () => {
                             {u.displayName || u.username}
                           </div>
                           <div className="text-xs text-muted-foreground truncate text-start">
-                            {tOptions(`roles.${u.role}`)}
+                            {u.role === 'venue' ? tOptions('roles.venue') : tOptions('roles.artist')}
                           </div>
                         </div>
                       </Link>
                     )
                   })}
-                  {suggestions.jobs.slice(0, 5).map((j) => (
+                  {suggestions.jobs.map((j) => (
                     <Link
                       key={`j-${j.id}`}
                       href={`/jobs/${j.id}`}
@@ -306,7 +330,10 @@ const LandingPage = () => {
               ) : (
                 featuredArtists.map((artist) => (
                   <motion.div key={artist.id} variants={fadeInUp} className="h-full">
-                    <ArtistCard {...artist} />
+                    <ArtistCard
+                      {...artist}
+                      roleLabel={tOptions(`roles.${artist.role}`)}
+                    />
                   </motion.div>
                 ))
               )}
@@ -322,7 +349,7 @@ const LandingPage = () => {
           </motion.div>
         </section>
 
-        {/* Featured Events */}
+        {/* Featured Jobs */}
         <section className="py-20">
           <motion.div
             className="mx-auto px-4 max-w-[1320px]"
@@ -347,14 +374,21 @@ const LandingPage = () => {
                     className="h-80 rounded-xl border border-border bg-card animate-pulse"
                   />
                 ))
-              ) : featuredEvents.length === 0 ? (
+              ) : featuredJobs.length === 0 ? (
                 <div className="col-span-full text-center py-12">
                   <p className="text-muted-foreground">{t('featuredJobs.noResults')}</p>
                 </div>
               ) : (
-                featuredEvents.map((event, index) => (
-                  <motion.div key={index} variants={fadeInUp} className="h-full">
-                    <EventCard event={event} />
+                featuredJobs.map((job) => (
+                  <motion.div key={job.id} variants={fadeInUp} className="h-full">
+                    <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline">
+                      <JobCard
+                        job={job}
+                        onToggleSave={handleToggleSave}
+                        isSaved={isJobSaved(job.id)}
+                        hideFooter={true}
+                      />
+                    </Link>
                   </motion.div>
                 ))
               )}

@@ -38,7 +38,7 @@ const EventCard = ({
   }
 
   return (
-    <Link href={`/event/${event.id}`} className="block h-full">
+    <Link href={`/jobs/${event.id}`} className="block h-full">
       <motion.div
         whileHover={{
           y: -5,
@@ -58,11 +58,11 @@ const EventCard = ({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             />
-            <div className="absolute top-3 right-3">
+            {/* <div className="absolute top-3 right-3">
               <Badge className={statusConfig[event.status].color}>
                 {statusConfig[event.status].label}
               </Badge>
-            </div>
+            </div> */}
           </div>
 
           <CardContent className="p-4">

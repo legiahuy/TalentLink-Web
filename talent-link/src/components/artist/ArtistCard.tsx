@@ -12,9 +12,10 @@ interface ArtistCardProps {
   genres: string[]
   location: string
   description?: string
+  roleLabel?: string
 }
 
-const ArtistCard = ({ name, username, image, genres, location, description }: ArtistCardProps) => {
+const ArtistCard = ({ name, username, image, genres, location, description, roleLabel }: ArtistCardProps) => {
   const handleClick = () => {
     // Scroll to top before navigation for better back button UX
     window.scrollTo(0, 0)
@@ -49,6 +50,11 @@ const ArtistCard = ({ name, username, image, genres, location, description }: Ar
             <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
               {name}
             </h3>
+            {roleLabel && (
+              <Badge variant="outline" className="text-[11px] px-2 py-0.5 whitespace-nowrap">
+                {roleLabel}
+              </Badge>
+            )}
           </div>
 
           {genres.length > 0 && (

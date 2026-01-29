@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { motion, Variants } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import JobCard from '@/components/jobs/JobCard'
@@ -21,6 +22,7 @@ import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
 import type { JobPost, JobSearchRequest } from '@/types/job'
+import { useSavedJobs } from '@/hooks/useSavedJobs'
 
 type JobType = 'all' | 'producer' | 'singer' | 'saved'
 
@@ -51,28 +53,27 @@ const JobPool = () => {
   const BUDGET_RANGE_DEFAULT: [number, number] = [0, 20000000]
   const [budgetRange, setBudgetRange] = useState<[number, number]>([...BUDGET_RANGE_DEFAULT])
   const [activeTab, setActiveTab] = useState<JobType>('all')
-  const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set())
+  const { savedJobs, toggleSave, isJobSaved } = useSavedJobs()
   const [jobs, setJobs] = useState<JobWithCreator[]>([])
   const [availableGenres, setAvailableGenres] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Load saved jobs from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(SAVED_JOBS_KEY)
-    if (saved) {
-      try {
-        setSavedJobs(new Set(JSON.parse(saved)))
-      } catch (e) {
-        console.error('Failed to load saved jobs', e)
-      }
-    }
-  }, [])
+  // Animations - optimized for faster display
+  const fadeInUp: Variants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  }
 
-  // Save jobs to localStorage when changed
-  useEffect(() => {
-    localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(Array.from(savedJobs)))
-  }, [savedJobs])
+  const staggerContainer: Variants = {
+    hidden: { opacity: 1 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  }
 
   // Debounce search input
   useEffect(() => {
@@ -147,55 +148,56 @@ const JobPool = () => {
       const searchResult = await jobService.searchJobsAdvanced(searchRequest)
 
       // Map JobPostSearchDto to JobPost format
-      const mappedJobs: JobPost[] = searchResult.jobPosts.map((job) => ({
+      // Handle both snake_case (actual API) and camelCase (type definition)
+      const mappedJobs: JobPost[] = searchResult.jobPosts.map((job: any) => ({
         id: job.id,
         title: job.title,
-        description: job.description ?? job.briefDescription ?? '',
-        brief_description: job.briefDescription,
-        post_type: job.postType as 'job_offer' | 'gig' | 'availability',
+        description: job.description ?? job.briefDescription ?? job.brief_description ?? '',
+        brief_description: job.briefDescription ?? job.brief_description,
+        post_type: (job.postType ?? job.post_type) as 'job_offer' | 'gig' | 'availability',
         type: job.type as 'producer' | 'singer' | 'venue' | undefined,
         status: job.status as 'draft' | 'published' | 'closed' | 'completed' | 'cancelled',
         visibility: job.visibility as 'public' | 'private' | 'invite_only',
-        creator_id: job.creatorId,
-        creator_role: job.creatorRole,
-        creator_name: job.creatorDisplayName,
-        creator_username: job.creatorUsername,
-        creator_avatar: job.creatorAvatarUrl,
-        location: job.location || job.locationText,
-        location_type: job.locationType as 'remote' | 'onsite' | 'hybrid' | undefined,
-        budget_min: job.budgetMin,
-        budget_max: job.budgetMax,
-        budget_currency: job.budgetCurrency as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
-        payment_type: job.paymentType as
+        creator_id: job.creatorId ?? job.creator_id,
+        creator_role: job.creatorRole ?? job.creator_role,
+        creator_display_name: job.creatorDisplayName ?? job.creator_display_name,
+        creator_username: job.creatorUsername ?? job.creator_username,
+        creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url,
+        location: job.location || job.locationText || job.location_text,
+        location_type: (job.locationType ?? job.location_type) as 'remote' | 'onsite' | 'hybrid' | undefined,
+        budget_min: job.budgetMin ?? job.budget_min,
+        budget_max: job.budgetMax ?? job.budget_max,
+        budget_currency: (job.budgetCurrency ?? job.budget_currency) as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
+        payment_type: (job.paymentType ?? job.payment_type) as
           | 'bySession'
           | 'byHour'
           | 'byProject'
           | 'byMonth'
           | undefined,
-        recruitment_type: job.recruitmentType as
+        recruitment_type: (job.recruitmentType ?? job.recruitment_type) as
           | 'full_time'
           | 'part_time'
           | 'contract'
           | 'one_time'
           | undefined,
-        experience_level: job.experienceLevel as
+        experience_level: (job.experienceLevel ?? job.experience_level) as
           | 'beginner'
           | 'intermediate'
           | 'expert'
           | 'any'
           | undefined,
-        required_skills: job.requiredSkills,
+        required_skills: job.requiredSkills ?? job.required_skills,
         genres: job.genres,
         benefits: job.benefits,
-        submission_deadline: job.deadline ?? undefined,
-        created_at: job.createdAt,
-        updated_at: job.updatedAt,
-        published_at: job.publishedAt ?? undefined,
-        closed_at: job.closedAt ?? undefined,
-        total_submissions: job.applicationsCount,
-        applications_count: job.applicationsCount,
-        bookings_count: job.bookingsCount,
-        views_count: job.viewsCount,
+        submission_deadline: job.deadline ?? job.submission_deadline ?? undefined,
+        created_at: job.createdAt ?? job.created_at,
+        updated_at: job.updatedAt ?? job.updated_at,
+        published_at: job.publishedAt ?? job.published_at ?? undefined,
+        closed_at: job.closedAt ?? job.closed_at ?? undefined,
+        total_submissions: job.applicationsCount ?? job.applications_count ?? job.total_submissions,
+        applications_count: job.applicationsCount ?? job.applications_count,
+        bookings_count: job.bookingsCount ?? job.bookings_count,
+        views_count: job.viewsCount ?? job.views_count,
       }))
 
       setJobs(mappedJobs)
@@ -291,17 +293,7 @@ const JobPool = () => {
     setBudgetRange([...BUDGET_RANGE_DEFAULT])
   }
 
-  const handleToggleSave = (jobId: string, isSaved: boolean) => {
-    setSavedJobs((prev) => {
-      const newSet = new Set(prev)
-      if (isSaved) {
-        newSet.add(jobId)
-      } else {
-        newSet.delete(jobId)
-      }
-      return newSet
-    })
-  }
+
 
   const handleViewDetails = (jobId: string) => {
     router.push(`/jobs/${jobId}`)
@@ -538,29 +530,35 @@ const JobPool = () => {
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as JobType)}>
-                <div className="flex items-center justify-between mb-6">
-                  <TabsList className="grid w-full max-w-xl grid-cols-4 bg-muted/50">
-                    <TabsTrigger value="all" className="gap-1.5 text-xs">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                  <TabsList className="h-11 p-1 bg-muted/50 backdrop-blur-sm border border-border/40">
+                    <TabsTrigger value="all" className="px-5 text-sm gap-2">
                       <Sparkles className="w-3.5 h-3.5" />
                       {t('tabs.all')}
                     </TabsTrigger>
-                    <TabsTrigger value="producer" className="gap-1.5 text-xs">
+                    <TabsTrigger value="producer" className="px-5 text-sm gap-2">
                       <Disc className="w-3.5 h-3.5" />
                       {t('tabs.forProducers')}
                     </TabsTrigger>
-                    <TabsTrigger value="singer" className="gap-1.5 text-xs">
+                    <TabsTrigger value="singer" className="px-5 text-sm gap-2">
                       <Mic className="w-3.5 h-3.5" />
                       {t('tabs.forSingers')}
                     </TabsTrigger>
-                    <TabsTrigger value="saved" className="gap-1.5 text-xs">
+                    <TabsTrigger value="saved" className="px-5 text-sm gap-2">
                       <Briefcase className="w-3.5 h-3.5" />
                       {t('tabs.saved')}
                     </TabsTrigger>
                   </TabsList>
-                  <div className="text-sm text-muted-foreground hidden sm:block font-medium">
-                    {loading
-                      ? tCommon('loading')
-                      : t('jobCount', { count: filteredJobs.length })}
+
+                  <div className="px-4 py-1.5 bg-muted/60 backdrop-blur-sm border border-border/40 rounded-full text-xs font-semibold text-muted-foreground shadow-sm">
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
+                        {tCommon('loading')}
+                      </span>
+                    ) : (
+                      `${filteredJobs.length} ${tCommon('results') || 'results'}`
+                    )}
                   </div>
                 </div>
 
@@ -570,17 +568,26 @@ const JobPool = () => {
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : filteredJobs.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                    <motion.div
+                      key={`all-${debouncedSearch}-${selectedGenre}-${selectedLocation}-${selectedLocationType}-${selectedExperience}-${selectedRecruitment}`}
+                      className="grid gap-4 md:grid-cols-2 xl:grid-cols-1"
+                      initial="hidden"
+                      animate="show"
+                      variants={staggerContainer}
+                    >
                       {filteredJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSaved={savedJobs.has(job.id)}
-                          onToggleSave={handleToggleSave}
-                          onViewDetails={handleViewDetails}
-                        />
+                        <motion.div key={job.id} variants={fadeInUp}>
+                          <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline" onClick={(e) => e.stopPropagation()}>
+                            <JobCard
+                              job={job}
+                              isSaved={isJobSaved(job.id)}
+                              onToggleSave={toggleSave}
+                              onViewDetails={handleViewDetails}
+                            />
+                          </Link>
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   ) : (
                     <Card className="p-12 text-center">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -603,17 +610,26 @@ const JobPool = () => {
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : filteredJobs.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                    <motion.div
+                      key={`producer-${debouncedSearch}-${selectedGenre}-${selectedLocation}-${selectedLocationType}-${selectedExperience}-${selectedRecruitment}`}
+                      className="grid gap-4 md:grid-cols-2 xl:grid-cols-1"
+                      initial="hidden"
+                      animate="show"
+                      variants={staggerContainer}
+                    >
                       {filteredJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSaved={savedJobs.has(job.id)}
-                          onToggleSave={handleToggleSave}
-                          onViewDetails={handleViewDetails}
-                        />
+                        <motion.div key={job.id} variants={fadeInUp}>
+                          <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline" onClick={(e) => e.stopPropagation()}>
+                            <JobCard
+                              job={job}
+                              isSaved={isJobSaved(job.id)}
+                              onToggleSave={toggleSave}
+                              onViewDetails={handleViewDetails}
+                            />
+                          </Link>
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   ) : (
                     <Card className="p-12 text-center">
                       <Disc className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -631,17 +647,26 @@ const JobPool = () => {
                       <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : filteredJobs.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                    <motion.div
+                      key={`singer-${debouncedSearch}-${selectedGenre}-${selectedLocation}-${selectedLocationType}-${selectedExperience}-${selectedRecruitment}`}
+                      className="grid gap-4 md:grid-cols-2 xl:grid-cols-1"
+                      initial="hidden"
+                      animate="show"
+                      variants={staggerContainer}
+                    >
                       {filteredJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSaved={savedJobs.has(job.id)}
-                          onToggleSave={handleToggleSave}
-                          onViewDetails={handleViewDetails}
-                        />
+                        <motion.div key={job.id} variants={fadeInUp}>
+                          <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline" onClick={(e) => e.stopPropagation()}>
+                            <JobCard
+                              job={job}
+                              isSaved={isJobSaved(job.id)}
+                              onToggleSave={toggleSave}
+                              onViewDetails={handleViewDetails}
+                            />
+                          </Link>
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   ) : (
                     <Card className="p-12 text-center">
                       <Mic className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -655,17 +680,26 @@ const JobPool = () => {
 
                 <TabsContent value="saved" className="mt-0">
                   {filteredJobs.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                    <motion.div
+                      key="saved-jobs"
+                      className="grid gap-4 md:grid-cols-2 xl:grid-cols-1"
+                      initial="hidden"
+                      animate="show"
+                      variants={staggerContainer}
+                    >
                       {filteredJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSaved={true}
-                          onToggleSave={handleToggleSave}
-                          onViewDetails={handleViewDetails}
-                        />
+                        <motion.div key={job.id} variants={fadeInUp}>
+                          <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline" onClick={(e) => e.stopPropagation()}>
+                            <JobCard
+                              job={job}
+                              isSaved={true}
+                              onToggleSave={toggleSave}
+                              onViewDetails={handleViewDetails}
+                            />
+                          </Link>
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   ) : (
                     <Card className="p-12 text-center">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />

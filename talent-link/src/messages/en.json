@@ -418,6 +418,7 @@
   },
   "MyApplications": {
     "title": "My Applications",
+    "subtitle": "Track the status of your applications and see which jobs you've applied to.",
     "tabs": {
       "all": "All",
       "pending_review": "Pending",
@@ -433,10 +434,41 @@
       "status": "Status",
       "actions": "Actions"
     },
+    "stats": {
+      "total": "Total",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "summary": {
+      "count": "{count} applications"
+    },
+    "error": {
+      "loadFailed": "Unable to load your applications right now.",
+      "toast": "Unable to load your applications."
+    },
     "noApplications": {
       "title": "No applications yet",
       "description": "You haven't applied to any jobs yet. Start exploring the job pool!",
-      "exploreButton": "Explore Jobs"
+      "exploreButton": "Explore Jobs",
+      "filtered": "No {status} applications found."
+    },
+    "jobUnavailable": "Job (Details unavailable)",
+    "rejectionReasonTitle": "Rejection Reason",
+    "dialog": {
+      "title": "Your application",
+      "description": "Submission details",
+      "appliedOn": "Applied {date}",
+      "reviewNotes": "Review notes",
+      "coverLetter": "Cover letter",
+      "portfolio": "Portfolio",
+      "demoFile": "Demo file",
+      "viewDemo": "View demo",
+      "noDetails": "No submission details available."
+    },
+    "actions": {
+      "viewJob": "View Job",
+      "viewApplication": "View Application"
     }
   },
   "MyPosts": {
@@ -686,6 +718,21 @@
     "showingResults": "Showing results for \"{query}\"",
     "loading": "Loading results...",
     "error": "Unable to load search results.",
+    "filters": {
+      "title": "Filters",
+      "clear": "Clear",
+      "role": "Role",
+      "roleAll": "All roles",
+      "genre": "Genre",
+      "genreAll": "All genres",
+      "location": "Location",
+      "locationAll": "All locations"
+    },
+    "tabs": {
+      "all": "All",
+      "jobs": "Jobs",
+      "users": "Users"
+    },
     "jobs": {
       "title": "Jobs",
       "noResults": "No matching jobs found."
