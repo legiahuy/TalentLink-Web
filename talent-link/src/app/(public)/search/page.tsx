@@ -32,12 +32,14 @@ import type {
   UserSearchResultDto,
 } from '@/types/search'
 import type { JobPost } from '@/types/job'
+import { useSavedJobs } from '@/hooks/useSavedJobs'
 
 export default function SearchPage() {
   const t = useTranslations('SearchPage')
   const tOptions = useTranslations('options')
   const tCommon = useTranslations('Common')
   const searchParams = useSearchParams()
+  const { isJobSaved, toggleSave } = useSavedJobs()
   const initialQuery = searchParams.get('query') || ''
   const [query, setQuery] = useState(initialQuery)
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
@@ -203,11 +205,7 @@ export default function SearchPage() {
     router.push(`/jobs/${jobId}`)
   }
 
-  const handleToggleSave = (jobId: string, isSaved: boolean) => {
-    // Handle save/unsave logic if needed
-    // For now, just track the action
-    console.log(`Job ${jobId} ${isSaved ? 'saved' : 'unsaved'}`)
-  }
+
 
   const renderJobs = (items?: JobPostSearchDto[]) => {
     if (!items || items.length === 0) {
@@ -234,8 +232,8 @@ export default function SearchPage() {
                   <JobCard
                     job={jobPost}
                     onViewDetails={handleViewJobDetails}
-                    onToggleSave={handleToggleSave}
-                    isSaved={false}
+                    onToggleSave={toggleSave}
+                    isSaved={isJobSaved(jobPost.id)}
                   />
                 </div>
               </Link>
