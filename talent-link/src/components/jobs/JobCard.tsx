@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import {
   MapPin,
-  DollarSign,
+  Banknote,
   Calendar,
   Briefcase,
   Bookmark,
@@ -22,12 +22,19 @@ interface JobCardProps {
   job: JobPost
   onApply?: (jobId: string) => void
   onViewDetails?: (jobId: string) => void
-  onToggleSave?: (jobId: string, isSaved: boolean) => void
+  onToggleSave?: (jobId: string) => void
   isSaved?: boolean
+  hideFooter?: boolean
 }
 
-const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }: JobCardProps) => {
-  const [saved, setSaved] = useState(isSaved)
+const JobCard = ({
+  job,
+  onApply,
+  onViewDetails,
+  onToggleSave,
+  isSaved = false,
+  hideFooter = false,
+}: JobCardProps) => {
   const router = useRouter()
   const t = useTranslations('JobDetail')
 
@@ -69,14 +76,19 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
     const currency = job.budget_currency || 'USD'
     const currencySymbol = currency === 'VND' ? '₫' : currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '¥'
 
+    // Format numbers with locale-specific formatting (adds commas/periods)
+    const formatNumber = (num: number) => {
+      return num.toLocaleString('en-US')
+    }
+
     const period = job.payment_type ? ` / ${tOptions(`payment.${job.payment_type}`)}` : ''
 
     if (job.budget_min && job.budget_max) {
-      return `${currencySymbol}${job.budget_min}-${job.budget_max}${period}`
+      return `${currencySymbol} ${formatNumber(job.budget_min)} - ${formatNumber(job.budget_max)}${period}`
     } else if (job.budget_min) {
-      return `${currencySymbol}${job.budget_min}+ ${period}`
+      return `${currencySymbol} ${formatNumber(job.budget_min)}+${period}`
     } else if (job.budget_max) {
-      return `${tCommon('upTo')} ${currencySymbol}${job.budget_max}${period}`
+      return `${tCommon('upTo')} ${currencySymbol} ${formatNumber(job.budget_max)}${period}`
     }
     return t('negotiable')
   }
@@ -101,13 +113,14 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
     return locType || t('remote')
   }
 
-  const handleSave = () => {
-    const newSavedState = !saved
-    setSaved(newSavedState)
-    onToggleSave?.(job.id, newSavedState)
+  const handleSave = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onToggleSave?.(job.id)
   }
 
   const handleCreatorClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
     if (job.creator_username) {
       router.push(`/profile/${job.creator_username}`)
@@ -115,14 +128,14 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
   }
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-primary">
+    <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-primary h-full flex flex-col">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
-          <button onClick={handleCreatorClick} className="shrink-0 cursor-pointer">
+          <button onClick={handleCreatorClick} className="shrink-0 cursor-pointer relative z-10">
             <Avatar className="w-14 h-14 rounded-lg border-2 border-border hover:border-primary transition-colors">
-              <AvatarImage src={resolveMediaUrl(job.creator_avatar)} alt={job.creator_name || 'Unknown'} />
+              <AvatarImage src={resolveMediaUrl(job.creator_avatar)} alt={job.creator_display_name || 'Unknown'} />
               <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                {(job.creator_name || 'Unknown')
+                {(job.creator_display_name || 'Unknown')
                   .split(' ')
                   .map((word) => word[0])
                   .join('')
@@ -143,18 +156,18 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
                   className="text-left hover:underline"
                 >
                   <CardDescription className="font-medium text-base">
-                    {job.creator_name || 'Unknown'}
+                    {job.creator_display_name || 'Unknown'}
                   </CardDescription>
                 </button>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0"
+                className="shrink-0 relative z-10 hover:bg-background/80"
                 onClick={handleSave}
-                aria-label={saved ? 'Remove from saved' : 'Save job'}
+                aria-label={isSaved ? 'Remove from saved' : 'Save job'}
               >
-                {saved ? (
+                {isSaved ? (
                   <BookmarkCheck className="w-5 h-5 text-primary fill-primary" />
                 ) : (
                   <Bookmark className="w-5 h-5" />
@@ -165,19 +178,19 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1">
         {/* Job Meta Info */}
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
+          {/* <div className="flex items-center gap-1.5">
             <Briefcase className="w-4 h-4 shrink-0" />
             <span className="truncate">{getJobType()}</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-1.5">
             <MapPin className="w-4 h-4 shrink-0" />
             <span className="truncate">{getLocation()}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <DollarSign className="w-4 h-4 shrink-0" />
+            <Banknote className="w-4 h-4 shrink-0" />
             <span className="truncate">{formatSalary()}</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -228,15 +241,32 @@ const JobCard = ({ job, onApply, onViewDetails, onToggleSave, isSaved = false }:
         )}
       </CardContent>
 
-      <CardFooter className="pt-4 gap-2">
-        <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => onApply?.(job.id)}>
-          {t('applyNow')}
-        </Button>
-        <Button variant="outline" className="shrink-0" onClick={() => onViewDetails?.(job.id)}>
-          <ExternalLink className="w-4 h-4 mr-2" />
-          {t('viewApplication')}
-        </Button>
-      </CardFooter>
+      {!hideFooter && (
+        <CardFooter className="pt-4 gap-2">
+          <Button
+            className="flex-1 bg-primary hover:bg-primary/90"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onApply?.(job.id)
+            }}
+          >
+            {t('applyNow')}
+          </Button>
+          <Button
+            variant="outline"
+            className="shrink-0"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onViewDetails?.(job.id)
+            }}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            {t('viewApplication')}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   )
 }

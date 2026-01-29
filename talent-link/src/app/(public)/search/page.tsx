@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { motion, Variants } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -40,11 +40,13 @@ export default function SearchPage() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get('query') || ''
   const [query, setQuery] = useState(initialQuery)
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
   const [jobs, setJobs] = useState<JobSearchResultDto | null>(null)
   const [users, setUsers] = useState<UserSearchResultDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | 'jobs' | 'users'>('all')
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
 
@@ -63,8 +65,34 @@ export default function SearchPage() {
     },
   }
 
+  // Debounce query input
   useEffect(() => {
-    const q = initialQuery.trim()
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 500)
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [query])
+
+  // Fetch data when debounced query changes
+  useEffect(() => {
+    const q = debouncedQuery.trim()
+    
+    // Update URL to match search query
+    // Use replace to avoid history stack overflow while typing
+    if (q !== initialQuery) {
+      const newUrl = q ? `/search?query=${encodeURIComponent(q)}` : '/search'
+      router.replace(newUrl, { scroll: false })
+    }
+
     if (!q) {
       setJobs(null)
       setUsers(null)
@@ -97,55 +125,77 @@ export default function SearchPage() {
     }
 
     fetchData()
-  }, [initialQuery, t])
+  }, [debouncedQuery, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync query state with URL search params
+  // Sync query state with URL search params (handle back/forward navigation)
   useEffect(() => {
-    setQuery(initialQuery)
-  }, [initialQuery])
+    // Only update if the URL query is different from current state 
+    // AND different from the debounced query we just set (to avoid race conditions while typing)
+    if (initialQuery !== query && initialQuery !== debouncedQuery) {
+      setQuery(initialQuery)
+      setDebouncedQuery(initialQuery)
+    }
+  }, [initialQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const q = query.trim()
-    if (!q) return
-    router.push(`/search?query=${encodeURIComponent(q)}`)
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    setDebouncedQuery(query)
   }
 
   // Map JobPostSearchDto to JobPost for JobCard component
-  const mapJobSearchToJobPost = (job: JobPostSearchDto): JobPost => {
+  const mapJobSearchToJobPost = (job: any): JobPost => {
     return {
       id: job.id,
       title: job.title,
-      description: job.description || '',
-      brief_description: undefined,
-      post_type: job.postType as 'job_offer' | 'gig' | 'availability',
+      description: job.description ?? job.briefDescription ?? job.brief_description ?? '',
+      brief_description: job.briefDescription ?? job.brief_description,
+      post_type: (job.postType ?? job.post_type) as 'job_offer' | 'gig' | 'availability',
       type: job.type as 'producer' | 'singer' | 'venue' | undefined,
       status: job.status as 'draft' | 'published' | 'closed' | 'completed' | 'cancelled',
       visibility: job.visibility as 'public' | 'private' | 'invite_only',
-      creator_id: job.creatorId,
-      creator_role: job.creatorRole,
-      creator_name: job.creatorDisplayName,
-      creator_username: job.creatorUsername,
-      creator_avatar: job.creatorAvatarUrl,
-      location: job.location,
-      location_type: job.locationType as 'remote' | 'onsite' | 'hybrid' | undefined,
-      budget_min: job.budgetMin,
-      budget_max: job.budgetMax,
-      budget_currency: job.budgetCurrency as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
-      payment_type: job.paymentType as 'bySession' | 'byHour' | 'byProject' | 'byMonth' | undefined,
-      experience_level: job.experienceLevel as 'beginner' | 'intermediate' | 'expert' | 'any' | undefined,
-      required_skills: job.requiredSkills,
+      creator_id: job.creatorId ?? job.creator_id,
+      creator_role: job.creatorRole ?? job.creator_role,
+      creator_display_name: job.creatorDisplayName ?? job.creator_display_name,
+      creator_username: job.creatorUsername ?? job.creator_username,
+      creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url,
+      location: job.location || job.locationText || job.location_text,
+      location_type: (job.locationType ?? job.location_type) as 'remote' | 'onsite' | 'hybrid' | undefined,
+      budget_min: job.budgetMin ?? job.budget_min,
+      budget_max: job.budgetMax ?? job.budget_max,
+      budget_currency: (job.budgetCurrency ?? job.budget_currency) as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
+      payment_type: (job.paymentType ?? job.payment_type) as
+        | 'bySession'
+        | 'byHour'
+        | 'byProject'
+        | 'byMonth'
+        | undefined,
+      recruitment_type: (job.recruitmentType ?? job.recruitment_type) as
+        | 'full_time'
+        | 'part_time'
+        | 'contract'
+        | 'one_time'
+        | undefined,
+      experience_level: (job.experienceLevel ?? job.experience_level) as
+        | 'beginner'
+        | 'intermediate'
+        | 'expert'
+        | 'any'
+        | undefined,
+      required_skills: job.requiredSkills ?? job.required_skills,
       genres: job.genres,
       benefits: job.benefits,
-      deadline: job.deadline || undefined,
-      submission_deadline: undefined,
-      created_at: job.createdAt,
-      updated_at: job.updatedAt,
-      published_at: job.publishedAt || undefined,
-      closed_at: job.closedAt || undefined,
-      applications_count: job.applicationsCount,
-      views_count: job.viewsCount,
-      bookings_count: job.bookingsCount,
+      submission_deadline: job.deadline ?? job.submission_deadline ?? undefined,
+      created_at: job.createdAt ?? job.created_at,
+      updated_at: job.updatedAt ?? job.updated_at,
+      published_at: job.publishedAt ?? job.published_at ?? undefined,
+      closed_at: job.closedAt ?? job.closed_at ?? undefined,
+      total_submissions: job.applicationsCount ?? job.applications_count ?? job.total_submissions,
+      applications_count: job.applicationsCount ?? job.applications_count,
+      bookings_count: job.bookingsCount ?? job.bookings_count,
+      views_count: job.viewsCount ?? job.views_count,
     }
   }
 
@@ -218,7 +268,7 @@ export default function SearchPage() {
               id={user.id}
               name={user.displayName || user.username}
               username={user.username}
-              image={user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg'}
+              image={user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/artist/default-avatar.jpeg'}
               genres={user.genres?.map((g: { name?: string } | string) => typeof g === 'string' ? g : (g.name || '')) || []}
               location={user.location || tCommon('unknown')}
               description={user.briefBio}

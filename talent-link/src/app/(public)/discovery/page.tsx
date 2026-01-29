@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, Variants } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { Search, Music, MapPin, X, Sparkles } from 'lucide-react'
@@ -53,6 +53,7 @@ const DiscoveryPage = () => {
   const [activeTab, setActiveTab] = useState<FilterType>('all')
 
   const [availableGenres, setAvailableGenres] = useState<string[]>([])
+  const [availableLocations, setAvailableLocations] = useState<string[]>([])
 
   // Debounce search query
   useEffect(() => {
@@ -119,7 +120,7 @@ const DiscoveryPage = () => {
             id: user.id,
             name: user.displayName || tCommon('unknown'),
             username: user.username,
-            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
+            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/artist/default-avatar.jpeg',
             genres: (user.genres || [])
               .map((g: { name?: string } | string) => (typeof g === 'string' ? g : g.name || ''))
               .filter(Boolean),
@@ -135,7 +136,7 @@ const DiscoveryPage = () => {
             id: user.id,
             name: user.displayName || tCommon('unknown'),
             username: user.username,
-            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/auth/auth-photo-1.jpg',
+            image: user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/artist/default-avatar.jpeg',
             genres: (user.genres || [])
               .map((g: { name?: string } | string) => (typeof g === 'string' ? g : g.name || ''))
               .filter(Boolean),
@@ -156,22 +157,43 @@ const DiscoveryPage = () => {
     fetchData()
   }, [debouncedSearch, selectedGenre, selectedLocation])
 
-  // Compute unique locations (kept for UI dropdown, though we could fetch from server if needed)
-  const availableLocations = useMemo(() => {
-    const allItems = [...artists, ...venues]
-    const locations = new Set<string>()
-    allItems.forEach((item) => {
-      if (item.location && item.location !== tCommon('unknown')) {
-        locations.add(item.location)
+  // Fetch locations once on mount (fetch all users to get unique locations)
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        // Fetch all users without filters to get all available locations
+        const result = await searchService.searchUsers({
+          page: 1,
+          pageSize: 1000, // Large enough to get all users
+        })
+        const allUsers = result.userProfiles
+        
+        const locations = new Set<string>()
+        allUsers.forEach((user) => {
+          if (user.location && user.location !== tCommon('unknown')) {
+            locations.add(user.location)
+          }
+        })
+        setAvailableLocations(Array.from(locations).sort())
+      } catch (error) {
+        console.error('Failed to fetch locations', error)
       }
-    })
-    return Array.from(locations).sort()
-  }, [artists, venues, tCommon])
+    }
+    fetchLocations()
+  }, [tCommon])
 
   // Counts for UI
   const filteredArtists = artists
   const filteredVenues = venues
   const allFilteredCount = filteredArtists.length + filteredVenues.length
+  
+  // Dynamic count based on active tab
+  const displayCount = 
+    activeTab === 'all' 
+      ? allFilteredCount 
+      : activeTab === 'artists' 
+        ? filteredArtists.length 
+        : filteredVenues.length
 
   const hasActiveFilters =
     searchQuery !== '' || selectedGenre !== 'all' || selectedLocation !== 'all'
@@ -338,7 +360,7 @@ const DiscoveryPage = () => {
                         {tCommon('loading')}
                       </span>
                     ) : (
-                      `${allFilteredCount} ${tCommon('results') || 'results'}`
+                      `${displayCount} ${tCommon('results') || 'results'}`
                     )}
                   </div>
                 </div>

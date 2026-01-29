@@ -11,19 +11,21 @@ import {
   MessageCircle,
   BookmarkCheck,
   FileText,
+  Banknote,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react'
+import { MapPin, Calendar, Briefcase } from 'lucide-react'
 import type { JobPost, MySubmissionsResponse, MySubmissionItem } from '@/types/job'
 import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 import { jobService } from '@/services/jobService'
 import { resolveMediaUrl } from '@/lib/utils'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { useSavedJobs } from '@/hooks/useSavedJobs'
 
 interface JobWithCreator extends JobPost {
   creator_display_name?: string
@@ -31,7 +33,7 @@ interface JobWithCreator extends JobPost {
   creator_username?: string
 }
 
-const SAVED_JOBS_KEY = 'talentlink_saved_jobs'
+
 
 const JobDetailPage = () => {
   const t = useTranslations('JobDetail')
@@ -45,37 +47,11 @@ const JobDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isApplicationOpen, setIsApplicationOpen] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
   const [hasApplied, setHasApplied] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
 
-  // Load saved state from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(SAVED_JOBS_KEY)
-    if (saved) {
-      try {
-        const savedJobs = new Set(JSON.parse(saved))
-        setIsSaved(savedJobs.has(jobId))
-      } catch (e) {
-        console.error('Failed to load saved jobs', e)
-      }
-    }
-  }, [jobId])
-
-  // Toggle save job
-  const toggleSave = () => {
-    const saved = localStorage.getItem(SAVED_JOBS_KEY)
-    const savedJobs = saved ? new Set(JSON.parse(saved)) : new Set<string>()
-
-    if (isSaved) {
-      savedJobs.delete(jobId)
-    } else {
-      savedJobs.add(jobId)
-    }
-
-    localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(Array.from(savedJobs)))
-    setIsSaved(!isSaved)
-  }
+  const { isJobSaved, toggleSave } = useSavedJobs()
+  const isSaved = isJobSaved(jobId)
 
   useEffect(() => {
     let active = true
@@ -282,12 +258,12 @@ const JobDetailPage = () => {
 
                   {/* Job Meta */}
                   <div className="flex flex-wrap gap-4 mb-6 text-sm">
-                    {job.type && (
+                    {/* {job.type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
                         <span>{tOptions(`roles.${job.type}`)}</span>
                       </div>
-                    )}
+                    )} */}
                     {job.recruitment_type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
@@ -309,7 +285,7 @@ const JobDetailPage = () => {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                      <Banknote className="w-4 h-4 text-muted-foreground" />
                       <span className="font-semibold text-primary">{formatSalary(job)}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -464,7 +440,7 @@ const JobDetailPage = () => {
                   )}
 
                   <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1" onClick={toggleSave}>
+                    <Button variant="outline" className="flex-1" onClick={() => toggleSave(jobId)}>
                       {isSaved ? (
                         <BookmarkCheck className="w-4 h-4 mr-2 text-primary fill-primary" />
                       ) : (
