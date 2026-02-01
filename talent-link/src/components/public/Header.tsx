@@ -28,12 +28,14 @@ import LangSwitch from '@/components/public/LangSwitch'
 import { User, Settings, LogOut, MessageCircle, Briefcase, Inbox } from 'lucide-react'
 import { resolveMediaUrl } from '@/lib/utils'
 import { useState } from 'react'
+import { useSocketContext } from '@/context/SocketContext'
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const pathname = usePathname()
   const t = useTranslations('Header')
   const [isOpen, setIsOpen] = useState(false)
+  const { unreadCount } = useSocketContext()
 
   const navigationItems = [
     { href: '/', label: t('navigation.home') },
@@ -187,7 +189,7 @@ const Header = () => {
             <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <Button variant="link" size="icon" className="h-9 w-9" asChild>
+                <Button variant="link" size="icon" className="h-9 w-9 relative" asChild>
                   <Link href="/messages">
                     <MessageCircle className="h-5 w-5" />
                   </Link>

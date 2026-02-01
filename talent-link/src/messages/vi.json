@@ -857,6 +857,27 @@
     "confirmDelete": "Bạn có chắc chắn muốn xóa hội thoại này không?",
     "activeNow": "Đang hoạt động",
     "noConversations": "Không có hội thoại",
-    "unreadMessages": "{count} tin nhắn mới"
+    "unreadMessages": "{count} tin nhắn mới",
+    "deleteMessageTitle": "Xóa tin nhắn?",
+    "deleteMessageConfirm": "Bạn có chắc chắn muốn xóa tin nhắn này không? Hành động này không thể hoàn tác.",
+    "deleting": "Đang xóa...",
+    "seen": "Đã xem",
+    "attachedImage": "Ảnh đính kèm",
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{count} phút trước",
+      "hoursAgo": "{count} giờ trước",
+      "daysAgo": "{count} ngày trước"
+    },
+    "preview": {
+      "noMessages": "Chưa có tin nhắn",
+      "photo": "Ảnh",
+      "video": "Video",
+      "audio": "Audio",
+      "attachment": "Tệp đính kèm",
+      "you": "Bạn",
+      "user": "Người dùng",
+      "unknown": "Không xác định"
+    }
   }
 }

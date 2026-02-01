@@ -6,6 +6,18 @@ import type { NextConfig } from 'next'
 const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts')
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/socket.io',
+        destination: 'https://talentlink.io.vn/socket.io/', // Ensure trailing slash for destination if backend needs it, or match source
+      },
+      {
+        source: '/socket.io/:path+',
+        destination: 'https://talentlink.io.vn/socket.io/:path+',
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

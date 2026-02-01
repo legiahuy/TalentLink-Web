@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Header from '@/components/public/Header'
 import MessageThread, { ThreadMessage } from '@/components/messages/MessageThread'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, Loader2, Paperclip, X, Image, FileText, Film, Music, MoreVertical, Trash2 } from 'lucide-react'
+import { Search, Send, Loader2, Paperclip, X, Image, FileText, Film, Music, MoreVertical, Trash2, MessageCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -42,7 +43,7 @@ const MessagesPage = () => {
   const [creatingConversation, setCreatingConversation] = useState(false)
 
   // Socket connection for real-time messaging
-  const { joinConversation, leaveConversation, sendTyping } = useSocket({
+  const { joinConversation, leaveConversation, sendTyping, onlineUsers } = useSocket({
     onNewMessage: (message: Message) => {
       console.log('📨 Socket nhận tin nhắn mới:', message)
       const isActiveConversation = message.conversationId === selectedConversation
@@ -511,6 +512,7 @@ const MessagesPage = () => {
       return {
         name: conversation.name || 'Group',
         avatar: undefined,
+        username: undefined,
       }
     }
     // API trả về p.id là odUserId của participant
@@ -518,6 +520,7 @@ const MessagesPage = () => {
     return {
       name: other?.displayName || other?.username || 'Unknown',
       avatar: other?.avatarUrl || undefined,
+      username: other?.username,
     }
   }
 
@@ -530,10 +533,10 @@ const MessagesPage = () => {
       const diffHours = Math.floor(diffMs / 3600000)
       const diffDays = Math.floor(diffMs / 86400000)
 
-      if (diffMins < 1) return 'Vừa xong'
-      if (diffMins < 60) return `${diffMins} phút trước`
-      if (diffHours < 24) return `${diffHours} giờ trước`
-      if (diffDays < 7) return `${diffDays} ngày trước`
+      if (diffMins < 1) return t('time.justNow')
+      if (diffMins < 60) return t('time.minutesAgo', { count: diffMins })
+      if (diffHours < 24) return t('time.hoursAgo', { count: diffHours })
+      if (diffDays < 7) return t('time.daysAgo', { count: diffDays })
       return date.toLocaleDateString('en-US')
     } catch {
       return ''
@@ -541,18 +544,18 @@ const MessagesPage = () => {
   }
 
   const getPreviewText = (conv: Conversation): string => {
-    if (!conv.lastMessage) return 'No messages yet'
+    if (!conv.lastMessage) return t('preview.noMessages')
 
     const lastMsg = conv.lastMessage
     const isOwn = lastMsg.senderId === user?.id
 
     // Tìm tên người gửi
-    let senderName = 'User'
+    let senderName = t('preview.user')
     if (isOwn) {
-      senderName = 'You'
+      senderName = t('preview.you')
     } else {
       const sender = conv.participants.find((p) => p.id === lastMsg.senderId)
-      senderName = sender?.displayName || sender?.username || 'User'
+      senderName = sender?.displayName || sender?.username || t('preview.user')
     }
 
     // Kiểm tra attachment URL trước (có thể attachmentType chưa set)
@@ -561,13 +564,13 @@ const MessagesPage = () => {
       const attachmentType = lastMsg.attachmentType
 
       if (attachmentType === 'image') {
-        return `${senderName}: 📷 Photo`
+        return `${senderName}: 📷 ${t('preview.photo')}`
       } else if (attachmentType === 'video') {
-        return `${senderName}: 🎥 Video`
+        return `${senderName}: 🎥 ${t('preview.video')}`
       } else if (attachmentType === 'audio') {
-        return `${senderName}: 🎵 Audio`
+        return `${senderName}: 🎵 ${t('preview.audio')}`
       } else {
-        return `${senderName}: 📎 Attachment`
+        return `${senderName}: 📎 ${t('preview.attachment')}`
       }
     }
 
@@ -578,7 +581,8 @@ const MessagesPage = () => {
       return content.length > 50 ? `${content.substring(0, 50)}...` : content
     }
 
-    return 'No messages yet'
+    // Fallback nếu có tin nhắn nhưng không xác định được nội dung (thường là do attachment bị thiếu field từ API)
+    return `${senderName}: 📎 ${t('preview.attachment')}`
   }
 
   const filteredConversations = conversations.filter((conv) => {
@@ -588,19 +592,23 @@ const MessagesPage = () => {
 
   const selectedConv = conversations.find((c) => c.id === selectedConversation)
   const selectedConvInfo = selectedConv ? getOtherParticipant(selectedConv) : null
+  
+  // Determine if other user is online
+  const otherParticipantId = selectedConv?.participants.find(p => p.id !== user?.id)?.id
+  const isOnline = otherParticipantId ? onlineUsers.has(otherParticipantId) : false
 
   const participantNameMap = useMemo(() => {
     const map: Record<string, string> = {}
     if (selectedConv) {
       selectedConv.participants.forEach((participant) => {
-        map[participant.id] = participant.displayName || participant.username || 'User'
+        map[participant.id] = participant.displayName || participant.username || t('preview.user')
       })
     }
     if (user?.id) {
-      map[user.id] = user.display_name || user.username || 'You'
+      map[user.id] = user.display_name || user.username || t('preview.you')
     }
     return map
-  }, [selectedConv, user])
+  }, [selectedConv, user, t])
 
   const participantAvatarMap = useMemo(() => {
     const map: Record<string, string | undefined> = {}
@@ -619,7 +627,7 @@ const MessagesPage = () => {
     id: msg.id,
     senderId: msg.senderId,
     senderName:
-      msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? 'You' : 'User'),
+      msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? t('preview.you') : t('preview.user')),
     content: msg.content,
     timestamp: new Date(msg.createdAt).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -752,23 +760,63 @@ const MessagesPage = () => {
                     {/* Thread Header */}
                     <div className="p-5 border-b border-border/50 flex items-center justify-between backdrop-blur-sm bg-gradient-to-r from-background to-muted/20 shadow-sm">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-11 w-11 ring-2 ring-primary/20 shadow-md">
-                          <AvatarImage
-                            src={
-                              selectedConvInfo.avatar
-                                ? resolveMediaUrl(selectedConvInfo.avatar)
-                                : undefined
-                            }
-                            alt={selectedConvInfo.name}
-                          />
-                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
-                            {selectedConvInfo.name[0]?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
-                          <p className="text-xs text-muted-foreground">{t('activeNow')}</p>
-                        </div>
+                        {selectedConvInfo.username ? (
+                          <Link href={`/profile/${selectedConvInfo.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                            <Avatar className="h-11 w-11 ring-2 ring-primary/20 shadow-md">
+                              <AvatarImage
+                                src={
+                                  selectedConvInfo.avatar
+                                    ? resolveMediaUrl(selectedConvInfo.avatar)
+                                    : undefined
+                                }
+                                alt={selectedConvInfo.name}
+                              />
+                              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                                {selectedConvInfo.name[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
+                              {isOnline && (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                  </span>
+                                  <p className="not-italic text-xs text-green-600 font-medium">{t('activeNow')}</p>
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-11 w-11 ring-2 ring-primary/20 shadow-md">
+                              <AvatarImage
+                                src={
+                                  selectedConvInfo.avatar
+                                    ? resolveMediaUrl(selectedConvInfo.avatar)
+                                    : undefined
+                                }
+                                alt={selectedConvInfo.name}
+                              />
+                              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                                {selectedConvInfo.name[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
+                              {isOnline && (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                  </span>
+                                  <p className="text-xs text-green-600 font-medium">{t('activeNow')}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -802,117 +850,106 @@ const MessagesPage = () => {
                           messages={formattedMessages}
                           onEditMessage={handleEditMessage}
                           onDeleteMessage={handleDeleteMessage}
-                          otherParticipantAvatar={
-                            selectedConvInfo.avatar ? resolveMediaUrl(selectedConvInfo.avatar) : undefined
-                          }
+                          otherParticipantAvatar={selectedConvInfo.avatar ? resolveMediaUrl(selectedConvInfo.avatar) : undefined}
                         />
                       )}
                     </div>
 
-                    {/* Typing indicator */}
-                    {typingUser && (
-                      <div className="px-6 py-3 text-sm text-muted-foreground italic bg-muted/30 backdrop-blur-sm border-t border-border/30">
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                          </div>
-                          <span>Typing...</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Message Input */}
-                    <div className="p-5 border-t border-border/50 backdrop-blur-sm bg-background/80">
-                      {/* Selected file preview */}
+                    {/* Input */}
+                    <div className="p-4 border-t border-border/50 bg-background/50 backdrop-blur-sm">
                       {selectedFile && (
-                        <div className="mb-3 flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                          <div className="p-2 bg-primary/10 rounded-lg">
+                        <div className="mb-2 p-2 bg-muted rounded-lg flex items-center justify-between animate-in slide-in-from-bottom-2">
+                          <div className="flex items-center gap-2">
                             {getFileIcon(selectedFile)}
+                            <span className="text-sm truncate max-w-[200px]">{selectedFile.name}</span>
                           </div>
-                          <span className="text-sm truncate flex-1 font-medium">{selectedFile.name}</span>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
+                            className="h-6 w-6 hover:bg-background/80"
                             onClick={() => setSelectedFile(null)}
                           >
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
                       )}
-                      <div className="flex gap-2 items-end">
-                        {/* File upload button */}
-                        <label>
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={handleFileSelect}
-                            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
-                            disabled={sendingMessage || uploadingFile}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            disabled={sendingMessage || uploadingFile}
-                            className="h-11 w-11 rounded-xl border-border/50 hover:bg-primary/10 hover:border-primary/50 transition-all"
-                            asChild
-                          >
-                            <span className="cursor-pointer">
-                              {uploadingFile ? (
-                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                              ) : (
-                                <Paperclip className="w-5 h-5" />
-                              )}
-                            </span>
-                          </Button>
-                        </label>
+                      
+                      {/* Typing indicator */}
+                      {typingUser && typingUser !== user?.id && (
+                        <div className="mb-2 px-2">
+                           <p className="text-xs text-muted-foreground flex items-center gap-1">
+                             <span className="animate-bounce">●</span>
+                             <span className="animate-bounce delay-100">●</span>
+                             <span className="animate-bounce delay-200">●</span>
+                             <span className="ml-1">Typing...</span>
+                           </p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          id="file-upload"
+                          className="hidden"
+                          onChange={handleFileSelect}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                          disabled={sendingMessage || uploadingFile}
+                        >
+                          <Paperclip className="w-5 h-5" />
+                        </Button>
                         <Input
                           placeholder="Type a message..."
                           value={messageInput}
                           onChange={(e) => {
                             setMessageInput(e.target.value)
-                            // Send typing indicator
-                            if (selectedConversation && e.target.value && !isTyping) {
-                              setIsTyping(true)
+                            if (selectedConversation) {
                               sendTyping(selectedConversation, true)
-                            } else if (selectedConversation && !e.target.value && isTyping) {
-                              setIsTyping(false)
-                              sendTyping(selectedConversation, false)
+                              // Debounce stop typing could be added here
                             }
                           }}
-                          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                           onBlur={() => {
-                            if (selectedConversation && isTyping) {
-                              setIsTyping(false)
+                            if (selectedConversation) {
                               sendTyping(selectedConversation, false)
                             }
                           }}
-                          className="flex-1 h-11 rounded-xl border-border/50 bg-background/50 focus:bg-background focus:border-primary/50 transition-all"
-                          disabled={sendingMessage}
-                        />
-                        <Button
-                          onClick={handleSendMessage}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSendMessage()
+                            }
+                          }}
+                          className="flex-1 bg-background/50 focus:bg-background transition-all"
                           disabled={sendingMessage || uploadingFile}
-                          className="h-11 px-5 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
+                        />
+                        <Button 
+                          onClick={handleSendMessage} 
+                          disabled={(!messageInput.trim() && !selectedFile) || sendingMessage || uploadingFile}
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all duration-300"
                         >
-                          {sendingMessage ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                          {sendingMessage || uploadingFile ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Send className="w-5 h-5" />
+                            <Send className="w-4 h-4" />
                           )}
                         </Button>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-transparent">
-                    <div className="text-center">
-                      <div className="mb-4 text-6xl">💬</div>
-                      <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
-                      <p className="text-sm text-muted-foreground">Choose from the list on the left to start messaging</p>
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground bg-muted/5">
+                    <div className="text-center space-y-4 p-8">
+                       <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                          <MessageCircle className="w-12 h-12 text-muted-foreground/50" />
+                       </div>
+                       <h3 className="text-xl font-semibold">{t('title')}</h3>
+                       <p className="max-w-xs mx-auto text-sm text-muted-foreground/80">
+                          Select a conversation to start chatting or search for a user to connect.
+                       </p>
                     </div>
                   </div>
                 )}

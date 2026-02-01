@@ -857,6 +857,27 @@
     "confirmDelete": "Are you sure you want to delete this conversation?",
     "activeNow": "Active now",
     "noConversations": "No conversations",
-    "unreadMessages": "{count} new messages"
+    "unreadMessages": "{count} new messages",
+    "deleteMessageTitle": "Delete message?",
+    "deleteMessageConfirm": "Are you sure you want to delete this message? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "seen": "Seen",
+    "attachedImage": "Attached image",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{count} minutes ago",
+      "hoursAgo": "{count} hours ago",
+      "daysAgo": "{count} days ago"
+    },
+    "preview": {
+      "noMessages": "No messages yet",
+      "photo": "Photo",
+      "video": "Video",
+      "audio": "Audio",
+      "attachment": "Attachment",
+      "you": "You",
+      "user": "User",
+      "unknown": "Unknown"
+    }
   }
 }
