@@ -1,16 +1,8 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import {
-  Loader,
   ArrowLeft,
-  Bookmark,
-  Share2,
-  Send,
-  MessageCircle,
-  BookmarkCheck,
-  FileText,
+  MapPin,
+  Calendar,
+  Briefcase,
   Banknote,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,14 +10,13 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { MapPin, Calendar, Briefcase } from 'lucide-react'
-import type { JobPost, MySubmissionsResponse, MySubmissionItem } from '@/types/job'
-import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 import { jobService } from '@/services/jobService'
 import { resolveMediaUrl } from '@/lib/utils'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
-import { useSavedJobs } from '@/hooks/useSavedJobs'
+import { getTranslations } from 'next-intl/server'
+import JobInteractions from '@/components/jobs/JobInteractions'
+import { Metadata } from 'next'
+import { JobPost } from '@/types/job'
 
 interface JobWithCreator extends JobPost {
   creator_display_name?: string
@@ -33,150 +24,98 @@ interface JobWithCreator extends JobPost {
   creator_username?: string
 }
 
-
-
-const JobDetailPage = () => {
-  const t = useTranslations('JobDetail')
-  const tCommon = useTranslations('Common')
-  const tOptions = useTranslations('options')
-  const params = useParams<{ id: string }>()
-  const router = useRouter()
-  const jobId = params?.id ?? ''
-
-  const [job, setJob] = useState<JobWithCreator | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isApplicationOpen, setIsApplicationOpen] = useState(false)
-  const [hasApplied, setHasApplied] = useState(false)
-  const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
-
-  const { isJobSaved, toggleSave } = useSavedJobs()
-  const isSaved = isJobSaved(jobId)
-
-  useEffect(() => {
-    let active = true
-
-    if (!jobId) {
-      setError(t('invalidJobId'))
-      setLoading(false)
-      return
-    }
-
-    const loadJob = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        // Fetch job data from API
-        const jobData = await jobService.getJobById(jobId, 'assets,tags')
-
-        if (!active) return
-
-        if (!jobData) {
-          setError(t('jobNotFound'))
-          return
-        }
-
-        // Backend already returns creator_name, creator_username, creator_avatar
-        setJob(jobData)
-
-        // Check if user has already applied
-        try {
-          const mySubmissions = await jobService.getMySubmissions()
-          const myApplication = mySubmissions.submissions?.find((sub) => sub.job?.id === jobId)
-          if (myApplication) {
-            setHasApplied(true)
-            setApplicationStatus(myApplication.status)
-          }
-        } catch (err) {
-          // Silently fail - user might not be logged in
-          console.error('Failed to check application status', err)
-        }
-      } catch (e) {
-        console.error('Error loading job', e)
-        if (!active) return
-        const message = e instanceof Error ? e.message : t('jobNotFoundDesc')
-        setError(message)
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    loadJob()
-    return () => {
-      active = false
-    }
-  }, [jobId])
-
-  // Set page title dynamically
-  useEffect(() => {
-    if (job) {
-      document.title = `${job.title} | TalentLink`
-    }
-  }, [job])
-
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-    if (diffInMinutes < 60) {
-      return diffInMinutes === 1 ? t('timeAgo.minute', { count: 1 }) : t('timeAgo.minutes', { count: diffInMinutes })
-    }
-    const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) {
-      return diffInHours === 1 ? t('timeAgo.hour', { count: 1 }) : t('timeAgo.hours', { count: diffInHours })
-    }
-    const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays === 0) return t('today')
-    if (diffInDays === 1) return t('yesterday')
-    if (diffInDays < 7) return t('timeAgo.days', { count: diffInDays })
-    if (diffInDays < 30) {
-      const weeks = Math.floor(diffInDays / 7)
-      return weeks === 1 ? t('timeAgo.week', { count: 1 }) : t('timeAgo.weeks', { count: weeks })
-    }
-    const months = Math.floor(diffInDays / 30)
-    return months === 1 ? t('timeAgo.month', { count: 1 }) : t('timeAgo.months', { count: months })
+// Helper functions (moved outside component)
+const getTimeAgo = (dateString: string, t: any) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  if (diffInMinutes < 60) {
+    return diffInMinutes === 1 ? t('timeAgo.minute', { count: 1 }) : t('timeAgo.minutes', { count: diffInMinutes })
   }
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) {
+    return diffInHours === 1 ? t('timeAgo.hour', { count: 1 }) : t('timeAgo.hours', { count: diffInHours })
+  }
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays === 0) return t('today')
+  if (diffInDays === 1) return t('yesterday')
+  if (diffInDays < 7) return t('timeAgo.days', { count: diffInDays })
+  if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7)
+    return weeks === 1 ? t('timeAgo.week', { count: 1 }) : t('timeAgo.weeks', { count: weeks })
+  }
+  const months = Math.floor(diffInDays / 30)
+  return months === 1 ? t('timeAgo.month', { count: 1 }) : t('timeAgo.months', { count: months })
+}
 
-  const formatSalary = (job: JobWithCreator) => {
-    if (job.budget_min && job.budget_max && job.budget_currency && job.payment_type) {
-      const formatNumber = (num: number) => {
-        if (job.budget_currency === 'VND') {
-          return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-            maximumFractionDigits: 0,
-          }).format(num)
-        }
-        return new Intl.NumberFormat('en-US', {
+const formatSalary = (job: JobWithCreator, tOptions: any, t: any) => {
+  if (job.budget_min && job.budget_max && job.budget_currency && job.payment_type) {
+    const formatNumber = (num: number) => {
+      if (job.budget_currency === 'VND') {
+        return new Intl.NumberFormat('vi-VN', {
           style: 'currency',
-          currency: job.budget_currency,
+          currency: 'VND',
           maximumFractionDigits: 0,
         }).format(num)
       }
-
-      type PaymentType = NonNullable<JobWithCreator['payment_type']>
-      const periodMap: Record<PaymentType, string> = {
-        bySession: tOptions('payment.bySession'),
-        byHour: tOptions('payment.byHour'),
-        byProject: tOptions('payment.byProject'),
-        byMonth: tOptions('payment.byMonth'),
-      }
-
-      const paymentType = job.payment_type
-      if (!paymentType) return ''
-
-      const range = `${formatNumber(job.budget_min)} - ${formatNumber(job.budget_max)}`
-      return `${range} / ${periodMap[paymentType]}${job.is_negotiable ? ` (${t('negotiable')})` : ''}`
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: job.budget_currency,
+        maximumFractionDigits: 0,
+      }).format(num)
     }
-    return ''
-  }
 
-  if (loading) {
-    return (
-      <div className="min-h-[70vh] w-full flex items-center justify-center">
-        <Loader className="animate-spin" size={24} />
-      </div>
-    )
+    type PaymentType = NonNullable<JobWithCreator['payment_type']>
+    const periodMap: Record<PaymentType, string> = {
+      bySession: tOptions('payment.bySession'),
+      byHour: tOptions('payment.byHour'),
+      byProject: tOptions('payment.byProject'),
+      byMonth: tOptions('payment.byMonth'),
+    }
+
+    const paymentType = job.payment_type
+    if (!paymentType) return ''
+
+    const range = `${formatNumber(job.budget_min)} - ${formatNumber(job.budget_max)}`
+    return `${range} / ${periodMap[paymentType]}${job.is_negotiable ? ` (${t('negotiable')})` : ''}`
+  }
+  return ''
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  try {
+    const job = await jobService.getJobById(id, 'assets,tags') as JobWithCreator
+    if (!job) return { title: 'Job Not Found' }
+
+    return {
+      title: `${job.title} | TalentLink`,
+      description: job.brief_description || job.description?.slice(0, 160),
+      openGraph: {
+        title: job.title,
+        description: job.brief_description || job.description?.slice(0, 160),
+        images: job.creator_avatar_url ? [resolveMediaUrl(job.creator_avatar_url)] : [],
+      },
+    }
+  } catch (error) {
+    return { title: 'Job Detail | TalentLink' }
+  }
+}
+
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const t = await getTranslations('JobDetail')
+  const tCommon = await getTranslations('Common')
+  const tOptions = await getTranslations('options')
+
+  let job: JobWithCreator | null = null
+  let error: string | null = null
+
+  try {
+    if (!id) throw new Error('Invalid Job ID')
+    job = await jobService.getJobById(id, 'assets,tags') as JobWithCreator
+  } catch (e) {
+    error = e instanceof Error ? e.message : t('jobNotFoundDesc')
   }
 
   if (error || !job) {
@@ -185,12 +124,12 @@ const JobDetailPage = () => {
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6">
           <div className="p-8 flex flex-col items-center text-center gap-4">
             <h2 className="text-2xl font-bold">{t('jobNotFound')}</h2>
-            <p className="text-muted-foreground">
-              {error || t('jobNotFoundDesc')}
-            </p>
-            <Button onClick={() => router.push('/jobs')} variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('backToJobs')}
+            <p className="text-muted-foreground">{error || t('jobNotFoundDesc')}</p>
+            <Button asChild variant="outline">
+              <Link href="/jobs">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('backToJobs')}
+              </Link>
             </Button>
           </div>
         </div>
@@ -210,9 +149,12 @@ const JobDetailPage = () => {
 
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 pt-24 pb-8 md:pt-28 md:pb-10 relative z-10">
           {/* Back Button */}
-          <Button variant="ghost" onClick={() => router.back()} className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('back')}
+          <Button variant="ghost" asChild className="mb-6">
+            <Link href="/jobs">
+               {/* Note: Original used router.back(), which is client-side. Link to /jobs is a safe server-side fallback/replacement, or we can use a client component for a back button if strictly needed. Preferring implicit link to list for SSR friendliness. */}
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('back')}
+            </Link>
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -222,10 +164,8 @@ const JobDetailPage = () => {
                 <CardContent className="p-6">
                   {/* Company Header */}
                   <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center sm:items-start">
-                    <button
-                      onClick={() =>
-                        job.creator_username && router.push(`/profile/${job.creator_username}`)
-                      }
+                    <Link
+                      href={job.creator_username ? `/profile/${job.creator_username}` : '#'}
                       className="shrink-0 cursor-pointer"
                     >
                       <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-border hover:border-primary transition-colors">
@@ -242,28 +182,20 @@ const JobDetailPage = () => {
                             .slice(0, 2)}
                         </AvatarFallback>
                       </Avatar>
-                    </button>
+                    </Link>
                     <div className="flex-1 text-center sm:text-left">
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
-                      <button
-                        onClick={() =>
-                          job.creator_username && router.push(`/profile/${job.creator_username}`)
-                        }
+                      <Link
+                         href={job.creator_username ? `/profile/${job.creator_username}` : '#'}
                         className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
                       >
                         {job.creator_display_name || tCommon('unknown')}
-                      </button>
+                      </Link>
                     </div>
                   </div>
 
                   {/* Job Meta */}
                   <div className="flex flex-wrap gap-4 mb-6 text-sm">
-                    {/* {job.type && (
-                      <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-muted-foreground" />
-                        <span>{tOptions(`roles.${job.type}`)}</span>
-                      </div>
-                    )} */}
                     {job.recruitment_type && (
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-muted-foreground" />
@@ -286,11 +218,11 @@ const JobDetailPage = () => {
                     )}
                     <div className="flex items-center gap-2">
                       <Banknote className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-semibold text-primary">{formatSalary(job)}</span>
+                      <span className="font-semibold text-primary">{formatSalary(job, tOptions, t)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>{getTimeAgo(job.created_at)}</span>
+                      <span>{getTimeAgo(job.created_at, t)}</span>
                     </div>
                   </div>
 
@@ -400,225 +332,12 @@ const JobDetailPage = () => {
               </Card>
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <Card className="lg:sticky lg:top-24 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardContent className="p-6 space-y-4">
-                  {hasApplied ? (
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <p className="text-sm font-medium">{t('applicationStatus')}</p>
-                        <Badge
-                          variant={
-                            applicationStatus === 'accepted'
-                              ? 'default'
-                              : applicationStatus === 'rejected'
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                          className="text-sm"
-                        >
-                          {(() => {
-                            const status = applicationStatus || 'applied'
-                            return t(`status.${status}`)
-                          })()}
-                        </Badge>
-                      </div>
-                      <Button variant="outline" className="w-full hidden sm:flex" size="lg" asChild>
-                        <Link href="/jobs/my-applications">{t('viewApplications')}</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full bg-primary hover:bg-primary/90 hidden sm:flex"
-                      size="lg"
-                      onClick={() => setIsApplicationOpen(true)}
-                      disabled={job?.status !== 'published' || job?.is_deadline_passed}
-                    >
-                      {t('applyNow')}
-                    </Button>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1" onClick={() => toggleSave(jobId)}>
-                      {isSaved ? (
-                        <BookmarkCheck className="w-4 h-4 mr-2 text-primary fill-primary" />
-                      ) : (
-                        <Bookmark className="w-4 h-4 mr-2" />
-                      )}
-                      {isSaved ? t('saved') : t('save')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({
-                            title: job.title,
-                            text: job.brief_description || job.description,
-                            url: window.location.href,
-                          })
-                        } else {
-                          navigator.clipboard.writeText(window.location.href)
-                          // Add toast notification here if you have toast
-                        }
-                      }}
-                    >
-                      <Share2 className="w-4 h-4 mr-2" />
-                      {t('share')}
-                    </Button>
-                  </div>
-
-                  <Button
-                    variant="secondary"
-                    className="w-full flex items-center justify-center gap-2"
-                    onClick={() => {
-                      router.push(
-                        `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
-                      )
-                    }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    {t('message')}
-                  </Button>
-
-                  {job.status && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <h3 className="font-semibold text-sm">{t('statusBadge')}</h3>
-                        <Badge variant={job.status === 'published' ? 'default' : 'secondary'}>
-                          {t(`status.${job.status}`)}
-                        </Badge>
-                      </div>
-                    </>
-                  )}
-
-                  {(job.total_submissions !== undefined ||
-                    job.applications_count !== undefined) && (
-                      <>
-                        <Separator />
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-sm">{t('totalApplications')}</h3>
-                          <p className="text-2xl font-bold">
-                            {job.total_submissions || job.applications_count || 0}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{t('totalApplications')}</p>
-                        </div>
-                      </>
-                    )}
-
-                  <Separator />
-
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      {t('postedOn', {
-                        date: new Date(job.created_at).toLocaleDateString(tCommon('locale'), {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        }),
-                      })}
-                    </p>
-                    {job.updated_at && job.updated_at !== job.created_at && (
-                      <p className="mt-1">
-                        {t('updatedOn', { timeAgo: getTimeAgo(job.updated_at) })}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Interactive Sidebar (Client Component) */}
+            <JobInteractions job={job} />
           </div>
         </div>
       </div>
-
-      {/* Mobile Fixed Bottom Actions */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-3 z-50 shadow-lg">
-        <div className="flex gap-2">
-          {hasApplied ? (
-            <Button variant="outline" className="flex-1 h-12" asChild>
-              <Link href="/jobs/my-applications">
-                <FileText className="w-4 h-4 mr-2" />
-                {t('viewApplication')}
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              className="flex-1 h-12 bg-primary hover:bg-primary/90"
-              onClick={() => setIsApplicationOpen(true)}
-              disabled={job?.status !== 'published' || job?.is_deadline_passed}
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {t('apply')}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            className="flex-1 h-12"
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: job.title,
-                  text: job.brief_description || job.description,
-                  url: window.location.href,
-                })
-              } else {
-                navigator.clipboard.writeText(window.location.href)
-                // Add toast notification here if you have toast
-              }
-            }}
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            {t('share')}
-          </Button>
-          <Button
-            variant="secondary"
-            className="flex-1 h-12"
-            onClick={() => {
-              router.push(
-                `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
-              )
-            }}
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            {t('message')}
-          </Button>
-        </div>
-      </div>
-
-      {job && (
-        <ApplicationDialog
-          open={isApplicationOpen}
-          onOpenChange={(open) => {
-            setIsApplicationOpen(open)
-            if (!open) {
-              // Refresh application status after dialog closes
-              const checkApplication = async () => {
-                try {
-                  const mySubmissions: MySubmissionsResponse = await jobService.getMySubmissions()
-                  const myApplication = mySubmissions.submissions.find(
-                    (sub: MySubmissionItem) => sub.job?.id === jobId,
-                  )
-                  if (myApplication) {
-                    setHasApplied(true)
-                    setApplicationStatus(myApplication.status)
-                  }
-                } catch (err) {
-                  // Silently fail
-                  console.error('Failed to check application status', err)
-                }
-              }
-              checkApplication()
-            }
-          }}
-          jobId={job.id}
-          jobTitle={job.title}
-          companyName={job.creator_display_name || tCommon('unknown')}
-        />
-      )}
     </div>
   )
 }
 
-export default JobDetailPage
