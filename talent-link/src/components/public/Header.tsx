@@ -28,14 +28,12 @@ import LangSwitch from '@/components/public/LangSwitch'
 import { User, Settings, LogOut, MessageCircle, Briefcase, Inbox } from 'lucide-react'
 import { resolveMediaUrl } from '@/lib/utils'
 import { useState } from 'react'
-import { useSocketContext } from '@/context/SocketContext'
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const pathname = usePathname()
   const t = useTranslations('Header')
   const [isOpen, setIsOpen] = useState(false)
-  const { unreadCount } = useSocketContext()
 
   const navigationItems = [
     { href: '/', label: t('navigation.home') },

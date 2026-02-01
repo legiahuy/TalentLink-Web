@@ -5,7 +5,7 @@ import { resolveMediaUrl } from '@/lib/utils'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Discover Talent | TalentLink',
+  title: 'Discover Talent',
   description: 'Connect with top creative talent and venues. Explore profiles of producers, singers, and venues on TalentLink.',
 }
 

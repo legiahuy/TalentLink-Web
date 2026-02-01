@@ -23,6 +23,7 @@ import { jobService } from '@/services/jobService'
 import { userService } from '@/services/userService'
 import type { JobPost, JobSearchRequest } from '@/types/job'
 import { useSavedJobs } from '@/hooks/useSavedJobs'
+import ApplicationDialog from '@/components/jobs/ApplicationDialog'
 
 type JobType = 'all' | 'producer' | 'singer' | 'saved'
 
@@ -209,6 +210,8 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
         applications_count: job.applicationsCount ?? job.applications_count,
         bookings_count: job.bookingsCount ?? job.bookings_count,
         views_count: job.viewsCount ?? job.views_count,
+        is_deadline_passed: job.isDeadlinePassed ?? job.is_deadline_passed,
+        can_accept_submissions: job.canAcceptSubmissions ?? job.can_accept_submissions,
       }))
 
       setJobs(mappedJobs)
@@ -304,6 +307,9 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
   const handleViewDetails = (jobId: string) => {
     router.push(`/jobs/${jobId}`)
   }
+
+  // State for application dialog
+  const [applicationDialogJob, setApplicationDialogJob] = useState<JobWithCreator | null>(null)
 
   return (
     <div className="min-h-screen relative">
@@ -566,6 +572,7 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                                 isSaved={isJobSaved(job.id)}
                                 onToggleSave={toggleSave}
                                 onViewDetails={handleViewDetails}
+                                onApply={() => setApplicationDialogJob(job)}
                               />
                             </Link>
                           </motion.div>
@@ -612,6 +619,14 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
           </div>
         </div>
       </div>
+
+        <ApplicationDialog
+          open={!!applicationDialogJob}
+          onOpenChange={(open: boolean) => !open && setApplicationDialogJob(null)}
+          jobId={applicationDialogJob?.id || ''}
+          jobTitle={applicationDialogJob?.title || ''}
+          companyName={applicationDialogJob?.creator_display_name || tCommon('unknown')}
+        />
     </div>
   )
 }

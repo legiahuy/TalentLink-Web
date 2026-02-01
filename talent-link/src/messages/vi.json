@@ -292,6 +292,8 @@
   },
   "Common": {
     "loading": "Đang tải...",
+    "success": "Thành công",
+    "send": "Gửi",
     "save": "Lưu",
     "cancel": "Hủy",
     "edit": "Chỉnh sửa",
@@ -797,6 +799,10 @@
   },
   "JobDetail": {
     "message": "Nhắn tin",
+    "sendMessageTo": "Gửi tin nhắn cho {name}",
+    "messageAbout": "Về việc: <highlight>{jobTitle}</highlight>",
+    "messagePlaceholder": "Nhập tin nhắn của bạn...",
+    "messageSent": "Đã gửi tin nhắn!",
     "descriptionTitle": "Mô tả công việc",
     "schedule": "Lịch làm việc",
     "requiredSkills": "Kỹ năng yêu cầu",
@@ -839,6 +845,7 @@
       "month": "{count} tháng trước",
       "months": "{count} tháng trước"
     },
+    "closed": "Đã đóng",
     "status": {
       "pending_review": "Chờ duyệt",
       "under_review": "Đang xem xét",
@@ -850,7 +857,9 @@
   },
   "MessagesPage": {
     "title": "Tin nhắn",
-    "searchPlaceholder": "Tìm kiếm hội thoại...",
+    "searchPlaceholder": "Tìm kiếm cuộc trò chuyện...",
+    "jobApplication": "Ứng tuyển công việc",
+    "viewJob": "Xem công việc",
     "prefillMessage": "Xin chào! Tôi rất quan tâm đến vị trí \"{title}\" (ID: {id}). Chúng ta có thể trao đổi thêm được không?",
     "loadingMessages": "Đang tải tin nhắn...",
     "deleteConversation": "Xóa hội thoại",

@@ -20,6 +20,7 @@ import { useSavedJobs } from '@/hooks/useSavedJobs'
 import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
 import type { JobPost, MySubmissionsResponse, MySubmissionItem } from '@/types/job'
+import JobMessageDialog from './JobMessageDialog'
 
 interface JobWithCreator extends JobPost {
   creator_display_name?: string
@@ -37,6 +38,7 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
   const router = useRouter()
 
   const [isApplicationOpen, setIsApplicationOpen] = useState(false)
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false)
   const [hasApplied, setHasApplied] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
 
@@ -97,7 +99,7 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
                 onClick={() => setIsApplicationOpen(true)}
                 disabled={job?.status !== 'published' || job?.is_deadline_passed}
               >
-                {t('applyNow')}
+                {job?.is_deadline_passed ? t('closed') : t('applyNow')}
               </Button>
             )}
 
@@ -134,11 +136,7 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
             <Button
               variant="secondary"
               className="w-full flex items-center justify-center gap-2"
-              onClick={() => {
-                router.push(
-                  `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
-                )
-              }}
+              onClick={() => setIsMessageDialogOpen(true)}
             >
               <MessageCircle className="w-4 h-4" />
               {t('message')}
@@ -207,7 +205,7 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
               disabled={job?.status !== 'published' || job?.is_deadline_passed}
             >
               <Send className="w-4 h-4 mr-2" />
-              {t('apply')}
+              {job?.is_deadline_passed ? t('closed') : t('apply')}
             </Button>
           )}
           <Button
@@ -231,11 +229,7 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
           <Button
             variant="secondary"
             className="flex-1 h-12"
-            onClick={() => {
-              router.push(
-                `/messages?userId=${job.creator_id}&jobId=${job.id}&jobTitle=${encodeURIComponent(job.title)}`,
-              )
-            }}
+            onClick={() => setIsMessageDialogOpen(true)}
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             {t('message')}
@@ -269,6 +263,12 @@ export default function JobInteractions({ job }: JobInteractionsProps) {
         jobId={job.id}
         jobTitle={job.title}
         companyName={job.creator_display_name || tCommon('unknown')}
+      />
+      
+      <JobMessageDialog
+        open={isMessageDialogOpen}
+        onOpenChange={setIsMessageDialogOpen}
+        job={job}
       />
     </>
   )

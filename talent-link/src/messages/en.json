@@ -292,6 +292,8 @@
   },
   "Common": {
     "loading": "Loading...",
+    "success": "Success",
+    "send": "Send",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
@@ -797,6 +799,10 @@
   },
   "JobDetail": {
     "message": "Message",
+    "sendMessageTo": "Send message to {name}",
+    "messageAbout": "Regarding: <highlight>{jobTitle}</highlight>",
+    "messagePlaceholder": "Type your message here...",
+    "messageSent": "Message sent!",
     "descriptionTitle": "Job Description",
     "schedule": "Schedule",
     "requiredSkills": "Required Skills",
@@ -839,6 +845,7 @@
       "month": "{count} month ago",
       "months": "{count} months ago"
     },
+    "closed": "Closed",
     "status": {
       "pending_review": "Pending Review",
       "under_review": "Under Review",
@@ -851,6 +858,8 @@
   "MessagesPage": {
     "title": "Messages",
     "searchPlaceholder": "Search conversations...",
+    "jobApplication": "Job Application",
+    "viewJob": "View Job",
     "prefillMessage": "Hi! I'm interested in the job position \"{title}\" (ID: {id}). Can we discuss further?",
     "loadingMessages": "Loading messages...",
     "deleteConversation": "Delete conversation",

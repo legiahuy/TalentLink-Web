@@ -5,7 +5,7 @@ import { JobSearchRequest, JobPost } from '@/types/job'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Find Jobs | TalentLink',
+  title: 'Find Jobs',
   description: 'Browse the latest creative jobs, auditions, and gigs. Find your next opportunity in the entertainment industry on TalentLink.',
 }
 
@@ -78,6 +78,8 @@ export default async function JobPoolPage() {
         applications_count: job.applicationsCount ?? job.applications_count,
         bookings_count: job.bookingsCount ?? job.bookings_count,
         views_count: job.viewsCount ?? job.views_count,
+        is_deadline_passed: job.isDeadlinePassed ?? job.is_deadline_passed,
+        can_accept_submissions: job.canAcceptSubmissions ?? job.can_accept_submissions,
       }))
     
   } catch (error) {

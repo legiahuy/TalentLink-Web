@@ -36,10 +36,8 @@ export default async function RootLayout({
       <body className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
         <FirebaseAnalytics />
         <AuthInitializer>
-          <SocketProvider>
-            <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-            <Toaster position="top-right" richColors />
-          </SocketProvider>
+          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+          <Toaster position="top-right" richColors />
         </AuthInitializer>
       </body>
     </html>

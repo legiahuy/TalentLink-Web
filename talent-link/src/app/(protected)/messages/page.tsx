@@ -577,6 +577,13 @@ const MessagesPage = () => {
     // Nếu có nội dung text
     if (lastMsg.content?.trim()) {
       const content = lastMsg.content.trim()
+      
+      // Check for job reference
+      const jobRefMatch = content.match(/^:::JOB_REF:(\{.*\}):::\n([\s\S]*)$/);
+      if (jobRefMatch) {
+        return `${senderName}: ${t('jobApplication')}`
+      }
+
       // Truncate nếu quá dài
       return content.length > 50 ? `${content.substring(0, 50)}...` : content
     }
