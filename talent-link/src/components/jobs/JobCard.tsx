@@ -250,8 +250,9 @@ const JobCard = ({
               e.stopPropagation()
               onApply?.(job.id)
             }}
+            disabled={job.status !== 'published' || job.is_deadline_passed}
           >
-            {t('applyNow')}
+            {job.is_deadline_passed ? t('closed') : t('applyNow')}
           </Button>
           <Button
             variant="outline"

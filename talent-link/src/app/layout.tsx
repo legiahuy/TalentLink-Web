@@ -6,6 +6,7 @@ import { Plus_Jakarta_Sans, Lora, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthInitializer } from '@/components/auth/AuthInitializer'
 import { FirebaseAnalytics } from '@/components/analytics/FirebaseAnalytics'
+import { SocketProvider } from '@/context/SocketContext'
 
 const sans = Plus_Jakarta_Sans({ variable: '--font-sans', subsets: ['latin'] })
 const serif = Lora({ variable: '--font-serif', subsets: ['latin'] })

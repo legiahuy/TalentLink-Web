@@ -1,0 +1,1152 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/conversations": {
+      "post": {
+        "operationId": "ConversationsController_create",
+        "summary": "Create a new conversation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "ConversationsController_findAll",
+        "summary": "Get all user conversations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of conversations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "get": {
+        "operationId": "ConversationsController_findOne",
+        "summary": "Get conversation by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found"
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "ConversationsController_update",
+        "summary": "Update conversation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversation updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ConversationsController_remove",
+        "summary": "Delete conversation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation deleted"
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}/participants": {
+      "post": {
+        "operationId": "ConversationsController_addParticipants",
+        "summary": "Add participants to group",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddParticipantsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Participants added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}/participants/{participantId}": {
+      "delete": {
+        "operationId": "ConversationsController_removeParticipant",
+        "summary": "Remove participant from group",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participantId",
+            "required": true,
+            "in": "path",
+            "description": "Participant UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participant removed"
+          }
+        },
+        "tags": [
+          "conversations"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages": {
+      "post": {
+        "operationId": "MessagesController_create",
+        "summary": "Send a message",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages/conversation/{conversationId}": {
+      "get": {
+        "operationId": "MessagesController_findByConversation",
+        "summary": "Get messages from conversation (paginated)",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of messages (default: 50)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "Get messages before this date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of messages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages/{id}": {
+      "get": {
+        "operationId": "MessagesController_findOne",
+        "summary": "Get a message by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Message UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Message not found"
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "MessagesController_update",
+        "summary": "Edit a message",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Message UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "MessagesController_remove",
+        "summary": "Delete a message",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Message UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message deleted successfully"
+          },
+          "404": {
+            "description": "Message not found"
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages/{id}/read": {
+      "post": {
+        "operationId": "MessagesController_markAsRead",
+        "summary": "Mark a message as read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Message UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages/conversation/{conversationId}/read": {
+      "post": {
+        "operationId": "MessagesController_markConversationAsRead",
+        "summary": "Mark all messages in conversation as read",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All messages marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkConversationAsReadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/messages/conversation/{conversationId}/unread-count": {
+      "get": {
+        "operationId": "MessagesController_getUnreadCount",
+        "summary": "Get unread message count for a conversation",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unread message count (returns a number)"
+          }
+        },
+        "tags": [
+          "messages"
+        ],
+        "security": [
+          {
+            "X-User-Email": []
+          },
+          {
+            "X-User-Id": []
+          }
+        ]
+      }
+    },
+    "/api/v1/storage/upload": {
+      "post": {
+        "operationId": "StorageController_uploadFile",
+        "summary": "Upload file (image/video/audio/file) to MinIO",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "folder": {
+                    "type": "string",
+                    "description": "Folder name (e.g., \"messages\", \"avatars\")",
+                    "default": "messages"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "example": "http://minio:9000/messaging/messages/1234567890-image.jpg"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "example": "1234567890-image.jpg"
+                    },
+                    "mimetype": {
+                      "type": "string",
+                      "example": "image/jpeg"
+                    },
+                    "size": {
+                      "type": "number",
+                      "example": 102400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "storage"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Messaging Service API",
+    "description": "Real-time messaging service with WebSocket support",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "conversations",
+      "description": "Conversation management endpoints"
+    },
+    {
+      "name": "messages",
+      "description": "Message management endpoints"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "X-User-Id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-User-Id",
+        "description": "User ID from authentication"
+      },
+      "X-User-Email": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-User-Email",
+        "description": "User email from authentication"
+      }
+    },
+    "schemas": {
+      "CreateConversationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Conversation name (required for groups)",
+            "example": "Project Team"
+          },
+          "isGroup": {
+            "type": "boolean",
+            "description": "Whether this is a group conversation",
+            "default": false
+          },
+          "participantIds": {
+            "description": "Array of participant user UUIDs",
+            "example": [
+              "uuid1",
+              "uuid2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "participantIds"
+        ]
+      },
+      "UserInfoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username",
+            "example": "johndoe"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name",
+            "example": "John Doe"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar URL",
+            "example": "https://example.com/avatar.jpg",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "displayName"
+        ]
+      },
+      "LastMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content",
+            "example": "Hello!"
+          },
+          "senderId": {
+            "type": "string",
+            "description": "Sender UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "sender": {
+            "description": "Sender info",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserInfoDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Message creation time",
+            "example": "2025-01-19T10:30:00.000Z"
+          },
+          "isEdited": {
+            "type": "boolean",
+            "description": "Whether message was edited",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "senderId",
+          "sender",
+          "createdAt",
+          "isEdited"
+        ]
+      },
+      "ConversationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Conversation UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Conversation name (for groups)",
+            "example": "Project Team",
+            "nullable": true
+          },
+          "isGroup": {
+            "type": "boolean",
+            "description": "Whether this is a group conversation",
+            "example": false
+          },
+          "participantIds": {
+            "description": "Array of participant user UUIDs",
+            "example": [
+              "uuid1",
+              "uuid2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "UUID of the user who created the conversation",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "nullable": true
+          },
+          "lastMessageId": {
+            "type": "string",
+            "description": "Last message UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp",
+            "example": "2025-01-19T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update timestamp",
+            "example": "2025-01-19T10:30:00.000Z"
+          },
+          "participants": {
+            "description": "Enriched participant info",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserInfoDto"
+            }
+          },
+          "lastMessage": {
+            "description": "Last message details",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageDto"
+              }
+            ]
+          },
+          "unreadCount": {
+            "type": "number",
+            "description": "Number of unread messages for current user",
+            "example": 3
+          }
+        },
+        "required": [
+          "id",
+          "isGroup",
+          "participantIds",
+          "createdAt",
+          "updatedAt",
+          "participants",
+          "unreadCount"
+        ]
+      },
+      "UpdateConversationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Updated conversation name",
+            "example": "Updated Team Name"
+          },
+          "participantIds": {
+            "description": "Updated participant list",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AddParticipantsDto": {
+        "type": "object",
+        "properties": {
+          "participantIds": {
+            "description": "Array of user IDs to add to conversation",
+            "example": [
+              "c56a4180-65aa-42ec-a945-5fd21dec0538",
+              "3b9e386f-14c4-47c6-ae7a-d2f3460a9dd1"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "participantIds"
+        ]
+      },
+      "CreateMessageDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation UUID (provide this OR recipientId)",
+            "example": "uuid"
+          },
+          "recipientId": {
+            "type": "string",
+            "description": "Recipient User ID for direct message (provide this OR conversationId)",
+            "example": "uuid"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content",
+            "example": "Hello everyone!"
+          },
+          "attachmentUrl": {
+            "type": "string",
+            "description": "Attachment URL",
+            "example": "https://example.com/image.jpg"
+          },
+          "attachmentType": {
+            "type": "string",
+            "description": "Attachment type",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "file"
+            ],
+            "example": "image"
+          }
+        }
+      },
+      "SenderInfoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username",
+            "example": "johndoe"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name",
+            "example": "John Doe"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar URL",
+            "example": "https://example.com/avatar.jpg",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "displayName"
+        ]
+      },
+      "MessageResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "senderId": {
+            "type": "string",
+            "description": "Sender UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content",
+            "example": "Hello everyone!"
+          },
+          "attachmentUrl": {
+            "type": "string",
+            "description": "Attachment URL",
+            "example": "https://example.com/image.jpg",
+            "nullable": true
+          },
+          "attachmentType": {
+            "type": "string",
+            "description": "Attachment type",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "file"
+            ],
+            "example": "image",
+            "nullable": true
+          },
+          "readBy": {
+            "description": "Array of user UUIDs who have read the message",
+            "example": [
+              "uuid1",
+              "uuid2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isEdited": {
+            "type": "boolean",
+            "description": "Whether message was edited",
+            "example": false
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Whether message was deleted",
+            "example": false
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp",
+            "example": "2025-01-19T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update timestamp",
+            "example": "2025-01-19T10:30:00.000Z"
+          },
+          "sender": {
+            "description": "Sender info",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SenderInfoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "conversationId",
+          "senderId",
+          "content",
+          "readBy",
+          "isEdited",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+          "sender"
+        ]
+      },
+      "UpdateMessageDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Updated message content",
+            "example": "Updated message"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "MarkConversationAsReadResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of messages marked as read",
+            "example": 5
+          }
+        },
+        "required": [
+          "conversationId",
+          "count"
+        ]
+      }
+    }
+  }
+}

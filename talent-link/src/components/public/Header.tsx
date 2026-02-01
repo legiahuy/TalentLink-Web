@@ -187,7 +187,7 @@ const Header = () => {
             <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <Button variant="link" size="icon" className="h-9 w-9" asChild>
+                <Button variant="link" size="icon" className="h-9 w-9 relative" asChild>
                   <Link href="/messages">
                     <MessageCircle className="h-5 w-5" />
                   </Link>
