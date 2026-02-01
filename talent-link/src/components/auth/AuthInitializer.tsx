@@ -11,9 +11,9 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     initialize()
   }, [initialize])
 
-  if (!isInitialized) {
-    return <LoadingScreen />
-  }
+  // if (!isInitialized) {
+  //   return <LoadingScreen />
+  // }
 
   return <>{children}</>
 }
