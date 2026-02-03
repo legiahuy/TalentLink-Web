@@ -35,6 +35,14 @@ const MessagesPage = () => {
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     )
   }, [])
+
+  const sortConversations = useCallback((items: Conversation[]) => {
+    return [...items].sort((a, b) => {
+      const dateA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime()
+      const dateB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime()
+      return dateB - dateA
+    })
+  }, [])
   const [messageInput, setMessageInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [typingUser, setTypingUser] = useState<string | null>(null)
@@ -65,8 +73,8 @@ const MessagesPage = () => {
         })
       }
       // Update last message in conversation list
-      setConversations((prev) =>
-        prev.map((conv) =>
+      setConversations((prev) => {
+        const updated = prev.map((conv) =>
           conv.id === message.conversationId
             ? {
               ...conv,
@@ -74,8 +82,9 @@ const MessagesPage = () => {
               unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
             }
             : conv,
-        ),
-      )
+        )
+        return sortConversations(updated)
+      })
     },
     onTyping: (data) => {
       if (data.conversationId === selectedConversation && data.userId !== user?.id) {
@@ -210,7 +219,7 @@ const MessagesPage = () => {
         }
         const data = await messageService.getConversations()
         const conversationsWithUnread = await fetchUnreadCounts(data)
-        setConversations(conversationsWithUnread)
+        setConversations(sortConversations(conversationsWithUnread))
       } catch (error) {
         console.error('Failed to fetch conversations:', error)
       } finally {
@@ -339,16 +348,31 @@ const MessagesPage = () => {
     container.scrollTo({ top: container.scrollHeight, behavior: 'auto' })
   }, [selectedConversation, loadingMessages])
 
-  // Auto scroll xuống khi có tin nhắn mới
+  // Auto scroll logic
   useEffect(() => {
     if (!messages.length || loadingMessages) return
     const container = threadContainerRef.current
     if (!container) return
-    // Smooth scroll khi có tin nhắn mới
-    setTimeout(() => {
-      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
-    }, 100)
-  }, [messages.length, loadingMessages])
+
+    // Logic: Only auto-scroll if user is already near bottom OR if the new message is from "me"
+    // Since we don't track "who sent the last message" easily in this effect without looking at messages[last],
+    // we can check if we are near bottom.
+    
+    // Threshold to consider "near bottom"
+    const threshold = 100
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= threshold
+
+    // If it's a new message (messages changed), assume we might want to scroll.
+    // For simplicity in MVP: If it's my message (added to local state), we forced scroll in handleSendMessage usually?
+    // Actually handleSendMessage just updates state.
+    // Let's scroll if near bottom.
+    
+    if (isNearBottom) {
+      requestAnimationFrame(() => {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+      })
+    }
+  }, [messages, loadingMessages])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -488,18 +512,22 @@ const MessagesPage = () => {
       console.log('✅ Tin nhắn đã gửi thành công:', newMessage)
 
       // Add message to local state (socket sẽ broadcast cho người khác)
-      setMessages((prev) => sortMessages([...prev, newMessage]))
+      setMessages((prev) => {
+        if (prev.some(m => m.id === newMessage.id)) return prev
+        return sortMessages([...prev, newMessage])
+      })
       setMessageInput('')
       setSelectedFile(null)
 
-      // Update last message in conversation list
-      setConversations((prev) =>
-        prev.map((conv) =>
+      // Update last message in conversation list & sort
+      setConversations((prev) => {
+        const updated = prev.map((conv) =>
           conv.id === selectedConversation
             ? { ...conv, lastMessage: newMessage, unreadCount: 0 }
             : conv,
-        ),
-      )
+        )
+        return sortConversations(updated)
+      })
     } catch (error) {
       console.error('Failed to send message:', error)
     } finally {
@@ -636,10 +664,7 @@ const MessagesPage = () => {
     senderName:
       msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? t('preview.you') : t('preview.user')),
     content: msg.content,
-    timestamp: new Date(msg.createdAt).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
+    timestamp: formatTime(msg.createdAt),
     isOwn: msg.senderId === user?.id,
     isRead: msg.isRead,
     avatarUrl: participantAvatarMap[msg.senderId],
@@ -844,7 +869,7 @@ const MessagesPage = () => {
                     </div>
 
                     {/* Messages */}
-                    <div ref={threadContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gradient-to-b from-transparent to-muted/5">
+                    <div ref={threadContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gradient-to-b from-transparent to-muted/5 scrollbar-thin">
                       {loadingMessages ? (
                         <div className="flex items-center justify-center h-full">
                           <div className="flex flex-col items-center gap-3">
@@ -855,8 +880,6 @@ const MessagesPage = () => {
                       ) : (
                         <MessageThread
                           messages={formattedMessages}
-                          onEditMessage={handleEditMessage}
-                          onDeleteMessage={handleDeleteMessage}
                           otherParticipantAvatar={selectedConvInfo.avatar ? resolveMediaUrl(selectedConvInfo.avatar) : undefined}
                         />
                       )}
@@ -931,7 +954,7 @@ const MessagesPage = () => {
                             }
                           }}
                           className="flex-1 bg-background/50 focus:bg-background transition-all"
-                          disabled={sendingMessage || uploadingFile}
+                          disabled={uploadingFile}
                         />
                         <Button 
                           onClick={handleSendMessage} 
