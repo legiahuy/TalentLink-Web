@@ -40,11 +40,11 @@ export const jobService = {
   // Endpoint: POST /api/v1/search/jobs
   searchJobsAdvanced: async (request: JobSearchRequest): Promise<JobSearchResult> => {
     const res = await axiosClient.post<BackendJobSearchResponse>('/search/jobs', request)
-    
+
     // Backend returns: { posts: [...], pagination: {...} }
     // Transform to frontend expected format: { jobPosts: [...], totalCount, page, pageSize, totalPages }
     const backendData = res.data
-    
+
     return {
       jobPosts: backendData.posts || [],
       totalCount: backendData.pagination?.total_items || 0,
@@ -129,7 +129,9 @@ export const jobService = {
   },
 
   getSubmissionById: async (id: string): Promise<SubmissionDetailResponse> => {
-    const res = await axiosClient.get(`/submissions/${id}`)
+    const res = await axiosClient.get(`/submissions/${id}`, {
+      params: { include: 'creator_profile' },
+    })
     return res.data?.data ?? res.data
   },
 

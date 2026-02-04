@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { jobService } from '@/services/jobService'
+import { userService } from '@/services/userService'
 import { resolveMediaUrl } from '@/lib/utils'
 import {
   ArrowLeft,
@@ -159,7 +160,43 @@ const JobApplicationsPage = () => {
         page: 1,
         page_size: 50,
       })
-      setSubmissions(response.submissions ?? [])
+
+      const rawSubmissions = response.submissions ?? []
+
+      // Fetch full applicant profiles in parallel using the username endpoint for consistency
+      const submissionsWithProfiles = await Promise.all(
+        rawSubmissions.map(async (submission: any) => {
+          try {
+            const username =
+              submission.creator_profile?.username ||
+              submission.creator_username ||
+              submission.username
+
+            let profile = null
+            if (username) {
+              try {
+                profile = await userService.getUserByUsername(username)
+              } catch (err) {
+                console.warn(`Failed to fetch profile by username for ${username}`, err)
+                // Fallback to ID
+                profile = await userService.getUser(submission.creator_id)
+              }
+            } else {
+              profile = await userService.getUser(submission.creator_id)
+            }
+
+            return {
+              ...submission,
+              applicant_account: profile,
+            }
+          } catch (err) {
+            console.warn(`Failed to fetch profile for applicant ${submission.creator_id}`, err)
+            return submission
+          }
+        }),
+      )
+
+      setSubmissions(submissionsWithProfiles)
     } catch (err) {
       console.error('Failed to load submissions', err)
       setError('Unable to load applications right now.')
@@ -221,6 +258,37 @@ const JobApplicationsPage = () => {
     setViewingSubmission(null)
     try {
       const detail = await jobService.getSubmissionById(submissionId)
+
+      // Fetch full applicant profile using the username endpoint for consistency
+      const username =
+        detail.creator_profile?.username ||
+        (detail as any).creator_username ||
+        (detail as any).username
+      if (username) {
+        try {
+          const applicantProfile = await userService.getUserByUsername(username)
+            // Store it for use in the dialog
+            ; (detail as any).applicant_account = applicantProfile
+        } catch (err) {
+          console.warn('Failed to fetch applicant profile by username', err)
+          // Fallback to fetch by ID if username fails
+          try {
+            const applicantProfile = await userService.getUser(detail.creator_id)
+              ; (detail as any).applicant_account = applicantProfile
+          } catch (innerErr) {
+            console.warn('Failed to fetch applicant profile by ID', innerErr)
+          }
+        }
+      } else {
+        // No username available, fallback to fetch by ID
+        try {
+          const applicantProfile = await userService.getUser(detail.creator_id)
+            ; (detail as any).applicant_account = applicantProfile
+        } catch (err) {
+          console.warn('Failed to fetch applicant profile by ID', err)
+        }
+      }
+
       setViewingSubmission(detail)
     } catch (err) {
       console.error('Failed to load submission detail', err)
@@ -231,9 +299,8 @@ const JobApplicationsPage = () => {
     }
   }
 
-  const handleViewProfile = (userId: string) => {
-    // TODO: Navigate to user profile
-    router.push(`/profile/${userId}`)
+  const handleViewProfile = (userId: string, username?: string) => {
+    router.push(`/profile/${username || userId}`)
   }
 
   const statusCounts = useMemo(() => {
@@ -398,66 +465,106 @@ const JobApplicationsPage = () => {
                     </div>
                   ) : (
                     <div className="divide-y divide-border/60">
-                      {submissions.map((submission) => (
-                        <div key={submission.id} className="p-4 md:p-6 space-y-4">
-                          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                            <div className="flex gap-4 flex-1">
-                              <Avatar className="w-12 h-12 rounded-lg">
-                                <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                                  {(submission.full_name || 'A')
-                                    .split(' ')
-                                    .map((word) => word[0])
-                                    .join('')
-                                    .toUpperCase()
-                                    .slice(0, 2)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-semibold">
-                                    {submission.full_name || 'Anonymous Applicant'}
-                                  </h3>
-                                  {getStatusBadge(submission.status)}
-                                </div>
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                                  {submission.email && <span>{submission.email}</span>}
-                                  {submission.phone_number && (
-                                    <span>{submission.phone_number}</span>
+                      {submissions.map((submission: any) => {
+                        const account = submission.applicant_account
+                        const profile = submission.creator_profile
+
+                        const profileUsername =
+                          account?.username ||
+                          profile?.username ||
+                          submission.creator_username ||
+                          submission.username ||
+                          submission.creator_id
+                        const displayName =
+                          account?.display_name ||
+                          account?.full_name ||
+                          profile?.full_name ||
+                          submission.full_name ||
+                          'Anonymous Applicant'
+                        const avatarUrl =
+                          account?.avatar_url ||
+                          profile?.avatar_url ||
+                          submission.creator_avatar
+
+                        return (
+                          <div key={submission.id} className="p-4 md:p-6 space-y-4">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                              <div className="flex gap-4 flex-1">
+                                <Link
+                                  href={`/profile/${profileUsername}`}
+                                  className="w-12 h-12 rounded-lg transition-opacity hover:opacity-80 flex-shrink-0 focus:outline-hidden block"
+                                >
+                                  <Avatar className="w-full h-full rounded-lg ring-2 ring-primary/5">
+                                    {avatarUrl && (
+                                      <AvatarImage
+                                        src={
+                                          avatarUrl.startsWith('http')
+                                            ? avatarUrl
+                                            : resolveMediaUrl(avatarUrl)
+                                        }
+                                        alt={displayName}
+                                        className="object-cover"
+                                      />
+                                    )}
+                                    <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                                      {displayName
+                                        .split(' ')
+                                        .map((word: string) => word[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </Link>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <Link
+                                      href={`/profile/${profileUsername}`}
+                                      className="text-lg font-semibold hover:text-primary transition-colors text-left block"
+                                    >
+                                      {displayName}
+                                    </Link>
+                                    {getStatusBadge(submission.status)}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                    {submission.email && <span>{submission.email}</span>}
+                                    {submission.phone_number && (
+                                      <span>{submission.phone_number}</span>
+                                    )}
+                                    <span>Applied {formatDate(submission.created_at)}</span>
+                                    {submission.reviewed_at && (
+                                      <span>• Reviewed {formatDate(submission.reviewed_at)}</span>
+                                    )}
+                                  </div>
+                                  {submission.cover_letter && (
+                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                                      {submission.cover_letter}
+                                    </p>
                                   )}
-                                  <span>Applied {formatDate(submission.created_at)}</span>
-                                  {submission.reviewed_at && (
-                                    <span>• Reviewed {formatDate(submission.reviewed_at)}</span>
-                                  )}
                                 </div>
-                                {submission.cover_letter && (
-                                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                                    {submission.cover_letter}
-                                  </p>
-                                )}
                               </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {submission.can_be_reviewed && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleReview(submission, 'accept')}
-                                    disabled={processing === submission.id}
-                                  >
-                                    <Check className="w-4 h-4 mr-1" />
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleReview(submission, 'reject')}
-                                    disabled={processing === submission.id}
-                                  >
-                                    <X className="w-4 h-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                  {/* <Button
+                              <div className="flex flex-wrap gap-2">
+                                {submission.can_be_reviewed && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleReview(submission, 'accept')}
+                                      disabled={processing === submission.id}
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      Accept
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleReview(submission, 'reject')}
+                                      disabled={processing === submission.id}
+                                    >
+                                      <X className="w-4 h-4 mr-1" />
+                                      Reject
+                                    </Button>
+                                    {/* <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleReview(submission, 'skip')}
@@ -466,20 +573,21 @@ const JobApplicationsPage = () => {
                                     <SkipForward className="w-4 h-4 mr-1" />
                                     Skip
                                   </Button> */}
-                                </>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewSubmission(submission.id)}
-                              >
-                                <Eye className="w-4 h-4 mr-1" />
-                                View
-                              </Button>
+                                  </>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewSubmission(submission.id)}
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </TabsContent>
@@ -512,23 +620,94 @@ const JobApplicationsPage = () => {
               <p>Loading submission...</p>
             </div>
           ) : viewingSubmission ? (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-lg font-semibold">
-                      {viewingSubmission.full_name || 'Anonymous applicant'}
-                    </p>
-                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                      {viewingSubmission.email && <span>{viewingSubmission.email}</span>}
-                      {viewingSubmission.phone_number && (
-                        <span>{viewingSubmission.phone_number}</span>
-                      )}
-                      <span>Applied {formatDate(viewingSubmission.created_at)}</span>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                {(() => {
+                  // Official account profile (fetched via userService in handleViewSubmission)
+                  const account = (viewingSubmission as any).applicant_account
+                  const profile = (viewingSubmission as any).creator_profile
+
+                  const profileUsername =
+                    account?.username ||
+                    profile?.username ||
+                    (viewingSubmission as any).creator_username ||
+                    viewingSubmission.creator_id
+
+                  const displayName =
+                    account?.display_name ||
+                    account?.full_name ||
+                    profile?.full_name ||
+                    viewingSubmission.full_name ||
+                    'Anonymous applicant'
+
+                  const avatarUrl =
+                    account?.avatar_url ||
+                    profile?.avatar_url ||
+                    (viewingSubmission as any).creator_avatar ||
+                    (viewingSubmission as any).avatar_url
+
+                  return (
+                    <div className="space-y-5">
+                      {/* Top Header: Avatar, Name & Status Tag centered */}
+                      <div className="flex items-center gap-4">
+                        <Link
+                          className="cursor-pointer transition-opacity hover:opacity-80 flex-shrink-0 focus:outline-hidden block"
+                          href={`/profile/${profileUsername}`}
+                        >
+                          <Avatar className="w-16 h-16 rounded-xl border-2 border-primary/10">
+                            {avatarUrl && (
+                              <AvatarImage
+                                src={
+                                  avatarUrl.startsWith('http')
+                                    ? avatarUrl
+                                    : resolveMediaUrl(avatarUrl)
+                                }
+                                alt={displayName}
+                                className="object-cover"
+                              />
+                            )}
+                            <AvatarFallback className="bg-primary/5 text-primary font-bold text-xl">
+                              {displayName
+                                .split(' ')
+                                .map((word: string) => word[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Link>
+
+                        <div className="flex-1 min-w-0">
+                          <Link
+                            href={`/profile/${profileUsername}`}
+                            className="text-xl font-bold leading-tight text-left hover:text-primary transition-colors cursor-pointer block truncate"
+                          >
+                            {displayName}
+                          </Link>
+                        </div>
+
+                        <div className="shrink-0">
+                          {getStatusBadge(viewingSubmission.status)}
+                        </div>
+                      </div>
+
+                      {/* Contact & Date Info Section - Custom Layout */}
+                      <div className="space-y-1.5 text-sm text-muted-foreground pt-1">
+                        <div className="flex flex-wrap items-center gap-x-4">
+                          {viewingSubmission.email && (
+                            <span>{viewingSubmission.email}</span>
+                          )}
+                          {viewingSubmission.phone_number && (
+                            <span>{viewingSubmission.phone_number}</span>
+                          )}
+                        </div>
+                        <div className="block">
+                          Applied {formatDate(viewingSubmission.created_at)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  {getStatusBadge(viewingSubmission.status)}
-                </div>
+                  )
+                })()}
                 {viewingSubmission.review_notes && (
                   <div className="rounded-lg border border-border/60 bg-muted/40 p-3">
                     <p className="text-xs uppercase text-muted-foreground mb-1">Review notes</p>
