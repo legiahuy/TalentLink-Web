@@ -6,7 +6,9 @@ import { Plus_Jakarta_Sans, Lora, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthInitializer } from '@/components/auth/AuthInitializer'
 import { FirebaseAnalytics } from '@/components/analytics/FirebaseAnalytics'
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from '@vercel/analytics/next'
+
+import { FeedbackButton } from '@/components/common/FeedbackButton'
 
 const sans = Plus_Jakarta_Sans({ variable: '--font-sans', subsets: ['latin'] })
 const serif = Lora({ variable: '--font-serif', subsets: ['latin'] })
@@ -33,10 +35,16 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <FirebaseAnalytics />
         <AuthInitializer>
-          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <FeedbackButton />
+          </NextIntlClientProvider>
           <Toaster position="top-right" richColors />
         </AuthInitializer>
         <Analytics />

@@ -89,7 +89,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     if (!job) return { title: 'Job Not Found' }
 
     return {
-      title: `${job.title} | TalentLink`,
+      title: `${job.title}`,
       description: job.brief_description || job.description?.slice(0, 160),
       openGraph: {
         title: job.title,
@@ -98,7 +98,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       },
     }
   } catch (error) {
-    return { title: 'Job Detail | TalentLink' }
+    return { title: 'Job Detail' }
   }
 }
 

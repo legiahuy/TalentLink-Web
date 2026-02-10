@@ -1,0 +1,27 @@
+import Link from 'next/link'
+import { MessageCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useTranslations } from 'next-intl'
+
+export const FeedbackButton = () => {
+  const t = useTranslations('Footer')
+  return (
+    <div className="fixed bottom-6 right-6 z-50">
+      <Button
+        asChild
+        className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
+        size="lg"
+      >
+        <Link
+          href="https://docs.google.com/forms/d/e/1FAIpQLSe66NkLKGnXth2ZytcHePkFRtj0o7E_0B8RBmPdyTp6q3svMQ/viewform"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2"
+        >
+          <MessageCircle className="h-5 w-5" />
+          <span>{t('feedback')}</span>
+        </Link>
+      </Button>
+    </div>
+  )
+}
