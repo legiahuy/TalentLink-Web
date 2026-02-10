@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl'
 import { startGoogleOAuth } from '@/lib/oauth'
 
 type LogInFormValues = {
-  email: string
+  identifier: string
   password: string
 }
 
@@ -23,7 +23,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
   const t = useTranslations('Auth.login')
 
   const loginSchema = z.object({
-    email: z.email(t('emailInvalid')),
+    identifier: z.string().min(1, t('emailInvalid')),
     password: z.string().min(6, t('passwordMinLength')),
   })
 
@@ -34,10 +34,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
   } = useForm<LogInFormValues>({ resolver: zodResolver(loginSchema) })
   const { login } = useAuthStore()
   const onSubmit = async (data: LogInFormValues) => {
-    const { email, password } = data
-    await login(email, password)
+    const { identifier, password } = data
+    await login(identifier, password)
     // try {
-    //   await login(email, password)
+    //   await login(identifier, password)
     //   navigate('/users/dashboard')
     // } catch {
     //   //STAY ON PAGE
@@ -56,16 +56,18 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
         </div>
 
         <div className="flex flex-col gap-3">
-          <Label htmlFor="email" className="block text-sm">
+          <Label htmlFor="identifier" className="block text-sm">
             {t('email')}
           </Label>
           <Input
-            type="email"
-            id="email"
+            type="text"
+            id="identifier"
             placeholder={t('emailPlaceholder')}
-            {...register('email')}
+            {...register('identifier')}
           />
-          {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
+          {errors.identifier && (
+            <p className="text-destructive text-xs">{errors.identifier.message}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">

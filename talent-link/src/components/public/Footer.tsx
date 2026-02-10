@@ -48,8 +48,13 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">{t('support')}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/help" className="hover:text-foreground transition-colors">
-                  {t('help')}
+                <Link
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSe66NkLKGnXth2ZytcHePkFRtj0o7E_0B8RBmPdyTp6q3svMQ/viewform"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  {t('feedback')}
                 </Link>
               </li>
               <li>

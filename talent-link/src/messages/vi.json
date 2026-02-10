@@ -48,6 +48,7 @@
     "terms": "Điều khoản",
     "privacy": "Chính sách",
     "connect": "Kết nối",
+    "feedback": "Đóng góp ý kiến",
     "copyright": "© 2025 TalentLink. All rights reserved."
   },
   "LanguageSwitcher": {
@@ -66,9 +67,9 @@
       "pageTitle": "Đăng nhập",
       "title": "Chào mừng quay lại",
       "subtitle": "Đăng nhập vào tài khoản TalentLink của bạn",
-      "email": "Email",
-      "emailPlaceholder": "email@example.com",
-      "emailInvalid": "Email không hợp lệ",
+      "email": "Email hoặc Tên đăng nhập",
+      "emailPlaceholder": "Email hoặc tên đăng nhập",
+      "emailInvalid": "Vui lòng nhập email hoặc tên đăng nhập hợp lệ",
       "password": "Mật Khẩu",
       "passwordPlaceholder": "Mật khẩu",
       "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
@@ -294,6 +295,7 @@
     "loading": "Đang tải...",
     "success": "Thành công",
     "send": "Gửi",
+    "sending": "Đang gửi...",
     "save": "Lưu",
     "cancel": "Hủy",
     "edit": "Chỉnh sửa",

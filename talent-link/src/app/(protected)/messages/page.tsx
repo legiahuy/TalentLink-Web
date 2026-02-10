@@ -7,7 +7,7 @@ import Header from '@/components/public/Header'
 import MessageThread, { ThreadMessage } from '@/components/messages/MessageThread'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, Loader2, Paperclip, X, Image, FileText, Film, Music, MoreVertical, Trash2, MessageCircle } from 'lucide-react'
+import { Search, Send, Loader2, Paperclip, X, Image, FileText, Film, Music, MoreVertical, Trash2, MessageCircle, ChevronLeft } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -357,7 +357,7 @@ const MessagesPage = () => {
     // Logic: Only auto-scroll if user is already near bottom OR if the new message is from "me"
     // Since we don't track "who sent the last message" easily in this effect without looking at messages[last],
     // we can check if we are near bottom.
-    
+
     // Threshold to consider "near bottom"
     const threshold = 100
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= threshold
@@ -366,7 +366,7 @@ const MessagesPage = () => {
     // For simplicity in MVP: If it's my message (added to local state), we forced scroll in handleSendMessage usually?
     // Actually handleSendMessage just updates state.
     // Let's scroll if near bottom.
-    
+
     if (isNearBottom) {
       requestAnimationFrame(() => {
         container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
@@ -605,7 +605,7 @@ const MessagesPage = () => {
     // Nếu có nội dung text
     if (lastMsg.content?.trim()) {
       const content = lastMsg.content.trim()
-      
+
       // Check for job reference
       const jobRefMatch = content.match(/^:::JOB_REF:(\{.*\}):::\n([\s\S]*)$/);
       if (jobRefMatch) {
@@ -627,7 +627,7 @@ const MessagesPage = () => {
 
   const selectedConv = conversations.find((c) => c.id === selectedConversation)
   const selectedConvInfo = selectedConv ? getOtherParticipant(selectedConv) : null
-  
+
   // Determine if other user is online
   const otherParticipantId = selectedConv?.participants.find(p => p.id !== user?.id)?.id
   const isOnline = otherParticipantId ? onlineUsers.has(otherParticipantId) : false
@@ -686,7 +686,7 @@ const MessagesPage = () => {
           >
             <div className="flex h-full">
               {/* Conversations List */}
-              <div className="w-full md:w-1/3 border-r border-border/50 flex flex-col bg-gradient-to-b from-muted/20 to-transparent">
+              <div className={`w-full md:w-1/3 border-r border-border/50 flex flex-col bg-gradient-to-b from-muted/20 to-transparent ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-5 border-b border-border/50 backdrop-blur-sm bg-background/50">
                   <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                     {t('title')}
@@ -723,10 +723,10 @@ const MessagesPage = () => {
                             key={conv.id}
                             onClick={() => setSelectedConversation(conv.id)}
                             className={`p-4 cursor-pointer transition-all duration-200 border-l-4 hover:scale-[1.01] ${isActive
-                                ? 'bg-primary/10 border-primary shadow-sm'
-                                : isUnread
-                                  ? 'bg-muted/50 border-primary/60 hover:bg-muted/70 hover:border-primary'
-                                  : 'border-transparent hover:bg-accent/50 hover:shadow-sm'
+                              ? 'bg-primary/10 border-primary shadow-sm'
+                              : isUnread
+                                ? 'bg-muted/50 border-primary/60 hover:bg-muted/70 hover:border-primary'
+                                : 'border-transparent hover:bg-accent/50 hover:shadow-sm'
                               }`}
                           >
                             <div className="flex gap-3">
@@ -786,12 +786,20 @@ const MessagesPage = () => {
               </div>
 
               {/* Message Thread */}
-              <div className="hidden md:flex md:w-2/3 flex-col">
+              <div className={`${selectedConversation ? 'flex' : 'hidden'} md:flex md:w-2/3 flex-col w-full`}>
                 {selectedConversation && selectedConvInfo ? (
                   <>
                     {/* Thread Header */}
                     <div className="p-5 border-b border-border/50 flex items-center justify-between backdrop-blur-sm bg-gradient-to-r from-background to-muted/20 shadow-sm">
                       <div className="flex items-center gap-3">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="md:hidden -ml-2 h-9 w-9"
+                          onClick={() => setSelectedConversation(null)}
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </Button>
                         {selectedConvInfo.username ? (
                           <Link href={`/profile/${selectedConvInfo.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                             <Avatar className="h-11 w-11 ring-2 ring-primary/20 shadow-md">
@@ -807,8 +815,8 @@ const MessagesPage = () => {
                                 {selectedConvInfo.name[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-lg truncate whitespace-nowrap">{selectedConvInfo.name}</h3>
                               {isOnline && (
                                 <div className="flex items-center gap-1.5">
                                   <span className="relative flex h-2 w-2">
@@ -835,8 +843,8 @@ const MessagesPage = () => {
                                 {selectedConvInfo.name[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <h3 className="font-bold text-lg">{selectedConvInfo.name}</h3>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-lg truncate whitespace-nowrap">{selectedConvInfo.name}</h3>
                               {isOnline && (
                                 <div className="flex items-center gap-1.5">
                                   <span className="relative flex h-2 w-2">
@@ -903,16 +911,16 @@ const MessagesPage = () => {
                           </Button>
                         </div>
                       )}
-                      
+
                       {/* Typing indicator */}
                       {typingUser && typingUser !== user?.id && (
                         <div className="mb-2 px-2">
-                           <p className="text-xs text-muted-foreground flex items-center gap-1">
-                             <span className="animate-bounce">●</span>
-                             <span className="animate-bounce delay-100">●</span>
-                             <span className="animate-bounce delay-200">●</span>
-                             <span className="ml-1">Typing...</span>
-                           </p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <span className="animate-bounce">●</span>
+                            <span className="animate-bounce delay-100">●</span>
+                            <span className="animate-bounce delay-200">●</span>
+                            <span className="ml-1">Typing...</span>
+                          </p>
                         </div>
                       )}
 
@@ -956,8 +964,8 @@ const MessagesPage = () => {
                           className="flex-1 bg-background/50 focus:bg-background transition-all"
                           disabled={uploadingFile}
                         />
-                        <Button 
-                          onClick={handleSendMessage} 
+                        <Button
+                          onClick={handleSendMessage}
                           disabled={(!messageInput.trim() && !selectedFile) || sendingMessage || uploadingFile}
                           className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all duration-300"
                         >
@@ -973,13 +981,13 @@ const MessagesPage = () => {
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-muted-foreground bg-muted/5">
                     <div className="text-center space-y-4 p-8">
-                       <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <MessageCircle className="w-12 h-12 text-muted-foreground/50" />
-                       </div>
-                       <h3 className="text-xl font-semibold">{t('title')}</h3>
-                       <p className="max-w-xs mx-auto text-sm text-muted-foreground/80">
-                          Select a conversation to start chatting or search for a user to connect.
-                       </p>
+                      <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MessageCircle className="w-12 h-12 text-muted-foreground/50" />
+                      </div>
+                      <h3 className="text-xl font-semibold">{t('title')}</h3>
+                      <p className="max-w-xs mx-auto text-sm text-muted-foreground/80">
+                        Select a conversation to start chatting or search for a user to connect.
+                      </p>
                     </div>
                   </div>
                 )}

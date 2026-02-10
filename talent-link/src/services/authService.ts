@@ -23,8 +23,8 @@ export const authService = {
   /**
    * Login with email and password
    */
-  login: async (email: string, password: string): Promise<LoginResponse> => {
-    const res = await axiosClient.post('/auth/login', { identifier: email, password })
+  login: async (identifier: string, password: string): Promise<LoginResponse> => {
+    const res = await axiosClient.post('/auth/login', { identifier, password })
     return res.data.data
   },
 

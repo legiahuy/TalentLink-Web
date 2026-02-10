@@ -42,7 +42,7 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
   const tCommon = useTranslations('Common')
   const tDetail = useTranslations('JobDetail')
   const tOptions = useTranslations('options')
-  
+
   // -- Search State --
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -61,16 +61,16 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
   const [budgetRange, setBudgetRange] = useState<[number, number]>([...BUDGET_RANGE_DEFAULT])
   const [activeTab, setActiveTab] = useState<JobType>('all')
   const { savedJobs, toggleSave, isJobSaved } = useSavedJobs()
-  
+
   // Initialize jobs with initialJobs
   const [jobs, setJobs] = useState<JobWithCreator[]>(initialJobs)
   const [availableGenres, setAvailableGenres] = useState<string[]>([])
-  
-  // Loading state: 
+
+  // Loading state:
   // If we have initialJobs and no filters changed yet, we might not need to show loading initially.
   // However, the original logic fetched on mount. We should respect initialJobs if provided.
   const [loading, setLoading] = useState(false)
-  
+
   // Track if it's the first render to avoid double fetching if initialJobs are present
   const isFirstRender = useRef(true)
 
@@ -121,7 +121,7 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
         page: 1,
         pageSize: 20,
         sortBy: 'created_at',
-        sortOrder: 'asc',
+        sortOrder: 'desc',
       }
 
       if (activeTab !== 'all' && activeTab !== 'saved') {
@@ -176,10 +176,19 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
         creator_username: job.creatorUsername ?? job.creator_username,
         creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url,
         location: job.location || job.locationText || job.location_text,
-        location_type: (job.locationType ?? job.location_type) as 'remote' | 'onsite' | 'hybrid' | undefined,
+        location_type: (job.locationType ?? job.location_type) as
+          | 'remote'
+          | 'onsite'
+          | 'hybrid'
+          | undefined,
         budget_min: job.budgetMin ?? job.budget_min,
         budget_max: job.budgetMax ?? job.budget_max,
-        budget_currency: (job.budgetCurrency ?? job.budget_currency) as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
+        budget_currency: (job.budgetCurrency ?? job.budget_currency) as
+          | 'USD'
+          | 'EUR'
+          | 'JPY'
+          | 'VND'
+          | undefined,
         payment_type: (job.paymentType ?? job.payment_type) as
           | 'bySession'
           | 'byHour'
@@ -376,7 +385,9 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
               <Card className="p-4 lg:sticky lg:top-24 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-sm uppercase tracking-wide">{t('filters.title')}</h2>
+                    <h2 className="font-semibold text-sm uppercase tracking-wide">
+                      {t('filters.title')}
+                    </h2>
                     {hasActiveFilters && (
                       <Button
                         variant="ghost"
@@ -463,8 +474,12 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                         <SelectContent>
                           <SelectItem value="all">{t('filters.experienceAll')}</SelectItem>
                           <SelectItem value="any">{tOptions('experience.any')}</SelectItem>
-                          <SelectItem value="beginner">{tOptions('experience.beginner')}</SelectItem>
-                          <SelectItem value="intermediate">{tOptions('experience.intermediate')}</SelectItem>
+                          <SelectItem value="beginner">
+                            {tOptions('experience.beginner')}
+                          </SelectItem>
+                          <SelectItem value="intermediate">
+                            {tOptions('experience.intermediate')}
+                          </SelectItem>
                           <SelectItem value="expert">{tOptions('experience.expert')}</SelectItem>
                         </SelectContent>
                       </Select>
@@ -485,10 +500,18 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">{t('filters.employmentAll')}</SelectItem>
-                          <SelectItem value="full_time">{tOptions('employment.full_time')}</SelectItem>
-                          <SelectItem value="part_time">{tOptions('employment.part_time')}</SelectItem>
-                          <SelectItem value="contract">{tOptions('employment.contract')}</SelectItem>
-                          <SelectItem value="one_time">{tOptions('employment.one_time')}</SelectItem>
+                          <SelectItem value="full_time">
+                            {tOptions('employment.full_time')}
+                          </SelectItem>
+                          <SelectItem value="part_time">
+                            {tOptions('employment.part_time')}
+                          </SelectItem>
+                          <SelectItem value="contract">
+                            {tOptions('employment.contract')}
+                          </SelectItem>
+                          <SelectItem value="one_time">
+                            {tOptions('employment.one_time')}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -566,7 +589,11 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                       >
                         {filteredJobs.map((job) => (
                           <motion.div key={job.id} variants={fadeInUp}>
-                            <Link href={`/jobs/${job.id}`} className="block h-full cursor-pointer hover:no-underline" onClick={(e) => e.stopPropagation()}>
+                            <Link
+                              href={`/jobs/${job.id}`}
+                              className="block h-full cursor-pointer hover:no-underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <JobCard
                                 job={job}
                                 isSaved={isJobSaved(job.id)}
@@ -579,7 +606,7 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                         ))}
                       </motion.div>
                     ) : (
-                       <Card className="p-12 text-center">
+                      <Card className="p-12 text-center">
                         {tab === 'producer' ? (
                           <Disc className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                         ) : tab === 'singer' ? (
@@ -591,19 +618,19 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
                           {tab === 'producer'
                             ? t('emptyProducers.title')
                             : tab === 'singer'
-                            ? t('emptySingers.title')
-                            : tab === 'saved'
-                            ? t('emptySaved.title')
-                            : t('emptyState.title')}
+                              ? t('emptySingers.title')
+                              : tab === 'saved'
+                                ? t('emptySaved.title')
+                                : t('emptyState.title')}
                         </h3>
                         <p className="text-muted-foreground mb-4">
                           {tab === 'producer'
                             ? t('emptyProducers.description')
                             : tab === 'singer'
-                            ? t('emptySingers.description')
-                            : tab === 'saved'
-                            ? t('emptySaved.description')
-                            : t('emptyState.description')}
+                              ? t('emptySingers.description')
+                              : tab === 'saved'
+                                ? t('emptySaved.description')
+                                : t('emptyState.description')}
                         </p>
                         {hasActiveFilters && tab !== 'saved' && (
                           <Button variant="outline" onClick={clearFilters}>
@@ -620,13 +647,13 @@ const JobPoolClient = ({ initialJobs = [] }: JobPoolClientProps) => {
         </div>
       </div>
 
-        <ApplicationDialog
-          open={!!applicationDialogJob}
-          onOpenChange={(open: boolean) => !open && setApplicationDialogJob(null)}
-          jobId={applicationDialogJob?.id || ''}
-          jobTitle={applicationDialogJob?.title || ''}
-          companyName={applicationDialogJob?.creator_display_name || tCommon('unknown')}
-        />
+      <ApplicationDialog
+        open={!!applicationDialogJob}
+        onOpenChange={(open: boolean) => !open && setApplicationDialogJob(null)}
+        jobId={applicationDialogJob?.id || ''}
+        jobTitle={applicationDialogJob?.title || ''}
+        companyName={applicationDialogJob?.creator_display_name || tCommon('unknown')}
+      />
     </div>
   )
 }
