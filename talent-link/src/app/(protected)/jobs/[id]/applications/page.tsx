@@ -267,14 +267,14 @@ const JobApplicationsPage = () => {
       if (username) {
         try {
           const applicantProfile = await userService.getUserByUsername(username)
-            // Store it for use in the dialog
-            ; (detail as any).applicant_account = applicantProfile
+          // Store it for use in the dialog
+          ;(detail as any).applicant_account = applicantProfile
         } catch (err) {
           console.warn('Failed to fetch applicant profile by username', err)
           // Fallback to fetch by ID if username fails
           try {
             const applicantProfile = await userService.getUser(detail.creator_id)
-              ; (detail as any).applicant_account = applicantProfile
+            ;(detail as any).applicant_account = applicantProfile
           } catch (innerErr) {
             console.warn('Failed to fetch applicant profile by ID', innerErr)
           }
@@ -283,7 +283,7 @@ const JobApplicationsPage = () => {
         // No username available, fallback to fetch by ID
         try {
           const applicantProfile = await userService.getUser(detail.creator_id)
-            ; (detail as any).applicant_account = applicantProfile
+          ;(detail as any).applicant_account = applicantProfile
         } catch (err) {
           console.warn('Failed to fetch applicant profile by ID', err)
         }
@@ -423,14 +423,14 @@ const JobApplicationsPage = () => {
                 onValueChange={(value) => setStatusFilter(value as StatusFilter)}
               >
                 <div className="flex flex-col gap-4 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
-                  <TabsList className="grid w-full max-w-2xl grid-cols-5">
+                  <TabsList className="grid w-full max-w-2xl grid-cols-4">
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="pending_review">Pending</TabsTrigger>
                     {/* <TabsTrigger value="under_review">Reviewing</TabsTrigger> */}
                     <TabsTrigger value="accepted">Accepted</TabsTrigger>
                     <TabsTrigger value="rejected">Rejected</TabsTrigger>
                     {/* <TabsTrigger value="skipped">Skipped</TabsTrigger> */}
-                    <TabsTrigger value="withdrawn">Withdrawn</TabsTrigger>
+                    {/* <TabsTrigger value="withdrawn">Withdrawn</TabsTrigger> */}
                   </TabsList>
                   <p className="text-sm text-muted-foreground">
                     {submissions.length} {submissions.length === 1 ? 'application' : 'applications'}
@@ -482,9 +482,7 @@ const JobApplicationsPage = () => {
                           submission.full_name ||
                           'Anonymous Applicant'
                         const avatarUrl =
-                          account?.avatar_url ||
-                          profile?.avatar_url ||
-                          submission.creator_avatar
+                          account?.avatar_url || profile?.avatar_url || submission.creator_avatar
 
                         return (
                           <div key={submission.id} className="p-4 md:p-6 space-y-4">
@@ -547,7 +545,7 @@ const JobApplicationsPage = () => {
                                 {submission.can_be_reviewed && (
                                   <>
                                     <Button
-                                      variant="outline"
+                                      variant="default"
                                       size="sm"
                                       onClick={() => handleReview(submission, 'accept')}
                                       disabled={processing === submission.id}
@@ -556,7 +554,7 @@ const JobApplicationsPage = () => {
                                       Accept
                                     </Button>
                                     <Button
-                                      variant="outline"
+                                      variant="destructive"
                                       size="sm"
                                       onClick={() => handleReview(submission, 'reject')}
                                       disabled={processing === submission.id}
@@ -686,17 +684,13 @@ const JobApplicationsPage = () => {
                           </Link>
                         </div>
 
-                        <div className="shrink-0">
-                          {getStatusBadge(viewingSubmission.status)}
-                        </div>
+                        <div className="shrink-0">{getStatusBadge(viewingSubmission.status)}</div>
                       </div>
 
                       {/* Contact & Date Info Section - Custom Layout */}
                       <div className="space-y-1.5 text-sm text-muted-foreground pt-1">
                         <div className="flex flex-wrap items-center gap-x-4">
-                          {viewingSubmission.email && (
-                            <span>{viewingSubmission.email}</span>
-                          )}
+                          {viewingSubmission.email && <span>{viewingSubmission.email}</span>}
                           {viewingSubmission.phone_number && (
                             <span>{viewingSubmission.phone_number}</span>
                           )}

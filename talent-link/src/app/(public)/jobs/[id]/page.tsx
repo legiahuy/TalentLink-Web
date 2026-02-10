@@ -1,10 +1,4 @@
-import {
-  ArrowLeft,
-  MapPin,
-  Calendar,
-  Briefcase,
-  Banknote,
-} from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Briefcase, Banknote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -30,11 +24,15 @@ const getTimeAgo = (dateString: string, t: any) => {
   const now = new Date()
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
   if (diffInMinutes < 60) {
-    return diffInMinutes === 1 ? t('timeAgo.minute', { count: 1 }) : t('timeAgo.minutes', { count: diffInMinutes })
+    return diffInMinutes === 1
+      ? t('timeAgo.minute', { count: 1 })
+      : t('timeAgo.minutes', { count: diffInMinutes })
   }
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
-    return diffInHours === 1 ? t('timeAgo.hour', { count: 1 }) : t('timeAgo.hours', { count: diffInHours })
+    return diffInHours === 1
+      ? t('timeAgo.hour', { count: 1 })
+      : t('timeAgo.hours', { count: diffInHours })
   }
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays === 0) return t('today')
@@ -82,10 +80,14 @@ const formatSalary = (job: JobWithCreator, tOptions: any, t: any) => {
   return ''
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
   const { id } = await params
   try {
-    const job = await jobService.getJobById(id, 'assets,tags') as JobWithCreator
+    const job = (await jobService.getJobById(id, 'assets,tags')) as JobWithCreator
     if (!job) return { title: 'Job Not Found' }
 
     return {
@@ -113,7 +115,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   try {
     if (!id) throw new Error('Invalid Job ID')
-    job = await jobService.getJobById(id, 'assets,tags') as JobWithCreator
+    job = (await jobService.getJobById(id, 'assets,tags')) as JobWithCreator
   } catch (e) {
     error = e instanceof Error ? e.message : t('jobNotFoundDesc')
   }
@@ -137,8 +139,52 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     )
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: job.title,
+    description: job.description,
+    datePosted: job.created_at,
+    validThrough: job.deadline || job.submission_deadline,
+    employmentType: job.recruitment_type?.toUpperCase().replace('-', '_'),
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: job.creator_display_name || 'Confidential',
+      sameAs: job.creator_username
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/profile/${job.creator_username}`
+        : undefined,
+      logo: job.creator_avatar_url ? resolveMediaUrl(job.creator_avatar_url) : undefined,
+    },
+    jobLocation: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: job.location || 'Vietnam',
+        addressCountry: 'VN',
+      },
+    },
+    baseSalary:
+      job.budget_min && job.budget_max
+        ? {
+            '@type': 'MonetaryAmount',
+            currency: job.budget_currency || 'VND',
+            value: {
+              '@type': 'QuantitativeValue',
+              minValue: job.budget_min,
+              maxValue: job.budget_max,
+              unitText: job.payment_type === 'byHour' ? 'HOUR' : 'MONTH',
+            },
+          }
+        : undefined,
+  }
+
   return (
     <div className="min-h-screen relative">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Full-width background wrapper */}
       <div className="w-full min-h-screen bg-linear-to-br from-muted/50 via-muted/30 to-muted/40 relative">
         {/* Subtle gradient overlay for depth */}
@@ -151,7 +197,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {/* Back Button */}
           <Button variant="ghost" asChild className="mb-6">
             <Link href="/jobs">
-               {/* Note: Original used router.back(), which is client-side. Link to /jobs is a safe server-side fallback/replacement, or we can use a client component for a back button if strictly needed. Preferring implicit link to list for SSR friendliness. */}
+              {/* Note: Original used router.back(), which is client-side. Link to /jobs is a safe server-side fallback/replacement, or we can use a client component for a back button if strictly needed. Preferring implicit link to list for SSR friendliness. */}
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t('back')}
             </Link>
@@ -186,7 +232,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     <div className="flex-1 text-center sm:text-left">
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
                       <Link
-                         href={job.creator_username ? `/profile/${job.creator_username}` : '#'}
+                        href={job.creator_username ? `/profile/${job.creator_username}` : '#'}
                         className="text-lg text-muted-foreground font-medium hover:underline hover:text-primary transition-colors"
                       >
                         {job.creator_display_name || tCommon('unknown')}
@@ -218,7 +264,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     )}
                     <div className="flex items-center gap-2">
                       <Banknote className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-semibold text-primary">{formatSalary(job, tOptions, t)}</span>
+                      <span className="font-semibold text-primary">
+                        {formatSalary(job, tOptions, t)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -290,44 +338,46 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     job.recruitment_type ||
                     job.deadline ||
                     job.submission_deadline) && (
-                      <div className="mb-6">
-                        <h2 className="text-xl font-semibold mb-3">{t('additionalInfo')}</h2>
-                        <div className="space-y-2 text-sm">
-                          {job.experience_level && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{t('experienceLevel')}:</span>
-                              <span className="font-medium capitalize">
-                                {tOptions(`experience.${job.experience_level}`)}
-                              </span>
-                            </div>
-                          )}
-                          {job.recruitment_type && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{t('employmentType')}:</span>
-                              <span className="font-medium capitalize">
-                                {tOptions(`employment.${job.recruitment_type}`)}
-                              </span>
-                            </div>
-                          )}
-                          {job.deadline && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{t('projectDeadline')}:</span>
-                              <span className="font-medium">
-                                {new Date(job.deadline).toLocaleDateString()}
-                              </span>
-                            </div>
-                          )}
-                          {job.submission_deadline && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{t('applicationDeadline')}:</span>
-                              <span className="font-medium">
-                                {new Date(job.submission_deadline).toLocaleDateString()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-3">{t('additionalInfo')}</h2>
+                      <div className="space-y-2 text-sm">
+                        {job.experience_level && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t('experienceLevel')}:</span>
+                            <span className="font-medium capitalize">
+                              {tOptions(`experience.${job.experience_level}`)}
+                            </span>
+                          </div>
+                        )}
+                        {job.recruitment_type && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t('employmentType')}:</span>
+                            <span className="font-medium capitalize">
+                              {tOptions(`employment.${job.recruitment_type}`)}
+                            </span>
+                          </div>
+                        )}
+                        {job.deadline && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t('projectDeadline')}:</span>
+                            <span className="font-medium">
+                              {new Date(job.deadline).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                        {job.submission_deadline && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              {t('applicationDeadline')}:
+                            </span>
+                            <span className="font-medium">
+                              {new Date(job.submission_deadline).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -340,4 +390,3 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     </div>
   )
 }
-
